@@ -17,7 +17,7 @@ df = pd.read_excel("Annex_A_Children_in_need_census_2021_to_2022_validation_rule
 
 """
 If rate limits are reached often and the operation frequently gets interrupted by Github, 
-Continue from where you ended as shown. Start from the next index row and select all cols 
+Continue from where you ended as shown. Start from the next index row (e.g row 92) and select all cols.
 new_df = df.loc[92:, :].copy()
 """
 # escape special characters so that they are not interpreted as Github markdown.
@@ -37,6 +37,6 @@ for index, row in df.iterrows():
         #labels = [row['Error/ query'], row['Module']]
         """If label names frequently trigger validation errors, skip the labels part and create them using Github's UI"""
     )
-    # wait between runs in order not to exceed Github's secondaryimage.png rate limit
-    time.sleep(1)
+    # wait between runs in order not to exceed Github's secondary rate limit.
+    time.sleep(2)
  
