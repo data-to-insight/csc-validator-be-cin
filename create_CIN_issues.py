@@ -4,16 +4,20 @@ import pandas as pd
 import time
 
 # generate a github token for yourself here https://github.com/settings/tokens
-token = os.getenv("GITHUB_TOKEN", "write_your_token_here")
+token = os.getenv("GITHUB_TOKEN", "write_your_token_here_keep_quotes")
 
 # initialise the Github class
 gh = Github(token)
 # replace content of bracket with the path of the repo you want to push to.
 repo = gh.get_repo('SocialFinanceDigitalLabs/CIN-validator')
 
-## Read validation rules into a dataframe.
-# put file containing validation rules in the same folder as this file and replace the filename in the line below.
-df = pd.read_excel("Annex_A_Children_in_need_census_2021_to_2022_validation_rules_v1-2.xlsx", sheet_name=1)
+## Read validation rules into a dataframe. 
+"""
+Get rules in excel format: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/973883/Annex_A_Children_in_need_census_2021_to_2022_validation_rules_v1-2.xlsx
+Adjust the year values in the link and paste it in browser to download the appropriate file. 
+Put file containing validation rules in the same folder as this file and replace the filename in the line below.
+"""
+df = pd.read_excel("write_filename_here_with_extension_and_quotes", sheet_name=1)
 
 """
 If rate limits are reached often and the operation frequently gets interrupted by Github, 
