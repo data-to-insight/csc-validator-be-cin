@@ -1,6 +1,9 @@
 from github import Github
-import os
+
 import pandas as pd
+
+import os
+import sys
 import time
 
 # generate a github token for yourself here https://github.com/settings/tokens
@@ -11,13 +14,12 @@ gh = Github(token)
 # replace content of bracket with the path of the repo you want to push to.
 repo = gh.get_repo('SocialFinanceDigitalLabs/CIN-validator')
 
-## Read validation rules into a dataframe. 
-"""
-Get rules in excel format: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/973883/Annex_A_Children_in_need_census_2021_to_2022_validation_rules_v1-2.xlsx
-Adjust the year values in the link and paste it in browser to download the appropriate file. 
-Put file containing validation rules in the same folder as this file and replace the filename in the line below.
-"""
-df = pd.read_excel("write_filename_here_with_extension_and_quotes", sheet_name=1)
+# get rules file and confirm it's type.
+rules_file = sys.argv[1] 
+while not rules_file.endswith('xlsx'):           
+    rules_file = input("Enter the name of the validation file, incl extension: ")
+## Read validation rules into a dataframe.       
+df = pd.read_excel(rules_file, sheet_name=1)
 
 """
 If rate limits are reached often and the operation frequently gets interrupted by Github, 
@@ -44,3 +46,9 @@ for index, row in df.iterrows():
     # wait between runs in order not to exceed Github's secondary rate limit.
     time.sleep(2)
  
+## How to run this file. 
+"""
+In your command line, do:
+python create_CIN_issues.py rules_file_name_here
+This is the rules file: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/973883/Annex_A_Children_in_need_census_2021_to_2022_validation_rules_v1-2.xlsx
+"""
