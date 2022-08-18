@@ -1,3 +1,4 @@
+import pandas as pd
 import xml.etree.ElementTree as ET
 
 # parse() processes files while fromstring() processes strings
@@ -9,6 +10,8 @@ message = fulltree.getroot()
 # the components are [Header, Children]
 children = message[1]
 
+group_generals = {}  # dict of dicts containing tag elements that have no subtags.
+all_children = [] # list of group_generals of each child. One dict added per child.
 child_count = 0
 for child in children:
     child_count += 1
@@ -29,8 +32,12 @@ for child in children:
 
         group.set(group_count, group_counts[group_count])
         print(f"--------{group.tag, group.attrib}-------------")
+        # create dictionary start point containing all unique identifiers per group
+        table_name = group.tag + "Table"
+        group_generals[table_name] = group.attrib
 
         element_counts = {
+            "Disabilities": 0,
             "AssessmentsCount": 0,
             "CINPlanDatesCount": 0,
             "Section47Count": 0,
@@ -61,3 +68,15 @@ for child in children:
                             sub.set(element_count, element_counts[element_count])
                             sub.set(sub_count, sub_counts[sub_count])
                             print(f"{sub.tag}:{sub.attrib}")
+            else:
+                # for example: CINreferralDate, ReferralSource, PrimaryNeedCode
+                group_generals[table_name][element.tag] = [element.text]
+    all_children.append(group_generals)
+print("#################################################")
+print(group_generals)
+print("#################################################")
+
+for name, values in group_generals.items():
+    df1 = pd.DataFrame(values)
+    print(f"############# {name} ############")
+    print(df1)
