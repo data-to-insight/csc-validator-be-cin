@@ -73,7 +73,7 @@ for child in children:
                             print(f"{sub.tag}:{sub.attrib}")
             else:
                 # for example: CINreferralDate, ReferralSource, PrimaryNeedCode
-                temp_dict[table_name][element.tag] = [element.text]
+                temp_dict[table_name][element.tag] = element.text
                 """if table_name in temp_dict: # if an instance of this group has been seen before,...
                     temp_dict[table_name] = temp_dict[table_name].append(temp_dict[table_name]) 
                 else:
@@ -83,17 +83,23 @@ for child in children:
         ## end: for element in group. Here, temp_dict for one group has been fully created.
 
         #  Convert dict value to a list containing a dict.
-        # temp_dict = {k: [v] for k, v in temp_dict.items()}
-        # TODO wrap singular dict values in a list so that pd.DataFrame can work on them also.
+        temp_dict = {k: [v] for k, v in temp_dict.items()}
+        """temp_dict["ChildIdentifiersTable"].extend(temp_dict["ChildIdentifiersTable"])
+        # print(temp_dict)
+        print(pd.DataFrame.from_dict(temp_dict["ChildIdentifiersTable"]))
+        break"""
         for k, v in temp_dict.items():
             # check whether table name exists in group_generals already
             if k in group_generals:
                 # if it exists already, add to list
-                group_generals[k] = [group_generals[k]]
-                group_generals[k].append(v)
+                # group_generals[k] = [group_generals[k]]
+                group_generals[k].extend(v)
                 # merge two lists. append would have created a list in a list.
             else:
                 # if it doesn't exist, start list
                 group_generals[k] = v
 
-print(group_generals)
+for k, v in group_generals.items():
+    print(f"************* {k} **************")
+    group_generals[k] = pd.DataFrame(group_generals[k])
+

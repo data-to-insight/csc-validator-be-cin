@@ -35,3 +35,16 @@ Reviews:{'child_count': 1, 'CINdetailsCount': 1, 'ChildProtectionPlansCount': 1,
    child_count  CINdetailsCount CINreferralDate ReferralSource PrimaryNeedCode CINclosureDate ReasonForClosure DateOfInitialCPC ReferralNFA
 0            1                1      1970-10-06             1A              N4     1971-02-27              RC1       1970-12-06           0
 """
+# when there is more than one CINdetails block in a child, multiple rows are generated as expected.
+"""
+************* ChildIdentifiersTable **************
+   child_count  ChildIdentifiersCount    LAchildID            UPN      FormerUPN UPNunknown PersonBirthDate ExpectedPersonBirthDate GenderCurrent PersonDeathDate
+0            1                      1  DfEX0000001  A123456789123  X98765432123B        UN3      1965-03-27              1066-04-13             1      1980-10-08
+************* ChildCharacteristicsTable **************
+   child_count  ChildCharacteristicsCount Ethnicity            Disabilities
+0            1                          1      WBRI  \n
+************* CINdetailsTable **************
+   child_count  CINdetailsCount CINreferralDate ReferralSource PrimaryNeedCode CINclosureDate ReasonForClosure DateOfInitialCPC ReferralNFA
+0            1                1      1970-10-06             1A              N4     1971-02-27              RC1       1970-12-06           0
+1            1                2      1970-10-06             1A              N4     1971-02-27              RC1       1970-12-06           0
+"""
