@@ -2,15 +2,15 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 # parse() processes files while fromstring() processes strings
-fulltree = ET.parse("CIN_Census_2021.xml")
-# fulltree = ET.parse('fake_CIN_data.xml')
+# fulltree = ET.parse("CIN_Census_2021.xml")
+fulltree = ET.parse("fake_CIN_data.xml")
 
 # Get the outermost tag as a starting point
 message = fulltree.getroot()
 # the components are [Header, Children]
 children = message[1]
 
-all_children = []  # list of group_generals of each child. One dict added per child.
+all_children = {}  # list of group_generals of each child. One dict added per child.
 child_count = 0
 for child in children:
     child_count += 1
@@ -99,7 +99,21 @@ for child in children:
                 # if it doesn't exist, start list
                 group_generals[k] = v
 
-for k, v in group_generals.items():
-    print(f"************* {k} **************")
-    group_generals[k] = pd.DataFrame(group_generals[k])
+    for k, v in group_generals.items():
+        group_generals[k] = pd.DataFrame(group_generals[k])
+        # add it to the data of all the other children present
+        if k in all_children:
+            all_children[k] = pd.concat([all_children[k], group_generals[k]])
+        else:
+            all_children[k] = group_generals[k]
+## end: for child in children.
 
+for table_name, table_df in all_children.items():
+    print(f"************* {table_name} **************")
+    print(table_df)
+    """
+    At this point, CSV file strings can be generated using
+    v.to_csv()
+    and sent to the frontend.
+    """
+# TODO make this into a class object
