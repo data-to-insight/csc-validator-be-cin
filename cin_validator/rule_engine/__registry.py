@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable, Iterable
 
-from cin_validator.rule_engine.__api import RuleDefinition, RuleType, Module
+from cin_validator.rule_engine.__api import RuleDefinition, RuleType, CINTable
 
 
 class __Registry:
@@ -22,7 +22,7 @@ registry = __Registry()
 
 def rule_definition(
     code: int,
-    module: Module,
+    module: CINTable,
     rule_type: RuleType = RuleType.ERROR,
     description: str = None,
     affected_fields: Iterable[str] = None,

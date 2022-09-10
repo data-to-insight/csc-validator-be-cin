@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Iterable, Union
 
-from cin_validator.rule_engine import RuleDefinition
-from cin_validator.type_definitions import CINTables
+from cin_validator.rule_engine import RuleDefinition, CINTable
 
 
 def _as_iterable(value):
@@ -16,7 +14,7 @@ def _as_iterable(value):
 
 @dataclass(frozen=True, eq=True)
 class IssueLocator:
-    table: CINTables
+    table: CINTable
     field: str
     row: int
 
