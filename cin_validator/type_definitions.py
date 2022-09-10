@@ -1,5 +1,12 @@
-import pandas as pd
+from enum import Enum
 from typing import NamedTuple
+
+import pandas as pd
+
+
+class CINTables(Enum):
+    HEADER = "Header"
+    CHILD_IDENTIFIERS = "ChildIdentifiers"
 
 
 class dfs(NamedTuple):
@@ -15,16 +22,6 @@ class dfs(NamedTuple):
     Section47: pd.DataFrame
     ChildProtectionPlans: pd.DataFrame
     Reviews: pd.DataFrame
-
-
-class RuleDefinition(NamedTuple):
-    """Data structure that holds metadata about rule"""
-
-    code: int
-    type: str  # how do I specify the list of accepted values
-    module: str  # how do I specify the list of accepted values
-    description: str
-    affected_fields: str  # why isn't this failing? are these types really enforced?
 
 
 class PointLocator(NamedTuple):
