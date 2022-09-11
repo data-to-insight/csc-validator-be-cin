@@ -13,8 +13,17 @@ class __Registry:
             raise ValueError(f"Rule with code {rd.code} already exists")
         self._registry[rd.code] = rd
 
+    def get(self, code: int):
+        return self._registry.get(code)
+
+    def __getitem__(self, code: int):
+        return self._registry[code]
+
     def __len__(self):
         return len(self._registry)
+
+    def __iter__(self):
+        return iter(self._registry.values())
 
 
 registry = __Registry()

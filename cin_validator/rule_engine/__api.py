@@ -1,3 +1,4 @@
+import importlib
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Iterable
@@ -39,3 +40,7 @@ class RuleDefinition:
     module: CINTable = None
     affected_fields: Iterable[str] = None
     description: str = None
+
+    @property
+    def code_module(self):
+        return importlib.import_module(self.func.__module__)
