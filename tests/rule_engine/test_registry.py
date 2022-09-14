@@ -8,7 +8,7 @@ def test_register_rules():
         code=8500,
         rule_type="error",
         module="Child Identifiers",
-        description="LA Child ID missing",
+        message="LA Child ID missing",
         affected_fields=["LAchildID"],
     )
     def validate_8500():
@@ -18,7 +18,7 @@ def test_register_rules():
         code=8501,
         rule_type="error",
         module="Child Identifiers",
-        description="LA Child ID missing",
+        message="LA Child ID missing",
         affected_fields=["LAchildID"],
     )
     def validate_8501():
@@ -34,7 +34,7 @@ def test_register_duplicate_code_raises_error():
             code=8500,
             rule_type="error",
             module="Child Identifiers",
-            description="LA Child ID missing",
+            message="LA Child ID missing",
             affected_fields=["LAchildID"],
         )
         def validate_8500():
@@ -44,7 +44,7 @@ def test_register_duplicate_code_raises_error():
             code=8500,
             rule_type="error",
             module="Child Identifiers",
-            description="LA Child ID missing",
+            message="LA Child ID missing",
             affected_fields=["LAchildID"],
         )
         def validate_8501():

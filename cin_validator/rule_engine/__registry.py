@@ -33,7 +33,7 @@ def rule_definition(
     code: int,
     module: CINTable,
     rule_type: RuleType = RuleType.ERROR,
-    description: str = None,
+    message: str = None,
     affected_fields: Iterable[str] = None,
 ):
     def decorator(func: Callable) -> Callable:
@@ -46,7 +46,7 @@ def rule_definition(
             func=func,
             rule_type=rule_type,
             module=module,
-            description=description,
+            description=message,
             affected_fields=affected_fields,
         )
         registry.add(definition)
