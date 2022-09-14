@@ -13,10 +13,10 @@ LAchildID = ChildIdentifiers.LAchildID
 @rule_definition(
     code=8500,
     module=CINTable.ChildIdentifiers,
-    description="LA Child ID missing",
+    message="LA Child ID missing",
     affected_fields=[LAchildID],
 )
-def validate_8500(
+def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
 
@@ -31,12 +31,12 @@ def validate_8500(
     )
 
 
-def test_validate_8500():
+def test_validate():
     # Create some sample data
     child_identifiers = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[LAchildID])
 
     # Run rule function passing in our sample data
-    result = run_rule(validate_8500, {ChildIdentifiers: child_identifiers})
+    result = run_rule(validate, {ChildIdentifiers: child_identifiers})
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
@@ -48,4 +48,4 @@ def test_validate_8500():
 
     # As well as the rule definition
     assert result.definition.code == 8500
-    assert result.definition.description == "LA Child ID missing"
+    assert result.definition.message == "LA Child ID missing"

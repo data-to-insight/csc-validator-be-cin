@@ -39,7 +39,7 @@ class RuleDefinition:
     rule_type: RuleType = RuleType.ERROR
     module: CINTable = None
     affected_fields: Iterable[str] = None
-    description: str = None
+    message: str = None
 
     @property
     def code_module(self):
