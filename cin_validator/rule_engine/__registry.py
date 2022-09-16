@@ -46,7 +46,7 @@ def rule_definition(
             func=func,
             rule_type=rule_type,
             module=module,
-            description=message,
+            message=message,
             affected_fields=affected_fields,
         )
         registry.add(definition)
