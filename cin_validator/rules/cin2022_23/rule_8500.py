@@ -31,7 +31,7 @@ def validate(
 
     # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
 
-    # Where present, the <CPPStartDate> (N00105) must be on or after the <CINReferralDate> (N00100)
+    # <LAchildID> (N00097) must be present
     failing_indices = df[df[LAchildID].isna()].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
