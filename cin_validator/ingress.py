@@ -6,6 +6,9 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
 
+# TODO make this work with from cin_validator.utils import get_values
+from utils import get_values
+
 # initialize all data sets as empty dataframes with columns names
 # whenever a child is created, it should add a row to each table where it exists.
 # tables should be attributes of a class that are accessible to the methods in create_child.
@@ -52,16 +55,12 @@ class XMLtoCSV():
         header_dict = {}
 
         collection_details = header.find('CollectionDetails')
-        header_dict['Collection'] = collection_details.find('Collection').text
-        header_dict['Year'] = collection_details.find('Year').text
-        header_dict['ReferenceDate'] = collection_details.find('ReferenceDate').text
+        collection_elements = ['Collection', 'Year', 'ReferenceDate']
+        header_dict = get_values(collection_elements, header_dict, collection_details)
 
         source = header.find('Source')
-        header_dict['SourceLevel'] = source.find('SourceLevel').text
-        header_dict['LEA'] = source.find('LEA').text
-        header_dict['SoftwareCode'] = source.find('SoftwareCode').text
-        header_dict['Release'] = source.find('Release').text
-        header_dict['SerialNo'] = source.find('DateTime').text
+        source_elements = ['SourceLevel', 'LEA', 'SoftwareCode', 'Release', 'SerialNo', 'DateTime']
+        header_dict = get_values(source_elements, header_dict, source)
 
         header_df = pd.DataFrame.from_dict([header_dict])
         return header_df
@@ -73,11 +72,8 @@ class XMLtoCSV():
         identifiers_dict = {}
 
         identifiers = child.find('ChildIdentifiers')
-        for column in self.ChildIdentifiers.columns:
-            try:
-                identifiers_dict[column] = identifiers.find(column).text
-            except:
-                identifiers_dict[column] = pd.NA
+        elements = self.ChildIdentifiers.columns
+        identifiers_dict = get_values(elements, identifiers_dict, identifiers)
         
         identifiers_df = pd.DataFrame.from_dict([identifiers_dict])
         self.ChildIdentifiers = pd.concat([self.ChildIdentifiers, identifiers_df])
@@ -100,9 +96,10 @@ class XMLtoCSV():
         pass
 
 # TODO make file path os-independent
-fulltree = ET.parse("./fake_data/CIN_Census_2021.xml")
-# fulltree = ET.parse("./fake_data/fake_CIN_data.xml")
+# fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
+fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
 
 message = fulltree.getroot()
 
-XMLtoCSV(message)
+conv = XMLtoCSV(message)
+print(conv.Header)
