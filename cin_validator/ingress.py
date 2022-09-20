@@ -1,6 +1,7 @@
-# Possible tests for this file
+# TODO Possible tests for this file
 # - Check that no generated table has more columns than expected.
 # - Check that all generated tables have the required IDs.
+# - Check that Header, ChildIdentifiers, and ChildCharacteristics tags do not repeat and have no duplicate subelements.
 
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -46,6 +47,8 @@ class XMLtoCSV():
 
     # TODO set defaults so that if element is not found, program doesn't break.
     def create_Header(self, header):
+        """One header exists in a CIN XML file"""
+
         header_dict = {}
 
         collection_details = header.find('CollectionDetails')
@@ -64,9 +67,21 @@ class XMLtoCSV():
         return header_df
 
     def create_ChildIdentifiers(self, child):
+        """One ChildIdentifiers block exists per child in CIN XML"""
         # pick out the values of relevant columns
         # add to the global attribute
-        pass
+        identifiers_dict = {}
+
+        identifiers = child.find('ChildIdentifiers')
+        for column in self.ChildIdentifiers.columns:
+            try:
+                identifiers_dict[column] = identifiers.find(column).text
+            except:
+                identifiers_dict[column] = pd.NA
+        
+        identifiers_df = pd.DataFrame.from_dict([identifiers_dict])
+        self.ChildIdentifiers = pd.concat([self.ChildIdentifiers, identifiers_df])
+
     def create_ChildCharacteristics(self, child):
         pass
     # CINdetailsID needed
