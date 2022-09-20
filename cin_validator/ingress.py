@@ -1,6 +1,9 @@
-import xml.etree.ElementTree as ET
+# Possible tests for this file
+# - Check that no generated table has more columns than expected.
+# - Check that all generated tables have the required IDs.
+
 import pandas as pd
-from cin_validator.rule_engine import CINTable
+import xml.etree.ElementTree as ET
 
 # initialize all data sets as empty dataframes with columns names
 # whenever a child is created, it should add a row to each table where it exists.
@@ -41,27 +44,44 @@ class XMLtoCSV():
         self.create_ChildProtectionPlans(child)
         self.create_Reviews(child)
 
-    def create_Header(child):
-        pass
-    def create_ChildIdentifiers(child):
+    # TODO set defaults so that if element is not found, program doesn't break.
+    def create_Header(self, header):
+        header_dict = {}
+
+        collection_details = header.find('CollectionDetails')
+        header_dict['Collection'] = collection_details.find('Collection').text
+        header_dict['Year'] = collection_details.find('Year').text
+        header_dict['ReferenceDate'] = collection_details.find('ReferenceDate').text
+
+        source = header.find('Source')
+        header_dict['SourceLevel'] = source.find('SourceLevel').text
+        header_dict['LEA'] = source.find('LEA').text
+        header_dict['SoftwareCode'] = source.find('SoftwareCode').text
+        header_dict['Release'] = source.find('Release').text
+        header_dict['SerialNo'] = source.find('DateTime').text
+
+        header_df = pd.DataFrame.from_dict([header_dict])
+        return header_df
+
+    def create_ChildIdentifiers(self, child):
         # pick out the values of relevant columns
         # add to the global attribute
         pass
-    def create_ChildCharacteristics(child):
+    def create_ChildCharacteristics(self, child):
         pass
     # CINdetailsID needed
-    def create_CINdetails(child):
+    def create_CINdetails(self, child):
         pass
-    def create_Asessments(child):
+    def create_Asessments(self, child):
         pass
-    def create_CINplanDates(child):
+    def create_CINplanDates(self, child):
         pass
-    def create_Section47(child):
+    def create_Section47(self, child):
         pass
     # CINdetails and CPPID needed
-    def create_ChildProtectionPlans(child):
+    def create_ChildProtectionPlans(self, child):
         pass
-    def create_Reviews(child):
+    def create_Reviews(self, child):
         pass
 
 # TODO make file path os-independent
