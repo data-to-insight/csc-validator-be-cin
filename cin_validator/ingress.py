@@ -336,16 +336,6 @@ class XMLtoCSV:
         reviews_df = pd.DataFrame(reviews_list)
         self.Reviews = pd.concat([self.Reviews, reviews_df], ignore_index=True)
 
-
-# TODO make file path os-independent
-fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
-# fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
-
-message = fulltree.getroot()
-
-conv = XMLtoCSV(message)
-print(conv.Reviews)
-
 """
 Sidenote: Fields absent from the fake_CIN_data.xml
 - Assessments
