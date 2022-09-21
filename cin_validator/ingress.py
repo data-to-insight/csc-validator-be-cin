@@ -48,9 +48,6 @@ class XMLtoCSV():
         
         # CINdetailsID needed
         self.create_CINdetails(child)
-        # self.create_Assessments(child)
-        self.create_CINplanDates(child)
-        self.create_Section47(child)
         
         # CINdetails and CPPID needed
         self.create_ChildProtectionPlans(child)
@@ -126,6 +123,7 @@ class XMLtoCSV():
             # functions that should use the CINdetailsID before it is incremented.
             self.create_Assessments(cin_detail)
             self.create_CINplanDates(cin_detail)
+            self.create_Section47(cin_detail)
         
         cin_details_df = pd.DataFrame(cin_details_list)
         self.CINdetails = pd.concat([self.CINdetails, cin_details_df], ignore_index=True)
@@ -168,8 +166,22 @@ class XMLtoCSV():
         dates_df = pd.DataFrame(dates_list)
         self.CINplanDates = pd.concat([self.CINplanDates, dates_df], ignore_index=True)
         
-    def create_Section47(self, child):
-        pass
+    def create_Section47(self, cin_detail):
+        """Multiple Section47 blocks can exist in one CINdetails block."""
+
+        sections_list = []
+        columns = self.Section47.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        sections = cin_detail.findall('Section47')
+        for section in sections:
+            section_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID,}
+            section_dict = get_values(elements, section_dict, section)
+            sections_list.append(section_dict)
+        
+        sections_df = pd.DataFrame(sections_list)
+        self.Section47 = pd.concat([self.Section47, sections_df], ignore_index=True)
+        
     # CINdetails and CPPID needed
     def create_ChildProtectionPlans(self, child):
         pass
@@ -183,10 +195,11 @@ fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.CINplanDates)
+print(conv.Section47)
 
 """
 Sidenote: Fields absent from the fake_CIN_data.xml
 - Assessments
 - CINPlanDates
+- Section47
 """
