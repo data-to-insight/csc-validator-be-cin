@@ -86,7 +86,7 @@ class XMLtoCSV():
         self.LAchildID = identifiers_dict.get('LAchildID', pd.NA)
 
         identifiers_df = pd.DataFrame.from_dict([identifiers_dict])
-        self.ChildIdentifiers = pd.concat([self.ChildIdentifiers, identifiers_df])
+        self.ChildIdentifiers = pd.concat([self.ChildIdentifiers, identifiers_df], ignore_index=True)
 
     def create_ChildCharacteristics(self, child):
         """One ChildCharacteristics block exists per child in CIN XML"""
@@ -102,7 +102,7 @@ class XMLtoCSV():
         characteristics_dict = get_values(elements, characteristics_dict, characteristics)
 
         characteristics_df = pd.DataFrame.from_dict([characteristics_dict])
-        self.ChildCharacteristics = pd.concat([self.ChildCharacteristics, characteristics_df])
+        self.ChildCharacteristics = pd.concat([self.ChildCharacteristics, characteristics_df], ignore_index=True)
 
     # CINdetailsID needed
     def create_CINdetails(self, child):
@@ -127,7 +127,7 @@ class XMLtoCSV():
             self.create_Assessments(cin_detail)
         
         cin_details_df = pd.DataFrame(cin_details_list)
-        self.CINdetails = pd.concat([self.CINdetails, cin_details_df])
+        self.CINdetails = pd.concat([self.CINdetails, cin_details_df], ignore_index=True)
 
         
     def create_Assessments(self, cin_detail):
