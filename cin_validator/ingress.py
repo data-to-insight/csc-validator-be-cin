@@ -48,7 +48,7 @@ class XMLtoCSV():
         
         # CINdetailsID needed
         self.create_CINdetails(child)
-        self.create_Asessments(child)
+        # self.create_Assessments(child)
         self.create_CINplanDates(child)
         self.create_Section47(child)
         
@@ -122,12 +122,36 @@ class XMLtoCSV():
 
             cin_detail_dict = get_values(elements, cin_detail_dict, cin_detail)
             cin_details_list.append(cin_detail_dict)
+
+            # functions that should use the CINdetailsID before it is incremented.
+            self.create_Assessments(cin_detail)
         
         cin_details_df = pd.DataFrame(cin_details_list)
         self.CINdetails = pd.concat([self.CINdetails, cin_details_df])
 
         
-    def create_Asessments(self, child):
+    def create_Assessments(self, cin_detail):
+        assessments_list = []
+        columns = self.Assessments.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        assessments = cin_detail.findall('Assessments')
+        for assessment in assessments:
+            # all the assessment descriptors repeat to create a row for each assessment factor.
+            assessment_factors = assessment.find('FactorsIdentifiedAtAssessment')
+            for factor in assessment_factors:
+                print(factor)
+                print(factor.text)
+                assessment_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID,}
+                assessment_dict = get_values(elements, assessment_dict, assessment)
+                # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
+                assessment_dict['AssessmentFactors'] = factor.text
+                assessments_list.append(assessment_dict)
+        
+        assessments_df = pd.DataFrame(assessments_list)
+        self.Assessments = pd.concat([self.Assessments, assessments_df], ignore_index=True)
+
+
         pass
     def create_CINplanDates(self, child):
         pass
@@ -140,10 +164,15 @@ class XMLtoCSV():
         pass
 
 # TODO make file path os-independent
-# fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
-fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
+fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
+# fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
 
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.CINdetails)
+print(conv.Assessments)
+
+"""
+Sidenote: Fields absent from the fake_CIN_data.xml
+- Assessments
+"""
