@@ -186,7 +186,7 @@ class XMLtoCSV():
         
     # CINdetails and CPPID needed
     def create_ChildProtectionPlans(self, cin_detail):
-        """Multiple Section47 blocks can exist in one CINdetails block."""
+        """Multiple ChildProtectionPlans blocks can exist in one CINdetails block."""
 
         plans_list = []
         columns = self.ChildProtectionPlans.columns
@@ -201,12 +201,30 @@ class XMLtoCSV():
             plan_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID, 'CPPID' : self.CPPID}
             plan_dict = get_values(elements, plan_dict, plan)
             plans_list.append(plan_dict)
+
+            # functions that should use CPPID before it is incremented
+            self.create_Reviews(plan)
         
         plans_df = pd.DataFrame(plans_list)
         self.ChildProtectionPlans = pd.concat([self.ChildProtectionPlans, plans_df], ignore_index=True)
         
-    def create_Reviews(self, child):
-        pass
+    def create_Reviews(self, plan):
+        """Multiple Reviews blocks can exist in one ChildProtectionPlans block."""
+
+        reviews_list = []
+        columns = self.Reviews.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        reviews = plan.findall('Reviews')
+        for review in reviews:
+            review_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID, 'CPPID' : self.CPPID}
+            review_dict = get_values(elements, review_dict, review)
+
+            reviews_list.append(review_dict)
+
+        reviews_df = pd.DataFrame(reviews_list)
+        self.Reviews = pd.concat([self.Reviews, reviews_df], ignore_index=True)
+
 
 # TODO make file path os-independent
 fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
@@ -215,7 +233,7 @@ fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.ChildProtectionPlans)
+print(conv.Reviews)
 
 """
 Sidenote: Fields absent from the fake_CIN_data.xml
@@ -223,4 +241,5 @@ Sidenote: Fields absent from the fake_CIN_data.xml
 - CINPlanDates
 - Section47
 - ChildProtectionPlans
+- Reviews
 """
