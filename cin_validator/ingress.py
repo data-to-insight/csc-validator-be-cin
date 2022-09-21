@@ -25,6 +25,8 @@ class XMLtoCSV():
     ChildProtectionPlans = pd.DataFrame(columns=["LAchildID", "CINdetailsID", "CPPID", "CPPstartDate", "CPPendDate", "InitialCategoryOfAbuse", "LatestCategoryOfAbuse", "NumberOfPreviousCPP"]) 
     Reviews = pd.DataFrame(columns=["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"])
 
+    id_cols = ["LAchildID", "CINdetailsID", "CPPID"]
+
     def __init__(self, root):
         header = root.find("Header")
         self.Header = self.create_Header(header)
@@ -37,18 +39,24 @@ class XMLtoCSV():
 # if not found, they should assign themselves to NaN
 
     def create_child(self, child):
+        # at the start of every child, reset the value of LAchildID
+        self.LAchildID = None
+
         self.create_ChildIdentifiers(child)
+        # LAchildID has been created. It can be used in the functions below.
         self.create_ChildCharacteristics(child)
+        
         # CINdetailsID needed
         self.create_CINdetails(child)
         self.create_Asessments(child)
         self.create_CINplanDates(child)
         self.create_Section47(child)
+        
         # CINdetails and CPPID needed
         self.create_ChildProtectionPlans(child)
         self.create_Reviews(child)
 
-    # TODO set defaults so that if element is not found, program doesn't break.
+    # TODO get column names from the CINTable object instead of writing them out as strings?
     def create_Header(self, header):
         """One header exists in a CIN XML file"""
 
@@ -75,11 +83,27 @@ class XMLtoCSV():
         elements = self.ChildIdentifiers.columns
         identifiers_dict = get_values(elements, identifiers_dict, identifiers)
         
+        self.LAchildID = identifiers_dict.get('LAchildID', pd.NA)
+
         identifiers_df = pd.DataFrame.from_dict([identifiers_dict])
         self.ChildIdentifiers = pd.concat([self.ChildIdentifiers, identifiers_df])
 
     def create_ChildCharacteristics(self, child):
-        pass
+        """One ChildCharacteristics block exists per child in CIN XML"""
+        # assign LAChild ID
+        characteristics_dict = {'LAchildID':self.LAchildID}
+
+        characteristics = child.find('ChildCharacteristics')
+        columns = self.ChildCharacteristics.columns
+        # select only columns whose values typically exist in this xml block.
+        # remove id_cols which tend to come from other blocks or get generated at runtime.
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        characteristics_dict = get_values(elements, characteristics_dict, characteristics)
+
+        characteristics_df = pd.DataFrame.from_dict([characteristics_dict])
+        self.ChildCharacteristics = pd.concat([self.ChildCharacteristics, characteristics_df])
+
     # CINdetailsID needed
     def create_CINdetails(self, child):
         pass
@@ -102,4 +126,4 @@ fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.Header)
+print(conv.ChildCharacteristics)
