@@ -2,6 +2,7 @@
 # - Check that no generated table has more columns than expected.
 # - Check that all generated tables have the required IDs.
 # - Check that Header, ChildIdentifiers, and ChildCharacteristics tags do not repeat and have no duplicate subelements.
+# - Check that all expected columns are created for every appropriate xml block found.
 
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -124,6 +125,7 @@ class XMLtoCSV():
             self.create_Assessments(cin_detail)
             self.create_CINplanDates(cin_detail)
             self.create_Section47(cin_detail)
+            self.create_ChildProtectionPlans(cin_detail)
         
         cin_details_df = pd.DataFrame(cin_details_list)
         self.CINdetails = pd.concat([self.CINdetails, cin_details_df], ignore_index=True)
@@ -183,8 +185,26 @@ class XMLtoCSV():
         self.Section47 = pd.concat([self.Section47, sections_df], ignore_index=True)
         
     # CINdetails and CPPID needed
-    def create_ChildProtectionPlans(self, child):
-        pass
+    def create_ChildProtectionPlans(self, cin_detail):
+        """Multiple Section47 blocks can exist in one CINdetails block."""
+
+        plans_list = []
+        columns = self.ChildProtectionPlans.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        # imitate DfE generator where the first counted thing starts from 1.
+        self.CPPID = 0
+
+        plans = cin_detail.findall('ChildProtectionPlans')
+        for plan in plans:
+            self.CPPID += 1
+            plan_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID, 'CPPID' : self.CPPID}
+            plan_dict = get_values(elements, plan_dict, plan)
+            plans_list.append(plan_dict)
+        
+        plans_df = pd.DataFrame(plans_list)
+        self.ChildProtectionPlans = pd.concat([self.ChildProtectionPlans, plans_df], ignore_index=True)
+        
     def create_Reviews(self, child):
         pass
 
@@ -195,11 +215,12 @@ fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.Section47)
+print(conv.ChildProtectionPlans)
 
 """
 Sidenote: Fields absent from the fake_CIN_data.xml
 - Assessments
 - CINPlanDates
 - Section47
+- ChildProtectionPlans
 """
