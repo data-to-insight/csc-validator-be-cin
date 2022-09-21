@@ -106,7 +106,27 @@ class XMLtoCSV():
 
     # CINdetailsID needed
     def create_CINdetails(self, child):
-        pass
+        """Multiple CIN details blocks can exist in one child."""
+
+        cin_details_list = []
+        columns = self.CINdetails.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        # imitate DfE generator where the ID count for the first child is 1
+        self.CINdetailsID = 0
+
+        cin_details = child.findall('CINdetails')
+        for cin_detail in cin_details:
+            self.CINdetailsID += 1
+            cin_detail_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID}
+
+            cin_detail_dict = get_values(elements, cin_detail_dict, cin_detail)
+            cin_details_list.append(cin_detail_dict)
+        
+        cin_details_df = pd.DataFrame(cin_details_list)
+        self.CINdetails = pd.concat([self.CINdetails, cin_details_df])
+
+        
     def create_Asessments(self, child):
         pass
     def create_CINplanDates(self, child):
@@ -126,4 +146,4 @@ fulltree = ET.parse("../fake_data/fake_CIN_data.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.ChildCharacteristics)
+print(conv.CINdetails)
