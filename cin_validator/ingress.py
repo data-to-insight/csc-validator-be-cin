@@ -125,12 +125,15 @@ class XMLtoCSV():
 
             # functions that should use the CINdetailsID before it is incremented.
             self.create_Assessments(cin_detail)
+            self.create_CINplanDates(cin_detail)
         
         cin_details_df = pd.DataFrame(cin_details_list)
         self.CINdetails = pd.concat([self.CINdetails, cin_details_df], ignore_index=True)
 
         
     def create_Assessments(self, cin_detail):
+        """Multiple Assessments blocks can exist in one CINdetails block."""
+
         assessments_list = []
         columns = self.Assessments.columns
         elements = list(set(columns).difference(set(self.id_cols)))
@@ -140,8 +143,6 @@ class XMLtoCSV():
             # all the assessment descriptors repeat to create a row for each assessment factor.
             assessment_factors = assessment.find('FactorsIdentifiedAtAssessment')
             for factor in assessment_factors:
-                print(factor)
-                print(factor.text)
                 assessment_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID,}
                 assessment_dict = get_values(elements, assessment_dict, assessment)
                 # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
@@ -151,10 +152,22 @@ class XMLtoCSV():
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat([self.Assessments, assessments_df], ignore_index=True)
 
+    def create_CINplanDates(self, cin_detail):
+        """Multiple CINplanDates blocks can exist in one CINdetails block."""
 
-        pass
-    def create_CINplanDates(self, child):
-        pass
+        dates_list = []
+        columns = self.CINplanDates.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        dates = cin_detail.findall('CINPlanDates')
+        for date in dates:
+            date_dict = {'LAchildID':self.LAchildID, 'CINdetailsID': self.CINdetailsID,}
+            date_dict = get_values(elements, date_dict, date)
+            dates_list.append(date_dict)
+        
+        dates_df = pd.DataFrame(dates_list)
+        self.CINplanDates = pd.concat([self.CINplanDates, dates_df], ignore_index=True)
+        
     def create_Section47(self, child):
         pass
     # CINdetails and CPPID needed
@@ -170,9 +183,10 @@ fulltree = ET.parse("../fake_data/CIN_Census_2021.xml")
 message = fulltree.getroot()
 
 conv = XMLtoCSV(message)
-print(conv.Assessments)
+print(conv.CINplanDates)
 
 """
 Sidenote: Fields absent from the fake_CIN_data.xml
 - Assessments
+- CINPlanDates
 """
