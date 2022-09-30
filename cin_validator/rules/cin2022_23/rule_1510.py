@@ -64,7 +64,7 @@ def validate(
 
     df2 = df2[df2['CHECK_CHAR'].astype(str) != df2['FIRST_CHAR'].astype(str)]
 
-    failing_indices = df2['index'].index
+    failing_indices = df2.set_index('index').index
 
     rule_context.push_issue(
         table=ChildIdentifiers, field=UPN, row=failing_indices
