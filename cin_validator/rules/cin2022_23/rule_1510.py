@@ -50,8 +50,8 @@ def validate(
     df.reset_index(inplace=True)
     df2 = df[['index','UPN']]
     df2 = df2[(df2['UPN'].str.len() == 13) & df2['UPN'].notna()]
-    df2['FIRST_CHAR'] = df2['UPN'].str[:1]
-    df2['LAST_C'] = df2['UPN'].str[-12:]
+    df2['FIRST_CHAR'] = df2['UPN'].str[0]
+    df2['LAST_C'] = df2['UPN'].str[1: ]
     df2['LAST_C'] = df2['LAST_C'].apply(lambda x: int(x) if str(x).isdigit() else pd.NA)
     df2 = df2[df2['LAST_C'].notna()]
     for i in range(1,13):
@@ -64,7 +64,7 @@ def validate(
 
     df2 = df2[df2['CHECK_CHAR'].astype(str) != df2['FIRST_CHAR'].astype(str)]
 
-    failing_indices = df2['index'].to_list()
+    failing_indices = df2['index'].index
 
     rule_context.push_issue(
         table=ChildIdentifiers, field=UPN, row=failing_indices
@@ -72,25 +72,29 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
 
-    child_identifiers = pd.DataFrame([['W351201321005'], [pd.NA], ['W35320152101A']], columns=[UPN])
+    child_identifiers = pd.DataFrame({"UPN": [
+    #These should pass
+    'A950000178301', #0 Valid format
+    pd.NA,           #1
+    'H243278544154', #2 Valid format
+    'ASFFAGSVSV123', #3 Nonsense
+    'R325',          #4 Nonsense   
+    #These should fail
+    'R247962919251', #5 Wrong initial char
+    'X428558133462'  #6 Wrong initial char
+    ]})
 
-    # Run rule function passing in our sample data
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
 
-    # The result contains a list of issues encountered
     issues = list(result.issues)
-    # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issues) == 1
-    # replace the table and column name as done earlier. 
-    # The last numbers represent the index values where you expect the sample data to fail the validation check.
+
+    #assert len(issues) == 2
+
     assert issues == [
-        IssueLocator(CINTable.ChildIdentifiers, UPN, 0),
+        IssueLocator(CINTable.ChildIdentifiers, UPN, 5),
+        IssueLocator(CINTable.ChildIdentifiers, UPN, 6),
     ]
 
-    # Check that the rule definition is what you wrote in the context above.
-
-    # replace 8500 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 1510
     assert result.definition.message == "UPN invalid (wrong check letter at character 1)"
