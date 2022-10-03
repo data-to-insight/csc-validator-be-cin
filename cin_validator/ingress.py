@@ -4,6 +4,7 @@
 
 import pandas as pd
 import xml.etree.ElementTree as ET
+from utils import make_census_period
 
 # initialize all data sets as empty dataframes with columns names
 # whenever a child is created, it should add a row to each table where it exists.
@@ -24,6 +25,9 @@ class XMLtoCSV():
     def __init__(self, root):
         header = root.find("Header")
         self.Header = self.create_Header(header)
+
+        self.collection_start = None
+        self.collection_end = None
 
         children = root.find("Children")
         for child in children.findall('Child'):
@@ -52,6 +56,9 @@ class XMLtoCSV():
         header_dict['Collection'] = collection_details.find('Collection').text
         header_dict['Year'] = collection_details.find('Year').text
         header_dict['ReferenceDate'] = collection_details.find('ReferenceDate').text
+
+        # define collection period based on year.
+        self.collection_start, self.collection_end = make_census_period(collection_year=header_dict['Year'])
 
         source = header.find('Source')
         header_dict['SourceLevel'] = source.find('SourceLevel').text
