@@ -59,7 +59,7 @@ def validate(
     df.reset_index(inplace=True)
     df2 = df[['index','UPN']]
     df2 = df2[(df2['UPN'].str.len() == 13) & df2['UPN'].notna()]
-    df2['C2_to_C4'] = df['UPN'].str[1: 4]
+    df2['C2_to_C4'] = df2['UPN'].str[1: 4]
     df2 = df2[~df2['C2_to_C4'].isin(LA_list)]
 
     failing_indices = df2.set_index('index').index
