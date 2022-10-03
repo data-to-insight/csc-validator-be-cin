@@ -29,7 +29,7 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
 
-    # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
+    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
     """
     <UPN> (N00001) if present must contain the correct check letter
 
@@ -47,43 +47,59 @@ def validate(
     7 = H;  8 = J;  9 = K;  10 = L;  11 = M;  12 = N;  13 = P;
     14 = Q;  15 = R;  16 = T;  17 = U;  18 = V;  19 = W;  20 = X;
     """
+
+    # save the original index so that it doesn't get distorted as the data is moved around.
     df.reset_index(inplace=True)
-    df2 = df[['index','UPN']]
-    df2 = df2[(df2['UPN'].str.len() == 13) & df2['UPN'].notna()]
-    df2['FIRST_CHAR'] = df2['UPN'].str[0]
-    df2['LAST_C'] = df2['UPN'].str[1: ]
-    df2['LAST_C'] = df2['LAST_C'].apply(lambda x: int(x) if str(x).isdigit() else pd.NA)
-    df2 = df2[df2['LAST_C'].notna()]
-    df2['SUMMED'] = 0
-    for i in range(1,13):
-        df2['SUMMED'] = (df2['SUMMED'] + (df2['UPN'].str[i].astype(int) * (i+1))) % 23
 
-    check_map = enumerate(list('ABCDEFGHJKLMNPQRTUVWX'))
+    # select columns of interest and rows where upn is present and at full length.
+    df2 = df[["index", "UPN"]]
+    df2 = df2[(df2["UPN"].str.len() == 13) & df2["UPN"].notna()]
+
+    # the reference value is the first character of the UPN string.
+    df2["FIRST_CHAR"] = df2["UPN"].str[0]
+
+    # the last 12 characters have to be digits or else the UPN cannot be considered.
+    df2["LAST_C"] = df2["UPN"].str[1:]
+    df2["LAST_C"] = df2["LAST_C"].apply(lambda x: int(x) if str(x).isdigit() else pd.NA)
+    df2 = df2[df2["LAST_C"].notna()]
+
+    # calculate check value according to rule description.
+    df2["SUMMED"] = 0
+    for i in range(1, 13):
+        # previous check was important because non-digits cannot be converted to int and hence cannot be multiplied.
+        df2["SUMMED"] = (df2["SUMMED"] + (df2["UPN"].str[i].astype(int) * (i + 1))) % 23
+
+    # enumerate object yields (index_position, element) tuples for each element in the string.
+    check_map = enumerate(list("ABCDEFGHJKLMNPQRTUVWX"))
     check_map = dict((i, j) for i, j in check_map)
-    df2['CHECK_CHAR'] = df2['SUMMED'].map(check_map)
 
-    df2 = df2[df2['CHECK_CHAR'].astype(str) != df2['FIRST_CHAR'].astype(str)]
+    # Deduce the alphabet-letter representation of the calculated value based on rule description.
+    df2["CHECK_CHAR"] = df2["SUMMED"].map(check_map)
+    # select out all the rows where the calculated value does not match the expected value.
+    df2 = df2[df2["CHECK_CHAR"].astype(str) != df2["FIRST_CHAR"].astype(str)]
+    # restore the original index.
+    failing_indices = df2.set_index("index").index
 
-    failing_indices = df2.set_index('index').index
-
-    rule_context.push_issue(
-        table=ChildIdentifiers, field=UPN, row=failing_indices
-    )
+    rule_context.push_issue(table=ChildIdentifiers, field=UPN, row=failing_indices)
 
 
 def test_validate():
 
-    child_identifiers = pd.DataFrame({"UPN": [
-    #These should pass
-    'A950000178301', #0 Valid format
-    pd.NA,           #1
-    'H243278544154', #2 Valid format
-    'ASFFAGSVSV123', #3 Nonsense
-    'R325',          #4 Nonsense   
-    #These should fail
-    'R247962919251', #5 Wrong initial char
-    'X428558133462'  #6 Wrong initial char
-    ]})
+    child_identifiers = pd.DataFrame(
+        {
+            "UPN": [
+                # These should pass
+                "A950000178301",  # 0 Valid format
+                pd.NA,  # 1
+                "H243278544154",  # 2 Valid format
+                "ASFFAGSVSV123",  # 3 Nonsense
+                "R325",  # 4 Nonsense
+                # These should fail
+                "R247962919251",  # 5 Wrong initial char
+                "X428558133462",  # 6 Wrong initial char
+            ]
+        }
+    )
 
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
 
@@ -97,4 +113,6 @@ def test_validate():
     ]
 
     assert result.definition.code == 1510
-    assert result.definition.message == "UPN invalid (wrong check letter at character 1)"
+    assert (
+        result.definition.message == "UPN invalid (wrong check letter at character 1)"
+    )
