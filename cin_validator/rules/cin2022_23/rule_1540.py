@@ -28,14 +28,12 @@ def validate(
 ):
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
-
+    
     # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
 
     # If <UPN> (N00001) present Characters 5-12 of <UPN> must be numeric
-    UPNs = df[df['UPN'].notna()]
-    UPNs['UPN'] = UPNs['UPN'].str[4:12]
-    UPNs['UPN'] = UPNs['UPN'].map(lambda x: x.strip('0123456789'))
-    failing_indices = UPNs[UPNs['UPN'].str.len() > 0].index
+    df = df.loc[df['UPN'].notna()]
+    failing_indices = df[~df['UPN'].str[4:12].str.isdigit()].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
     # If there are multiple columns or table, make this sentence multiple times.
