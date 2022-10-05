@@ -32,7 +32,16 @@ def validate(
     # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
 
     # If <UPN> (N00001) present Characters 5-12 of <UPN> must be numeric
+    
+    #  df takes a slice of rows of df where the UPN column doesn't have Na/NaN values
     df = df.loc[df['UPN'].notna()]
+
+    #  Returns indices of rows where character 5:12 of UPN contains non numerical characters.
+    #  Does this by:
+    #  Returning a boolean for the logic check to see is characters 5:12 contain only numerical characters.
+    #  Using the not operator (~) to return values as false where the logic returns true (and true if there are non-numeric characters).
+    #  Slicing df according to this criteria. 
+    #  Returns indices of the rows of this df to failing_indices.
     failing_indices = df[~df['UPN'].str[4:12].str.isdigit()].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
