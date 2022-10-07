@@ -84,7 +84,7 @@ def test_validate():
         IssueLocator(CINTable.Section47, S47ActualStartDate, 2),
         IssueLocator(CINTable.Section47, S47ActualStartDate, 5),
     ]
-
+    
     assert result.definition.code == 2889
     assert (
         result.definition.message
