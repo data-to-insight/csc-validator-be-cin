@@ -29,12 +29,12 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
 
-    # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
+    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # <LAchildID> (N00097) must be present
     failing_indices = df[df[LAchildID].isna()].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
+    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
         table=ChildIdentifiers, field=LAchildID, row=failing_indices
@@ -52,7 +52,7 @@ def test_validate():
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issues) == 2
-    # replace the table and column name as done earlier. 
+    # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
         IssueLocator(CINTable.ChildIdentifiers, LAchildID, 1),
