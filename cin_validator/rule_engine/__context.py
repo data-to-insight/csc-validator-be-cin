@@ -66,8 +66,8 @@ class RuleContext:
     
     def _accum_issues(self, table, field, row, id_col):
         for i in range(len(row)):
-            # self.__linked_issues[id_col[i]].append(IssueLocatorLists(table, field, [row[i]]))
-            self.__linked_issues[id_col[i]].append(IssueLocator(table, field, row[i]))
+            self.__linked_issues[id_col[i]].append(IssueLocatorLists(table, field, [row[i]]))
+            # self.__linked_issues[id_col[i]].append(IssueLocator(table, field, row[i]))
 
     def push_linked_issues(self, list_args):
         for tup in list_args:
@@ -83,4 +83,5 @@ class RuleContext:
     @property
     def linked_issues(self):
         for linked_issues in self.__linked_issues.values():
-            yield from linked_issues
+            # yield from linked_issues
+            yield linked_issues

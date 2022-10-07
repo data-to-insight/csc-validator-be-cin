@@ -41,12 +41,11 @@ def validate(
     # keep the original index uncorrupted and select out only the rows where a comparison is possible.
     df_present = df[df[CPPstartDate].notna() & df[CPPendDate].notna()]
     df_issues = df_present[df_present[CPPendDate] < df_present[CPPstartDate]].set_index("index")
-    start_error_locs = df_issues.loc[df_issues[CPPstartDate]==True].index
-    idc = df_issues[LAchildID]
-    end_error_locs = df_issues.loc[df_issues[CPPendDate]==True].index
+    error_locs = df_issues.index
+    idc = df_issues[LAchildID].values
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
     # If there are multiple columns or table, make this sentence multiple times.
-    rule_context.push_linked_issues([(ChildProtectionPlans, CPPstartDate, start_error_locs, idc),(ChildProtectionPlans, CPPendDate, end_error_locs, idc),])
+    rule_context.push_linked_issues([(ChildProtectionPlans, CPPstartDate, error_locs, idc),(ChildProtectionPlans, CPPendDate, error_locs, idc),])
 
 
 def test_validate():
@@ -65,6 +64,7 @@ def test_validate():
 
     # The result contains a list of issues encountered
     issues = list(result.linked_issues)
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print(issues)
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issues) == 2
