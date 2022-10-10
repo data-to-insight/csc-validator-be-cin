@@ -32,24 +32,6 @@ class IssueLocatorLists:
                 for row in self.row:
                     yield IssueLocator(table, field, row)
 
-"""class LinkedIssueLocatorLists:
-    def __init__(self, table, field, row, id_col):
-        self.table = _as_iterable(table)
-        self.field = _as_iterable(field)
-        self.row = _as_iterable(row)
-        self.id_col = _as_iterable(id_col)
-        # TODO check that id_col and row always have the same length.
-        self.issues_per_id = defaultdict(list)
-
-    def __iter__(self):
-        for table in self.table:
-            for field in self.field:
-                # for row in self.row:
-                for i in range(len(self.row)):
-                    # yield IssueLocator(table, field, row)
-                    self.issues_per_id[self.id_col[i]].append(IssueLocator(table, field, self.row[i]))
-"""
-
 class RuleContext:
     def __init__(self, definition: RuleDefinition):
         self.__definition = definition
@@ -64,16 +46,15 @@ class RuleContext:
     def push_issue(self, table, field, row):
         self.__issues.append(IssueLocatorLists(table, field, row))
     
-    def _accum_issues(self, table, field, row, id_col):
-        for i in range(len(row)):
-            self.__linked_issues[id_col[i]].append(IssueLocatorLists(table, field, [row[i]]))
-            # self.__linked_issues[id_col[i]].append(IssueLocator(table, field, row[i]))
-
     def push_linked_issues(self, list_args):
         for tup in list_args:
             table, field, row, id_col = tup
-            self._accum_issues(table, field, row, id_col)
-            
+            locators = []
+            locators.append(IssueLocatorLists(table, field, row))
+            locators_dict = dict(zip(id_col, locators))
+            for k, v in locators_dict.items():
+                self.__linked_issues[k].append(v)
+            # combine the dicts from each loop
     @property
     def issues(self):
         for issues in self.__issues:
@@ -82,6 +63,6 @@ class RuleContext:
 
     @property
     def linked_issues(self):
-        for linked_issues in self.__linked_issues.values():
-            # yield from linked_issues
-            yield linked_issues
+        for related_locs in self.__linked_issues.values():
+            for loc in related_locs:
+                yield from loc
