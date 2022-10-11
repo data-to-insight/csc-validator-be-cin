@@ -32,20 +32,34 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildProtectionPlans]
 
-    # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
+    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # If present <CPPendDate> (N00115) must be on or after the <CPPstartDate> (N00105)
-    df[CPPstartDate] = pd.to_datetime(df[CPPstartDate], format="%d/%m/%Y")
-    df[CPPendDate] = pd.to_datetime(df[CPPendDate], format="%d/%m/%Y")
+    # if rule requires columns containing date values, convert those columns to datetime objects first.
+    df[CPPstartDate] = pd.to_datetime(df[CPPstartDate], format='%d/%m/%Y', errors="coerce")
+    df[CPPendDate] = pd.to_datetime(df[CPPendDate], format="%d/%m/%Y", errors="coerce")
+    
+    ## Logic
+    # if columns are in muliple tables, preserve the original indices of all the tables involved by doing reset_index(inplace=True)
     df.reset_index(inplace=True)
-    # keep the original index uncorrupted and select out only the rows where a comparison is possible.
+    # select out only the rows where a comparison is possible in this case, the non-null rows.
     df_present = df[df[CPPstartDate].notna() & df[CPPendDate].notna()]
-    df_issues = df_present[df_present[CPPendDate] < df_present[CPPstartDate]].set_index("index")
-    error_locs = df_issues.index
-    idc = df_issues[LAchildID].values
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
-    # If there are multiple columns or table, make this sentence multiple times.
-    rule_context.push_linked_issues([(ChildProtectionPlans, CPPstartDate, error_locs, idc),(ChildProtectionPlans, CPPendDate, error_locs, idc),])
+    # write out the comparison logic between the columns, as defined by the rule which you are implementing.
+    condition = df_present[CPPendDate] < df_present[CPPstartDate]
+
+    ## Submit results.
+    # for each column, filter the dataframe so that later you can select the locations where the rule is flagged.
+    end_before = df_present.loc[condition, [CPPendDate, LAchildID]]
+    start_after = df_present.loc[condition, [CPPstartDate, LAchildID]]
+    
+    # for each column, get the index locations and childID values at the position where the issue is flagged.
+    end_before_locs = end_before.index
+    end_before_ids = end_before[LAchildID].values
+    start_after_locs = start_after.index 
+    start_after_ids = start_after[LAchildID].values
+
+    # Pass in a list of tuples into push_linked_issues as shown, where each tuple describes the fail locations of one column.
+    rule_context.push_linked_issues([(ChildProtectionPlans, CPPstartDate, start_after_locs, start_after_ids),(ChildProtectionPlans, CPPendDate, end_before_locs, end_before_ids),])
 
 
 def test_validate():
@@ -64,15 +78,13 @@ def test_validate():
 
     # The result contains a list of issues encountered
     issues = list(result.linked_issues)
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    print(issues)
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issues) == 2
     # replace the table and column name as done earlier. 
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
-        [IssueLocator(CINTable.ChildIdentifiers, CPPstartDate, 2), IssueLocator(CINTable.ChildIdentifiers, CPPendDate, 2),], # first instance of the issue
-        [IssueLocator(CINTable.ChildIdentifiers, CPPstartDate, 4), IssueLocator(CINTable.ChildIdentifiers, CPPendDate, 4),], # second instance of the issue
+        [IssueLocator(CINTable.ChildProtectionPlans, CPPstartDate, 2), IssueLocator(CINTable.ChildProtectionPlans, CPPendDate, 2),], # first instance of the issue
+        [IssueLocator(CINTable.ChildProtectionPlans, CPPstartDate, 4), IssueLocator(CINTable.ChildProtectionPlans, CPPendDate, 4),], # second instance of the issue
     ]
 
     # Check that the rule definition is what you wrote in the context above.
