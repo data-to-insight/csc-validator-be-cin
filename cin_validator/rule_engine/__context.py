@@ -1,7 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from typing import NamedTuple
 
 from cin_validator.rule_engine import RuleDefinition, CINTable
 
@@ -13,14 +12,8 @@ def _as_iterable(value):
         return [value]
     return value
 
-"""
 @dataclass(frozen=True, eq=True)
 class IssueLocator:
-    table: CINTable
-    field: str
-    row: int"""
-
-class IssueLocator(NamedTuple):
     table: CINTable
     field: str
     row: int
