@@ -1,6 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+from typing import NamedTuple
 
 from cin_validator.rule_engine import RuleDefinition, CINTable
 
@@ -12,13 +13,17 @@ def _as_iterable(value):
         return [value]
     return value
 
-
+"""
 @dataclass(frozen=True, eq=True)
 class IssueLocator:
     table: CINTable
     field: str
-    row: int
+    row: int"""
 
+class IssueLocator(NamedTuple):
+    table: CINTable
+    field: str
+    row: int
 
 class IssueLocatorLists:
     def __init__(self, table, field, row):
@@ -46,15 +51,15 @@ class RuleContext:
     def push_issue(self, table, field, row):
         self.__issues.append(IssueLocatorLists(table, field, row))
     
+    def issue_accum(self, table, field, row, id_col):
+        for i in range(len(row)):
+            self.__linked_issues[id_col[i]].append(IssueLocator(table, field, row[i]))
+
     def push_linked_issues(self, list_args):
         for tup in list_args:
             table, field, row, id_col = tup
-            locators = []
-            locators.append(IssueLocatorLists(table, field, row))
-            locators_dict = dict(zip(id_col, locators))
-            for k, v in locators_dict.items():
-                self.__linked_issues[k].append(v)
-            # combine the dicts from each loop
+            self.issue_accum(table, field, row, id_col)
+             
     @property
     def issues(self):
         for issues in self.__issues:
@@ -63,6 +68,4 @@ class RuleContext:
 
     @property
     def linked_issues(self):
-        for related_locs in self.__linked_issues.values():
-            for loc in related_locs:
-                yield from loc
+        return list(self.__linked_issues.values())

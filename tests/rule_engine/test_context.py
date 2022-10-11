@@ -1,3 +1,4 @@
+
 from cin_validator.rule_engine import RuleContext, IssueLocator, rule_definition, CINTable
 from cin_validator.test_engine import run_rule
 import pandas as pd
@@ -16,22 +17,13 @@ CINPlanStartDate = CINplanDates.CINPlanStartDate
                 affected_fields=["sample child"],
                 )
 def validate(data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext):
-    """
-    This test function checks for location linking among
-    - multiple columns in the same table.
-    - multiple columns across multiple tables where error occurences are mapped 1 to 1 and in order.
-
-    At this point, this test function does not cover the use cases where
-    - uneven lengths of error locations are returned across columns.
-    - Failing child IDs are present in some tables and missing in others.
-    - NaNs are present among the index values.
-    """
+    
     start_date_locs = pd.Index([1, 3, 5, 7])
     end_date_locs = pd.Index([2, 4, 6, 8])
     plan_start_locs = pd.Index([0, 1, 2, 3])
 
     cpp_id_col = pd.Index(["001", "009", "011", "012"])
-    plan_id_col = pd.Index(["001", "009", "011", "012"]) # In an error instance, is it possible child ids per table to differ across tables?
+    plan_id_col = pd.Index(["001", "009", "011", "012"]) # In an error instance, is it possible for child ids per table to differ across tables?
 
     rule_context.push_linked_issues(
         [
@@ -41,7 +33,7 @@ def validate(data_container: Mapping[CINTable, pd.DataFrame], rule_context: Rule
         ]
     )
 
-def func_context():
+def test_context():
  
     child_protection_plans = pd.DataFrame([
         {"LAchildID": 1, "CPPstartDate": "26/05/2000" , "CPPendDate": "26/05/2000" ,},
@@ -53,9 +45,8 @@ def func_context():
     ])
 
     rule_context = run_rule(validate, {ChildProtectionPlans: child_protection_plans})
-    print(rule_context.issues)
-  
-    """assert rule_context.issues == [
+
+    assert rule_context.linked_issues == [
         [IssueLocator(table=ChildProtectionPlans, field=CPPstartDate, row=1),
         IssueLocator(table=ChildProtectionPlans, field=CPPendDate, row=2),
         IssueLocator(table=CINplanDates, field=CINPlanStartDate, row=0),],
@@ -71,6 +62,15 @@ def func_context():
         [IssueLocator(table=ChildProtectionPlans, field=CPPstartDate, row=7),
         IssueLocator(table=ChildProtectionPlans, field=CPPendDate, row=8),
         IssueLocator(table=CINplanDates, field=CINPlanStartDate, row=3),],
-    ]"""
+    ]
 
-    func_context()
+"""
+    This test function checks for location linking among
+    - multiple columns in the same table.
+    - multiple columns across multiple tables where error occurences are mapped 1 to 1 and in order.
+
+    At this point, this test function does not cover the use cases where
+    - uneven lengths of error locations are returned across columns.
+    - Failing child IDs are present in some tables and missing in others.
+    - NaNs are present among the index values.
+"""
