@@ -24,7 +24,7 @@ def validate(
     <ReferralNFA> (N00112) must be present and must be 1 or 0, true or false
     """
     df["ReferralNFA"] = df["ReferralNFA"].astype(str).str.lower()
-    df = df[~df['ReferralNFA'].isin(["1", "0", "false", "true"])]
+    df = df[~df["ReferralNFA"].isin(["1", "0", "false", "true"])]
 
     failing_indices = df.index
 
