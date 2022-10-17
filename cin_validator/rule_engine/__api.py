@@ -5,17 +5,94 @@ from typing import Callable, Iterable, NamedTuple
 
 
 class CINTable(Enum):
-    Header = Enum("Header", ["Collection", "Year", "ReferenceDate", "SourceLevel", "LEA", "SoftwareCode", "Release", "SerialNo", "DateTime"])
-    ChildIdentifiers = Enum(
-        "ChildIdentifiers", ["LAchildID", "UPN", "FormerUPN", "UPNunknown", "PersonBirthDate", "ExpectedPersonBirthDate", "GenderCurrent", "PersonDeathDate"]
+    Header = Enum(
+        "Header",
+        [
+            "Collection",
+            "Year",
+            "ReferenceDate",
+            "SourceLevel",
+            "LEA",
+            "SoftwareCode",
+            "Release",
+            "SerialNo",
+            "DateTime",
+        ],
     )
-    ChildCharacteristics = Enum("ChildCharacteristics", ["LAchildID", "Ethnicity", ])
+    ChildIdentifiers = Enum(
+        "ChildIdentifiers",
+        [
+            "LAchildID",
+            "UPN",
+            "FormerUPN",
+            "UPNunknown",
+            "PersonBirthDate",
+            "ExpectedPersonBirthDate",
+            "GenderCurrent",
+            "PersonDeathDate",
+        ],
+    )
+    ChildCharacteristics = Enum(
+        "ChildCharacteristics",
+        [
+            "LAchildID",
+            "Ethnicity",
+        ],
+    )
     Disabilities = Enum("Disabilities", ["LAchildID", "Disability"])
-    CINdetails = Enum("CINdetails", ["LAchildID", "CINdetailsID", "CINreferralDate", "ReferralSource", "PrimaryNeedCode", "CINclosureDate", "ReasonForClosure", "DateOfInitialCPC", "ReferralNFA" ])
-    Assessments = Enum("Assessments", ["LAchildID", "CINdetailsID", "AssessmentActualStartDate", "AssessmentInternalReviewDate", "AssessmentAuthorisationDate", "AssessmentFactors"]) 
-    CINplanDates = Enum("CINplanDates", ["LAchildID", "CINdetailsID", "CINPlanStartDate", "CINPlanEndDate"])
-    Section47 = Enum("Section47", ["LAchildID", "CINdetailsID", "S47ActualStartDate", "InitialCPCtarget", "DateOfInitialCPC", "ICPCnotRequired"])
-    ChildProtectionPlans = Enum("ChildProtectionPlans", ["LAchildID", "CINdetailsID", "CPPID", "CPPstartDate", "CPPendDate", "InitialCategoryOfAbuse", "LatestCategoryOfAbuse", "NumberOfPreviousCPP"]) 
+    CINdetails = Enum(
+        "CINdetails",
+        [
+            "LAchildID",
+            "CINdetailsID",
+            "CINreferralDate",
+            "ReferralSource",
+            "PrimaryNeedCode",
+            "CINclosureDate",
+            "ReasonForClosure",
+            "DateOfInitialCPC",
+            "ReferralNFA",
+        ],
+    )
+    Assessments = Enum(
+        "Assessments",
+        [
+            "LAchildID",
+            "CINdetailsID",
+            "AssessmentActualStartDate",
+            "AssessmentInternalReviewDate",
+            "AssessmentAuthorisationDate",
+            "AssessmentFactors",
+        ],
+    )
+    CINplanDates = Enum(
+        "CINplanDates",
+        ["LAchildID", "CINdetailsID", "CINPlanStartDate", "CINPlanEndDate"],
+    )
+    Section47 = Enum(
+        "Section47",
+        [
+            "LAchildID",
+            "CINdetailsID",
+            "S47ActualStartDate",
+            "InitialCPCtarget",
+            "DateOfInitialCPC",
+            "ICPCnotRequired",
+        ],
+    )
+    ChildProtectionPlans = Enum(
+        "ChildProtectionPlans",
+        [
+            "LAchildID",
+            "CINdetailsID",
+            "CPPID",
+            "CPPstartDate",
+            "CPPendDate",
+            "InitialCategoryOfAbuse",
+            "LatestCategoryOfAbuse",
+            "NumberOfPreviousCPP",
+        ],
+    )
     Reviews = Enum("Reviews", ["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"])
 
     def __getattr__(self, item):
@@ -30,6 +107,7 @@ class CINTable(Enum):
 
 class RuleType(Enum):
     ERROR = "Error"
+    QUERY = "Query"
 
 
 @dataclass(frozen=True, eq=True)
