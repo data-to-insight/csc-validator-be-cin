@@ -18,3 +18,9 @@ def make_census_period(collection_year):
 
     return collection_start, collection_end
 
+class DataContainerWrapper:
+    def __init__(self, value) -> None:
+        self.value = value
+
+    def __getitem__(self, name):
+        return getattr(self.value, name.name)
