@@ -8,7 +8,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 # TODO make this work with from cin_validator.utils import get_values
-from utils import get_values, make_census_period
+from .utils import get_values, make_census_period
 
 # initialize all data sets as empty dataframes with columns names
 # whenever a child is created, it should add a row to each table where it exists.
