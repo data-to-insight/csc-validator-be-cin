@@ -34,7 +34,6 @@ class RuleContext:
     def __init__(self, definition: RuleDefinition):
         self.__definition = definition
         self.__issues = []
-        self.__linked_issues = defaultdict(list)
         
 
     @property
@@ -44,15 +43,10 @@ class RuleContext:
     def push_issue(self, table, field, row):
         self.__issues.append(IssueLocatorLists(table, field, row))
     
-    def issue_accum(self, table, field, row, id_col):
-        for i in range(len(row)):
-            self.__linked_issues[id_col[i]].append(IssueLocator(table, field, row[i]))
-
-    def push_linked_issues(self, list_args):
-        for tup in list_args:
-            table, field, row, id_col = tup
-            self.issue_accum(table, field, row, id_col)
-             
+    def push_linked_issues(self, df):
+        """Receives a DataFrame GroupBy object, converts it into a DataFrame and assigns it to a class attribute."""
+        self.__linked_issues = df.reset_index()
+      
     @property
     def issues(self):
         for issues in self.__issues:
@@ -61,4 +55,4 @@ class RuleContext:
 
     @property
     def linked_issues(self):
-        return list(self.__linked_issues.values())
+        return self.__linked_issues
