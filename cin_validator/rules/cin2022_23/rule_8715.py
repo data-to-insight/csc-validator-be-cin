@@ -20,7 +20,7 @@ DateOfInitialCPC = Section47.DateOfInitialCPC
     module=CINTable.Section47,
     message="Date of Initial Child Protection Conference must fall within the census year",
     affected_fields=[DateOfInitialCPC],
-    # include ReferenceDate from Header table as <ReferenceDate>?
+    # Do I also include ReferenceDate from Header table as <ReferenceDate>?
     
 )
 def validate(
