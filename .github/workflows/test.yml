@@ -1,0 +1,56 @@
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2
+
+      - name: Cache dependencies
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-poetry-deps
+        with:
+          path: |
+            ~/.venv
+            ~/.cache/pypoetry
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pyproject.toml', '**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Test Framework
+        run: |
+          poetry run coverage run --data-file='.coverage.framework' -m pytest
+
+      - name: Test Rules
+        run: |
+          poetry run coverage run --data-file='.coverage.rules' -m cin_validator test
+
+      - name: Coverage report
+        run: |
+          poetry run coverage combine
+          poetry run coverage report
+          poetry run coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: false
