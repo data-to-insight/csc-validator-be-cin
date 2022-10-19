@@ -1,14 +1,13 @@
 import importlib
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
 import pytest
 
-from cin_validator.rule_engine import registry, RuleContext
 from cin_validator.ingress import XMLtoCSV
+from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
-
-import xml.etree.ElementTree as ET
 
 
 @click.group()
@@ -29,6 +28,7 @@ def list_cmd(ruleset):
     for rule in registry:
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
+
 @cli.command()
 @click.argument("filename", type=click.File("rt"), required=True)
 @click.option(
@@ -37,15 +37,15 @@ def list_cmd(ruleset):
     default="rules.cin2022_23",
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
-def run_all(filename:str, ruleset):
+def run_all(filename: str, ruleset):
     # TODO detect filetype xml/csv/zip. check if the directory is a folder.
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
     data_files = DataContainerWrapper(XMLtoCSV(root))
-    
+
     importlib.import_module(f"cin_validator.{ruleset}")
     for rule in registry:
-        
+
         ctx = RuleContext(rule)
         rule.func(data_files, ctx)
         print(rule.code, len(list(ctx.issues)))

@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -34,20 +38,54 @@ def validate(
     df2 = df[(df["UPN"].str.len() == 13) & df["UPN"].notna()]
 
     # Valid characters
-    valid = ['A','B','C','D','E','F','G','H','J','K','L','M','N','P','Q','R','T','U','V','W','Y','X','Z','0','1','2','3','4','5','6','7','8','9']
+    valid = [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "P",
+        "Q",
+        "R",
+        "T",
+        "U",
+        "V",
+        "W",
+        "Y",
+        "X",
+        "Z",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+    ]
 
     failing_indices = df2[~df2["UPN"].str[12].isin(valid)].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively. 
+    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
-    rule_context.push_issue(
-        table=ChildIdentifiers, field=UPN, row=failing_indices
-    )
+    rule_context.push_issue(table=ChildIdentifiers, field=UPN, row=failing_indices)
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    child_identifiers = pd.DataFrame([['1234567891234'], ['123456789123I'], ['123456789123O']], columns=[UPN])
+    child_identifiers = pd.DataFrame(
+        [["1234567891234"], ["123456789123I"], ["123456789123O"]], columns=[UPN]
+    )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
@@ -56,7 +94,7 @@ def test_validate():
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issues) == 2
-    # replace the table and column name as done earlier. 
+    # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
         IssueLocator(CINTable.ChildIdentifiers, UPN, 1),
@@ -67,4 +105,6 @@ def test_validate():
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 1550
-    assert result.definition.message == "UPN invalid (character 13 not a recognised value)"
+    assert (
+        result.definition.message == "UPN invalid (character 13 not a recognised value)"
+    )
