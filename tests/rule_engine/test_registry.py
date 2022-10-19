@@ -4,6 +4,8 @@ from cin_validator.rule_engine import registry, rule_definition
 
 
 def test_register_rules():
+    registry._registry.clear()
+
     @rule_definition(
         code=8500,
         rule_type="error",
@@ -28,6 +30,8 @@ def test_register_rules():
 
 
 def test_register_duplicate_code_raises_error():
+    registry._registry.clear()
+
     with pytest.raises(ValueError):
 
         @rule_definition(
