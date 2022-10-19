@@ -4,11 +4,13 @@
 # - Check that Header, ChildIdentifiers, and ChildCharacteristics tags do not repeat and have no duplicate subelements.
 # - Check that all expected columns are created for every appropriate xml block found.
 
-import pandas as pd
 import xml.etree.ElementTree as ET
+
+import pandas as pd
 
 # TODO make this work with from cin_validator.utils import get_values
 from .utils import get_values, make_census_period
+
 
 # initialize all data sets as empty dataframes with columns names
 # whenever a child is created, it should add a row to each table where it exists.
@@ -104,7 +106,7 @@ class XMLtoCSV:
     def __init__(self, root):
         header = root.find("Header")
         self.Header = self.create_Header(header)
-        
+
         self.collection_start = None
         self.collection_end = None
 
@@ -139,10 +141,12 @@ class XMLtoCSV:
         collection_details = header.find("CollectionDetails")
         collection_elements = ["Collection", "Year", "ReferenceDate"]
         header_dict = get_values(collection_elements, header_dict, collection_details)
-        
+
         # define collection period based on year.
-        self.collection_start, self.collection_end = make_census_period(collection_year=header_dict['Year'])
-          
+        self.collection_start, self.collection_end = make_census_period(
+            collection_year=header_dict["Year"]
+        )
+
         source = header.find("Source")
         source_elements = [
             "SourceLevel",
@@ -341,6 +345,7 @@ class XMLtoCSV:
 
         reviews_df = pd.DataFrame(reviews_list)
         self.Reviews = pd.concat([self.Reviews, reviews_df], ignore_index=True)
+
 
 """
 Sidenote: Fields absent from the fake_CIN_data.xml

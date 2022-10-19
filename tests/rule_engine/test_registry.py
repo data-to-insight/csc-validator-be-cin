@@ -1,6 +1,6 @@
 import pytest
 
-from cin_validator.rule_engine import rule_definition, registry
+from cin_validator.rule_engine import registry, rule_definition
 
 
 def test_register_rules():

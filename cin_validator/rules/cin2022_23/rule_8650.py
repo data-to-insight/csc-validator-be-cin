@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 CINdetails = CINTable.CINdetails
@@ -25,7 +29,7 @@ def validate(
     """
     PriNeed_list = ["N0", "N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9"]
 
-    #Primary Need Code is not in list.
+    # Primary Need Code is not in list.
     df = df[(~df["PrimaryNeedCode"].isin(PriNeed_list)) & df["PrimaryNeedCode"].notna()]
 
     failing_indices = df.index
