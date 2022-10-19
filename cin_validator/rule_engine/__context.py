@@ -1,6 +1,7 @@
-from collections import defaultdict
+import pandas as pd
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
 
 from cin_validator.rule_engine import RuleDefinition, CINTable
 
@@ -17,6 +18,13 @@ class IssueLocator:
     table: CINTable
     field: str
     row: int
+
+@dataclass(frozen=True, eq=True)
+class Type1:
+    table: CINTable
+    columns: List[str]
+    row_df: pd.DataFrame
+
 
 class IssueLocatorLists:
     def __init__(self, table, field, row):
@@ -43,9 +51,9 @@ class RuleContext:
     def push_issue(self, table, field, row):
         self.__issues.append(IssueLocatorLists(table, field, row))
     
-    def push_linked_issues(self, df):
-        """Receives a DataFrame GroupBy object, converts it into a DataFrame and assigns it to a class attribute."""
-        self.__linked_issues = df.reset_index()
+    def push_type_1(self, table, columns, row_df):
+        """Many columns, One Table, no merge involved"""
+        self.__type1_issues = Type1(table, columns, row_df)
       
     @property
     def issues(self):
@@ -54,5 +62,5 @@ class RuleContext:
  
 
     @property
-    def linked_issues(self):
-        return self.__linked_issues
+    def type1_issues(self):
+        return self.__type1_issues
