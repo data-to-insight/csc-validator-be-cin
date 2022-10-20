@@ -40,15 +40,6 @@ def validate(
     # Death date must not be null, invalid text dates are made null in the line above
     df = df[df[PersonDeathDate].notna()]
 
-    # Create a key column to join
-    # df["Key"] = 0
-    """df_ref = df_ref[[ReferenceDate]]
-    df_ref["YearEnd"] = pd.to_datetime(df_ref["ReferenceDate"], format=r"%Y-%m-%d", errors="coerce") #equals 31/03/2023  (for example, year can be different)
-    df_ref["YearStart"] = df_ref["YearEnd"] - pd.DateOffset(years=1) + pd.DateOffset(days=1)         #equals 01/04/2022  (for example, year can be different)
-    #Create a key column to join
-    df_ref["Key"] = 0"""
-    # df = df.merge(df_ref, on="Key")
-
     collection_year = df_ref[Year]
     collection_start, collection_end = make_census_period(collection_year)
     # DeathDate isn't in the financial year
