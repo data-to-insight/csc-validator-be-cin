@@ -25,8 +25,11 @@ def validate(
     """
     abuse_cats = ["NEG", "PHY", "SAB", "EMO", "MUL"]
 
-    #Initial Category Code is not in list.
-    df = df[(~df["InitialCategoryOfAbuse"].isin(abuse_cats)) | df["InitialCategoryOfAbuse"].isna()]
+    # Initial Category Code is not in list.
+    df = df[
+        (~df["InitialCategoryOfAbuse"].isin(abuse_cats))
+        | df["InitialCategoryOfAbuse"].isna()
+    ]
 
     failing_indices = df.index
 
