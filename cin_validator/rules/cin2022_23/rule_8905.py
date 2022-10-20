@@ -27,8 +27,8 @@ def validate(
 
     # Initial Category Code is not in list.
     df = df[
-        (~df["InitialCategoryOfAbuse"].isin(abuse_cats))
-        | df["InitialCategoryOfAbuse"].isna()
+        (~df[InitialCategoryOfAbuse].isin(abuse_cats))
+        | df[InitialCategoryOfAbuse].isna()
     ]
 
     failing_indices = df.index
@@ -42,7 +42,7 @@ def test_validate():
 
     fake_cats = ["NEG", "AAA", "PHY", pd.NA, "BBB", "EMO", "MUL"]
 
-    fake_dataframe = pd.DataFrame({"InitialCategoryOfAbuse": fake_cats})
+    fake_dataframe = pd.DataFrame({InitialCategoryOfAbuse: fake_cats})
 
     result = run_rule(validate, {ChildProtectionPlans: fake_dataframe})
 
