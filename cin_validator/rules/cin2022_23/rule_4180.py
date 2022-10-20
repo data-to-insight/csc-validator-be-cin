@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -31,10 +35,12 @@ def validate(
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    valid_gender_codes = [1,2,0,9]
+    valid_gender_codes = [1, 2, 0, 9]
 
     # <GenderCurrent> (N00097) must be present and valid
-    failing_indices = df[df[GenderCurrent].isna()|(~df[GenderCurrent].isin(valid_gender_codes))].index
+    failing_indices = df[
+        df[GenderCurrent].isna() | (~df[GenderCurrent].isin(valid_gender_codes))
+    ].index
 
     # Replace ChildIdentifiers and GenderCurrent with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
@@ -45,7 +51,9 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    child_identifiers = pd.DataFrame([[1], [pd.NA], [7], ['Male']], columns=[GenderCurrent])
+    child_identifiers = pd.DataFrame(
+        [[1], [pd.NA], [7], ["Male"]], columns=[GenderCurrent]
+    )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
@@ -59,7 +67,8 @@ def test_validate():
     assert issues == [
         IssueLocator(CINTable.ChildIdentifiers, GenderCurrent, 1),
         IssueLocator(CINTable.ChildIdentifiers, GenderCurrent, 2),
-        IssueLocator(CINTable.ChildIdentifiers, GenderCurrent, 3),    ]
+        IssueLocator(CINTable.ChildIdentifiers, GenderCurrent, 3),
+    ]
 
     # Check that the rule definition is what you wrote in the context above.
 
