@@ -2,13 +2,16 @@ from typing import Mapping
 
 import pandas as pd
 
-
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
+# Replace ChildProtectionPlans with the table name, and LAChildID with the column name you want.
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 LAchildID = ChildProtectionPlans.LAchildID
@@ -17,9 +20,9 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
+    # write the rule code here, in place of 8840
     code=8840,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child Protection Plan cannot start and end on the same day",
@@ -29,14 +32,14 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
+    # Replace ChildProtectionPlans with the name of the table you need.
     df = data_container[ChildProtectionPlans]
-    # Before you begine, rename the index so that the initial row positions can be kept intact.
+    # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
-    # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
+    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    #  Determine if the dates are the same by finding is the difference between dates is 0
+    #  Determine if the dates are the same by finding if the difference between dates is 0
     condition = df["CPPstartDate"] == df["CPPendDate"]
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
@@ -95,7 +98,7 @@ def test_validate():
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: child_protection_plans})
 
-    # The result contains a list of issues encountered
+    # The result contains a NamedTuple of issues encountered
     issues = result.type1_issues
 
     # get table name and check it. Replace ChildProtectionPlans with the name of your table.
@@ -150,7 +153,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8840 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8840
     assert (
         result.definition.message
