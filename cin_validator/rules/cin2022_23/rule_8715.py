@@ -1,4 +1,3 @@
-from ctypes import FormatError
 from typing import Mapping
 
 import pandas as pd
