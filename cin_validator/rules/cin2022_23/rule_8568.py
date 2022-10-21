@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 CINdetails = CINTable.CINdetails
@@ -28,9 +32,7 @@ def validate(
 
     failing_indices = df.index
 
-    rule_context.push_issue(
-        table=CINdetails, field=ReferralNFA, row=failing_indices
-    )
+    rule_context.push_issue(table=CINdetails, field=ReferralNFA, row=failing_indices)
 
 
 def test_validate():
@@ -53,7 +55,4 @@ def test_validate():
     ]
 
     assert result.definition.code == 8568
-    assert (
-        result.definition.message
-        == "RNFA flag is missing or invalid"
-    )
+    assert result.definition.message == "RNFA flag is missing or invalid"

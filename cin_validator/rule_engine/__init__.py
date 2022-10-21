@@ -1,5 +1,5 @@
-from .__api import RuleDefinition, RuleType, CINTable
-from .__context import RuleContext, IssueLocator
+from .__api import CINTable, RuleDefinition, RuleType
+from .__context import IssueLocator, RuleContext
 from .__registry import registry, rule_definition
 
 __all__ = [
