@@ -2,6 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
+
 from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
 from cin_validator.rule_engine import IssueLocator
 from cin_validator.test_engine import run_rule
@@ -36,7 +37,7 @@ def validate(
     # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
 
     #  Determine if the dates are the same by finding is the difference between dates is 0
-    condition = df[df['CPPstartDate'] == df['CPPendDate']].index
+    condition = df['CPPstartDate'] == df['CPPendDate'] 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -63,13 +64,15 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
+    
+    #  Fails rows 0, 1, and 3
     child_protection_plans = pd.DataFrame(
-        {'LAchildID'   : ['child1', 'child2', 'child3', 'child4'],
-        'CPPstartDate' : ['08/10/1989', '05/12/1993', '05/12/1993', '05/12/1997'], 
-        'CPPendDate'   : ['08/10/1989','05/12/1993', '12/09/2022', '05/12/1997'],
+        {'LAchildID'   : ['child1',     'child2',     'child3',     'child4', 'child5'],
+        'CPPstartDate' : ['08/10/1989', '05/12/1993', '05/12/1993', '05/12/1997', pd.NA], 
+        'CPPendDate'   : ['08/10/1989', '05/12/1993', '12/09/2022', '05/12/1997', pd.NA],
         })
-    child_protection_plans['CPPstartDate'] = pd.to_datetime(child_protection_plans['CPPstartDate'])
-    child_protection_plans['CPPendDate'] = pd.to_datetime(child_protection_plans['CPPendDate'])
+    child_protection_plans['CPPstartDate'] = pd.to_datetime(child_protection_plans['CPPstartDate'], format="%d/%m/%Y", errors="coerce")
+    child_protection_plans['CPPendDate'] = pd.to_datetime(child_protection_plans['CPPendDate'], format="%d/%m/%Y", errors="coerce")
     
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: child_protection_plans})
@@ -88,7 +91,6 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
 
-
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
     # replace the table and column name as done earlier. 
@@ -102,7 +104,7 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    "child3",
+                    "child1",
                     pd.to_datetime("08/10/1989", format="%d/%m/%Y", errors="coerce"),
                     pd.to_datetime("08/10/1989", format="%d/%m/%Y", errors="coerce"),
                 ),
@@ -110,7 +112,7 @@ def test_validate():
             },
             {
                 "ERROR_ID": (
-                    "child4",
+                    "child2",
                     pd.to_datetime("05/12/1993", format="%d/%m/%Y", errors="coerce"),
                     pd.to_datetime("05/12/1993", format="%d/%m/%Y", errors="coerce"),
                 ),
