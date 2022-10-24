@@ -47,8 +47,7 @@ def validate(
 
     # If <CPPendDate> (N00115) is present, then<CPPendDate> (N00115) must fall within [Period_of_Census] inclusive
     failing_indices = df[
-        (df[CPPendDate] < collection_start)
-        | (df[CPPendDate] > reference_date)
+        (df[CPPendDate] < collection_start) | (df[CPPendDate] > reference_date)
     ].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
@@ -64,7 +63,7 @@ def test_validate():
         [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
     )
 
-    fake_cppend = pd.DataFrame(
+    fake_cpp = pd.DataFrame(
         [
             {
                 CPPendDate: "01/03/2019"
@@ -79,13 +78,13 @@ def test_validate():
     )
 
     # if date columns are involved, the validate function will be expecting them as dates so convert before passing them in.
-    fake_cppend[CPPendDate] = pd.to_datetime(
-        fake_cppend[CPPendDate], format="%d/%m/%Y", errors="coerce"
+    fake_cpp[CPPendDate] = pd.to_datetime(
+        fake_cpp[CPPendDate], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run rule function passing in our sample data
     # Since the ReferenceDate comes from the Header column, we provide that also.
-    result = run_rule(validate, {ChildProtectionPlans: fake_cppend, Header: fake_header})
+    result = run_rule(validate, {ChildProtectionPlans: fake_cpp, Header: fake_header})
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
@@ -103,6 +102,6 @@ def test_validate():
     # replace 8930 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8930
     assert (
-        result.definition.message 
+        result.definition.message
         == "Child Protection Plan End Date must fall within the census year"
     )
