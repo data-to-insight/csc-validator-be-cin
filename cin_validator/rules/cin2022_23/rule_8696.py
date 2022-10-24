@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Mapping
 
 import pandas as pd
@@ -26,22 +25,21 @@ ReferenceDate = Header.ReferenceDate
     module=CINTable.Assessments,
     message="Assessment end date must fall within the census year",
     affected_fields=[AssessmentAuthorisationDate, ReferenceDate],
-        
-)    
+)
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # Replace ChildIdentifiers with the name of the table you need.
-    df = data_container[Assessments]   
+    df = data_container[Assessments]
     df_ref = data_container[Header]
-    
+
     ref_data_series = df_ref[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_data_series)
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # <If present <AssessmentAuthorisationDate> (N00160) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
-    
+
     df = df[
         ~(
             (df[AssessmentAuthorisationDate] < collection_start)
@@ -56,9 +54,10 @@ def validate(
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
-    
+
+
 def test_validate():
-   # Create some sample data such that some values pass the validation and some fail.
+    # Create some sample data such that some values pass the validation and some fail.
 
     miss_auth = pd.to_datetime(
         [
@@ -72,10 +71,9 @@ def test_validate():
 
     fake_auth = pd.DataFrame({AssessmentAuthorisationDate: miss_auth})
     fake_header = pd.DataFrame({ReferenceDate: ["31/03/2022"]})
-    
+
     # Run rule function passing in our sample data
     result = run_rule(validate, {Assessments: fake_auth, Header: fake_header})
-    
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
@@ -91,5 +89,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 8696
-    assert (result.definition.message == "Assessment end date must fall within the census year"
+    assert (
+        result.definition.message
+        == "Assessment end date must fall within the census year"
     )
