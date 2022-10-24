@@ -74,6 +74,9 @@ def test_validate():
             {
                 CPPendDate: "01/10/2022"
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
+            {
+                CPPendDate: pd.NA
+            },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
         ]
     )
 
