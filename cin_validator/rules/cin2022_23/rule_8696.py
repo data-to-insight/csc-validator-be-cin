@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Mapping
 
 import pandas as pd
@@ -9,51 +10,72 @@ from cin_validator.rule_engine import (
     rule_definition,
 )
 from cin_validator.test_engine import run_rule
+from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 # Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 Assessments = CINTable.Assessments
+Header = CINTable.Header
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
+ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
     code=8696,
     module=CINTable.Assessments,
     message="Assessment end date must fall within the census year",
-    affected_fields=[AssessmentAuthorisationDate],
-    # Do I also include ReferenceDate from Header table as <ReferenceDate>?
+    affected_fields=[AssessmentAuthorisationDate, ReferenceDate],
+        
 )    
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # Replace ChildIdentifiers with the name of the table you need.
-    df = data_container[Assessments]
-   
+    df = data_container[Assessments]   
+    df_ref = data_container[Header]
+    
+    ref_data_series = df_ref[ReferenceDate]
+    collection_start, collection_end = make_census_period(ref_data_series)
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # <If present <AssessmentAuthorisationDate> (N00160) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
-    failing_indices = df[df[AssessmentAuthorisationDate].isna()].index
     
-    collection_start = pd.to_datetime('01/04/2021', format= '%d/%m/%Y')
-    collection_end = pd.to_datetime('31/03/2022', format= '%d/%m/%Y')
+    df = df[
+        ~(
+            (df[AssessmentAuthorisationDate] < collection_start)
+            & (df[AssessmentAuthorisationDate] > collection_end)
+        )
+    ]
+    failing_indices = df.index
 
-    failing_indices = ((pd.to_datetime(AssessmentAuthorisationDate, format = '%d/%m/%Y') >= collection_start) & (pd.to_datetime(AssessmentAuthorisationDate, format= '%d/%m/%Y') <= collection_end)).index
-
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
         table=Assessments, field=AssessmentAuthorisationDate, row=failing_indices
     )
 
-
+    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
+    # If there are multiple columns or table, make this sentence multiple times.
+    
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
-    child_identifiers = pd.DataFrame([['01/03/2019'], [pd.NA], ['01/10/2022']], columns=[AssessmentAuthorisationDate])
+   # Create some sample data such that some values pass the validation and some fail.
 
+    miss_auth = pd.to_datetime(
+        [
+            "01/03/2019",
+            "01/04/2021",
+            "01/10/2022",
+        ],
+        format="%d/%m/%Y",
+        errors="coerce",
+    )
+
+    fake_auth = pd.DataFrame({AssessmentAuthorisationDate: miss_auth})
+    fake_header = pd.DataFrame({ReferenceDate: ["31/03/2022"]})
+    
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Assessments: child_identifiers})
+    result = run_rule(validate, {Assessments: fake_auth, Header: fake_header})
+    
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
@@ -63,10 +85,11 @@ def test_validate():
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
         IssueLocator(CINTable.Assessments, AssessmentAuthorisationDate, 0),
-        IssueLocator(CINTable.Assessments, AssessmentAuthorisationDate, 1),
+        IssueLocator(CINTable.Assessments, AssessmentAuthorisationDate, 2),
     ]
 
     # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 8696
-    assert result.definition.message == "Assessment end date must fall within the census year"
+    assert (result.definition.message == "Assessment end date must fall within the census year"
+    )
