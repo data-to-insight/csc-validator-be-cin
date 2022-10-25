@@ -40,7 +40,7 @@ def validate(
 
     # <PersonBirthDate> (N00066) must be on or before <ReferenceDate> (N00603) or null
 
-    df = df[(df[PersonBirthDate] > collection_end)] 
+    df = df[(df[PersonBirthDate] > collection_end)]
 
     failing_indices = df.index
 
@@ -53,17 +53,17 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    
+
     test_dobs = pd.to_datetime(
-        [ 
-            "01/06/2021", # 0 pass
-            "01/06/2022", # 1 fail
-            "31/08/2021", # 2 pass
-            "31/12/2022", # 3 fail
-            pd.NA, #4 ignored
+        [
+            "01/06/2021",  # 0 pass
+            "01/06/2022",  # 1 fail
+            "31/08/2021",  # 2 pass
+            "31/12/2022",  # 3 fail
+            pd.NA,  # 4 ignored
         ],
-        format='%d/%m/%Y',
-        errors="coerce"
+        format="%d/%m/%Y",
+        errors="coerce",
     )
 
     fake_dobs = pd.DataFrame({PersonBirthDate: test_dobs})
@@ -86,4 +86,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 8520
-    assert result.definition.message == "Date of Birth is after data collection period (must be on or before the end of the census period)"
+    assert (
+        result.definition.message
+        == "Date of Birth is after data collection period (must be on or before the end of the census period)"
+    )
