@@ -41,11 +41,12 @@ def validate(
     # <If present <AssessmentAuthorisationDate> (N00160) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
 
     df = df[
-        ~(
+       (
             (df[AssessmentAuthorisationDate] < collection_start)
-            & (df[AssessmentAuthorisationDate] > collection_end)
-        )
+            | (df[AssessmentAuthorisationDate] > collection_end)
+       )
     ]
+
     failing_indices = df.index
 
     rule_context.push_issue(
