@@ -15,7 +15,7 @@ LAchildID = ChildIdentifiers.LAchildID
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8500
-    code='8535Q',
+    code="8535Q",
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
     # specify that it is a query
@@ -50,16 +50,20 @@ def validate(
     condition2 = df[PersonBirthDate].isna()
 
     # df with all rows meeting the conditions
-    df_issues = df[condition1|condition2].reset_index()
+    df_issues = df[condition1 | condition2].reset_index()
 
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[PersonDeathDate], df_issues[PersonBirthDate])
+        zip(
+            df_issues[LAchildID], df_issues[PersonDeathDate], df_issues[PersonBirthDate]
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=ChildIdentifiers, columns=[PersonDeathDate, PersonBirthDate], row_df=df_issues
+        table=ChildIdentifiers,
+        columns=[PersonDeathDate, PersonBirthDate],
+        row_df=df_issues,
     )
 
 
@@ -164,7 +168,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == '8535Q'
+    assert result.definition.code == "8535Q"
     assert (
         result.definition.message
         == "Child’s date of death should not be prior to the date of birth"
