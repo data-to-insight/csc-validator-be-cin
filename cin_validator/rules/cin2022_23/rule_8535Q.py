@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -18,6 +18,8 @@ LAchildID = ChildIdentifiers.LAchildID
     code='8535Q',
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
+    # specify that it is a query
+    rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child’s date of death should not be prior to the date of birth",
     # The column names tend to be the words within the < > signs in the github issue description.
