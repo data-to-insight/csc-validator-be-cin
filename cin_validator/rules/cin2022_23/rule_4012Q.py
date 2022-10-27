@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.rule_engine import IssueLocator
 from cin_validator.test_engine import run_rule
 
@@ -14,6 +14,7 @@ LAchildID = CINplanDates.LAchildID
 # define characteristics of rule
 @rule_definition(
     code="4012Q",
+    rule_type=RuleType.QUERY,
     module=CINTable.CINplanDates,
     message="CIN Plan shown as starting and ending on the same day - please check",
     affected_fields=[CINPlanStartDate, CINPlanEndDate],
@@ -75,6 +76,7 @@ def test_validate():
         "15-01-2020",
         "01-01-2020",
     ]
+    #  Fails rows 0, 2, 6.
     fake_dataframe = pd.DataFrame(
         {"LAchildID": IDS_are, "CINPlanStartDate": starts, "CINPlanEndDate": ends}
     )
