@@ -13,8 +13,6 @@ AssessmentActualStartDate = Assessments.AssessmentActualStartDate
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 
 
-
-
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8500
@@ -56,13 +54,19 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[AssessmentActualStartDate], df_issues[AssessmentAuthorisationDate])
+        zip(
+            df_issues[LAchildID],
+            df_issues[AssessmentActualStartDate],
+            df_issues[AssessmentAuthorisationDate],
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=Assessments, columns=[AssessmentActualStartDate, AssessmentAuthorisationDate], row_df=df_issues
+        table=Assessments,
+        columns=[AssessmentActualStartDate, AssessmentAuthorisationDate],
+        row_df=df_issues,
     )
 
 
