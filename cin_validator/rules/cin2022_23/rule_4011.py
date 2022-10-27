@@ -45,7 +45,9 @@ def validate(
     df_issues = df[condition1].reset_index()
 
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[CINPlanEndDate], df_issues[CINPlanStartDate])
+        zip(
+            df_issues[LAchildID], df_issues[CINPlanEndDate], df_issues[CINPlanStartDate]
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
@@ -69,12 +71,12 @@ def test_validate():
                 "CINPlanEndDate": "26/05/2000",
                 "CINPlanStartDate": "26/05/2001",
                 # fails, start after end
-            }, 
+            },
             {
                 "LAchildID": "child3",
                 "CINPlanEndDate": "26/05/2000",
                 "CINPlanStartDate": "26/05/1999",
-            },  
+            },
             {
                 "LAchildID": "child4",
                 "CINPlanEndDate": "26/05/2000",
@@ -129,7 +131,6 @@ def test_validate():
                 ),
                 "ROW_ID": [1],
             },
-
         ]
     )
     assert issue_rows.equals(expected_df)
@@ -137,7 +138,4 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 4011
-    assert (
-        result.definition.message
-        == "CIN Plan End Date earlier than Start Date"
-    )
+    assert result.definition.message == "CIN Plan End Date earlier than Start Date"
