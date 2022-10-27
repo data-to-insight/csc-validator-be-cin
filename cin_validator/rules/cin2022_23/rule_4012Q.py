@@ -26,13 +26,15 @@ def validate(
     """
     Within a <CINPlanDates> group, <CINPlanStartDate> (N00689) should not be the same as the <CINPlanEndDate> (N00690)
     """
-    df.index.name = "ROW_ID"   
+    df.index.name = "ROW_ID"
     df = df[df["CINPlanStartDate"] == df["CINPlanEndDate"]]
 
     df_issues = df.reset_index()
 
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[CINPlanStartDate], df_issues[CINPlanEndDate])
+        zip(
+            df_issues[LAchildID], df_issues[CINPlanStartDate], df_issues[CINPlanEndDate]
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
@@ -43,10 +45,39 @@ def validate(
 
 
 def test_validate():
-    IDS_are = ["AAAAAAAA",  "BBBBBBBBB", "CCCCCCCCCCC", "DDDDDDDDD", "EEEE", "FFFFFFFFF", "GGGGGGGGGG", "HHHH"]
-    starts = ["01-01-2020", "01-02-2020", "01-03-2020", "15-01-2020", pd.NA, "01-07-2020", "15-01-2020", pd.NA]
-    ends  =  ["01-01-2020", "01-01-2020", "01-03-2020", "17-01-2020", pd.NA, "01-01-2020", "15-01-2020", "01-01-2020"]
-    fake_dataframe = pd.DataFrame({"LAchildID": IDS_are, "CINPlanStartDate": starts, "CINPlanEndDate": ends})
+    IDS_are = [
+        "AAAAAAAA",
+        "BBBBBBBBB",
+        "CCCCCCCCCCC",
+        "DDDDDDDDD",
+        "EEEE",
+        "FFFFFFFFF",
+        "GGGGGGGGGG",
+        "HHHH",
+    ]
+    starts = [
+        "01-01-2020",
+        "01-02-2020",
+        "01-03-2020",
+        "15-01-2020",
+        pd.NA,
+        "01-07-2020",
+        "15-01-2020",
+        pd.NA,
+    ]
+    ends = [
+        "01-01-2020",
+        "01-01-2020",
+        "01-03-2020",
+        "17-01-2020",
+        pd.NA,
+        "01-01-2020",
+        "15-01-2020",
+        "01-01-2020",
+    ]
+    fake_dataframe = pd.DataFrame(
+        {"LAchildID": IDS_are, "CINPlanStartDate": starts, "CINPlanEndDate": ends}
+    )
 
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     fake_dataframe[CINPlanStartDate] = pd.to_datetime(
