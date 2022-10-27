@@ -16,6 +16,7 @@ CPPstartDate = ChildProtectionPlans.CPPstartDate
 # is it necessary to get LAchildID per table?
 LAchildID = ChildProtectionPlans.LAchildID
 CINdetailsID = ChildProtectionPlans.CINdetailsID
+# TODO is it redundant to have both of them here?
 DateOfInitialCPC = Section47.DateOfInitialCPC
 DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
@@ -26,9 +27,9 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
+    # write the rule code here, in place of 2885
     code=2885,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -45,21 +46,23 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildProtectionPlans with the name of the table you need.
-    df_cpp = data_container[ChildProtectionPlans].copy()
+    df_cpp = data_container[
+        ChildProtectionPlans
+    ].copy()  # TODO Is it necessary to copy? How else can we ensure that the original data is protected?.
     df_47 = data_container[Section47].copy()
     df_cin = data_container[CINdetails].copy()
+
     # Before you begin, rename the index so that the initial row positions can be kept intact.
-    df_cpp.index.name = "ROW_ID_cpp"
-    df_47.index.name = "ROW_ID_47"
-    df_cin.index.name = "ROW_ID_cin"
-    # Rename columns so that when the tables are merged, we know the source of each column.
-    df_47.rename(columns={DateOfInitialCPC: "DateOfInitialCPC47"}, inplace=True)
-    df_cin.rename(columns={DateOfInitialCPC: "DateOfInitialCPCcin"}, inplace=True)
+    df_cpp.index.name = "ROW_ID"
+    df_47.index.name = "ROW_ID"
+    df_cin.index.name = "ROW_ID"
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    for df in [df_cpp, df_47, df_cin]:
-        df.reset_index(inplace=True)
+    # TODO summarise with this?: for df in [df_cpp, df_47, df_cin]
+    df_cpp.reset_index(inplace=True)
+    df_47.reset_index(inplace=True)
+    df_cin.reset_index(inplace=True)
 
     # get collection period
     header = data_container[Header]
@@ -79,16 +82,26 @@ def validate(
     )
     df_cpp = df_cpp[start_date_present & within_period]
 
-    merged_df = df_cpp.merge(df_47, on=LAchildID, how="left").merge(
-        df_cin, on=LAchildID
+    # since not all the children in the cpp table have to be considered, merge left.
+    # left merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
+    df_cpp_47 = df_cpp.copy().merge(
+        df_47.copy(), on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
     )
-    # TODO COMPARE ONLY WHEN LACHILDID AND CINDETAILSID MATCH.
-    condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC47"]) & (
-        merged_df[CPPstartDate] != merged_df["DateOfInitialCPCcin"]
+    df_cpp_cin = df_cpp.copy().merge(
+        df_cin.copy(),
+        on=[LAchildID, CINdetailsID],
+        how="left",
+        suffixes=["_cpp", "_cin"],
     )
+    merged_df = df_cpp_47.merge(df_cpp_cin)
+    # check that the the dates being compared existed in the same CIN event period and belong to the same child.
+    condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_47"]) & (
+        merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_cin"]
+    )
+
     # If the rule means that CINdetails' value should also be checked *only if* Section47's value is NaN, then
-    # condition = (merged_df[CPPstartDate] != merged_df[DateOfInitialCPC47]) & merged_df[DateOfInitialCPC47].notna()
-    #                | (merged_df[DateOfInitialCPC47].isna()&(merged_df[CPPstartDate] != merged_df[DateOfInitialCPCcin]))
+    # condition = (merged_df[CPPstartDate] != merged_df[DateOfInitialCPC_47]) & merged_df[DateOfInitialCPC_47].notna()
+    #                | (merged_df[DateOfInitialCPC_47].isna()&(merged_df[CPPstartDate] != merged_df[DateOfInitialCPC_cin]))
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     merged_df = merged_df[condition].reset_index()
@@ -98,29 +111,24 @@ def validate(
         zip(merged_df[LAchildID], merged_df[CINdetailsID], merged_df[CPPstartDate])
     )
 
-    # TODO RENAME ROW_ID AND ERROR_ID DERIVATIVES TO STANDARD FORMAT PER TABLE.
     df_cpp_issues = (
-        df_cpp.merge(merged_df, on="ROW_ID_cpp")
-        .groupby("ERROR_ID")["ROW_ID_cpp"]
+        df_cpp.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_cpp")
+        .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
     df_47_issues = (
-        df_47.merge(merged_df, on="ROW_ID_47")
-        .groupby("ERROR_ID")["ROW_ID_47"]
+        df_47.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_47")
+        .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
     df_cin_issues = (
-        df_cin.merge(merged_df, on="ROW_ID_cin")
-        .groupby("ERROR_ID")["ROW_ID_cin"]
+        df_cin.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_cpp")
+        .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
-
-    for df in (df_cpp_issues, df_47_issues, df_cin_issues):
-        df.columns = ["ERROR_ID", "ROW_ID"]
-        # TODO is it safer to map the column names explicitly using dictionaries?.
 
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
@@ -275,7 +283,8 @@ def test_validate():
 
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
-    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
+    assert len(issues_list) == 3
+    """    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
     issues = issues_list[1]
 
@@ -325,7 +334,7 @@ def test_validate():
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
-
+    """
     # replace 8925 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 2885
     assert (
