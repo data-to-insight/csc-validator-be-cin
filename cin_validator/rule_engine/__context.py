@@ -46,6 +46,7 @@ class RuleContext:
     def __init__(self, definition: RuleDefinition):
         self.__definition = definition
         self.__issues = []
+        self.__type2_issues = []
 
     @property
     def definition(self):
@@ -58,6 +59,10 @@ class RuleContext:
         """Many columns, One Table, no merge involved"""
         self.__type1_issues = Type1(table, columns, row_df)
 
+    def push_type_2(self, table, columns, row_df):
+        table_tuple = Type1(table, columns, row_df)
+        self.__type2_issues.append(table_tuple)
+
     @property
     def issues(self):
         for issues in self.__issues:
@@ -66,3 +71,7 @@ class RuleContext:
     @property
     def type1_issues(self):
         return self.__type1_issues
+
+    @property
+    def type2_issues(self):
+        return self.__type2_issues
