@@ -84,7 +84,7 @@ def test_validate():
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
             {
-                "LAchildID": "child3",
+                "LAchildID": "child4",
                 "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
@@ -114,7 +114,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [CINclosureDate, ReasonForClosure]
+    assert issue_columns == [ReasonForClosure, CINclosureDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -141,7 +141,7 @@ def test_validate():
             },
             {
                 "ERROR_ID": (
-                    "child3",
+                    "child4",
                     "26/05/2000",
                     pd.NA,
                 ),
