@@ -41,7 +41,7 @@ def validate(
     # return rows where CINClosureDate is present but ReasonForClosure is not. 
     # If CINclosureDate is not null and ReasonForClosure is null 
     condition = df[CINclosureDate].notna() & df[ReasonForClosure].isna()
-
+    
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -62,7 +62,7 @@ def validate(
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table= CINDetails, columns=[CINclosureDate, ReasonForClosure], row_df=df_issues
+        table= CINDetails, columns=[CINclosureDate,ReasonForClosure], row_df=df_issues
     )
 
 
@@ -72,33 +72,39 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": "26/05/2000",
+                "ReasonForClosure": "26/05/2000",
+                #"CINclosureDate": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
-                "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": pd.NA,
+                "ReasonForClosure": "26/05/2000",
+                #"CINclosureDate": pd.NA,
             },
             {
                 "LAchildID": "child3",
-                "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": "26/05/1999",
+                "ReasonForClosure": "26/05/2000",
+                #"CINclosureDate": "26/05/1999",
             }, 
             {
                 "LAchildID": "child3",
-                "ReasonForClosure": pd.NA,
                 "CINclosureDate": "26/05/2000",
+                "ReasonForClosure": pd.NA,
+                #"CINclosureDate": "26/05/2000",
             },#fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child4",
-                "ReasonForClosure": pd.NA,
                 "CINclosureDate": "25/05/2000",
+                "ReasonForClosure": pd.NA,
+                #"CINclosureDate": "25/05/2000",
             }, #fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child5",
-                "ReasonForClosure": pd.NA,
                 "CINclosureDate": pd.NA,
+                "ReasonForClosure": pd.NA,
+                #"CINclosureDate": pd.NA,
             },
         ]
     )
@@ -125,7 +131,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [ReasonForClosure, CINclosureDate]
+    assert issue_columns == [CINclosureDate, ReasonForClosure]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -145,8 +151,8 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child3",
-                    pd.NA,
                     "26/05/2000",
+                    pd.NA,
                     
                 ),
                 "ROW_ID": [3],
@@ -154,8 +160,8 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child4",
-                    pd.NA,
                     "25/05/2000",
+                    pd.NA,
                     
                 ),
                 "ROW_ID": [4],
