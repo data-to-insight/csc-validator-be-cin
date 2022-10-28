@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext,
+from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
 from cin_validator.rule_engine import IssueLocator
 from cin_validator.test_engine import run_rule
 
@@ -28,13 +28,6 @@ def validate(
     """
 
     df.index.name = "ROW_ID"
-
-    df["S47ActualStartDate"] = pd.to_datetime(
-        df["S47ActualStartDate"], format=r"%d-%m-%Y", errors="coerce"
-    )
-    df["DateOfInitialCPC"] = pd.to_datetime(
-        df["DateOfInitialCPC"], format=r"%d-%m-%Y", errors="coerce"
-    )
 
     df.query(
         "(S47ActualStartDate > DateOfInitialCPC) or (DateOfInitialCPC.notna() and S47ActualStartDate.isna())",
