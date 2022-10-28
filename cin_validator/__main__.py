@@ -99,9 +99,9 @@ def cli_converter(filename: str):
         }
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
-            filepath = Path(f'output_csvs/{k}.csv')  
-            filepath.parent.mkdir(parents=True, exist_ok=True)  
-            v.to_csv(filepath)  
+            filepath = Path(f"output_csvs/{k}.csv")
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            v.to_csv(filepath)
     else:
         click.echo(f"{filename} can't be found, have you entered it correctly?")
 
