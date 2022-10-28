@@ -76,13 +76,13 @@ def test_validate():
     ]
     ICPCstart = [
         "01-01-2020",
-        "01-01-2020", #  Fails as ICPC before S47.
+        "01-01-2020",  #  Fails as ICPC before S47.
         "01-03-2020",
         "17-01-2020",
         pd.NA,
-        "01-01-2020", #  Fails as ICPC before S47.
+        "01-01-2020",  #  Fails as ICPC before S47.
         "15-01-2020",
-        "01-01-2020", #  Fails as ICPC with no S47.
+        "01-01-2020",  #  Fails as ICPC with no S47.
     ]
     fake_dataframe = pd.DataFrame(
         {
