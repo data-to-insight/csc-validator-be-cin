@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext, RuleType
+from cin_validator.rule_engine import rule_definition, CINTable, RuleContext,
 from cin_validator.rule_engine import IssueLocator
 from cin_validator.test_engine import run_rule
 
@@ -14,7 +14,6 @@ LAchildID = Section47.LAchildID
 # define characteristics of rule
 @rule_definition(
     code="8615",
-    rule_type=RuleType.QUERY,
     module=CINTable.Section47,
     message="Section 47 Enquiry Start Date must be present and cannot be later than the date of the initial Child Protection Conference",
     affected_fields=[S47ActualStartDate, DateOfInitialCPC],
@@ -84,13 +83,13 @@ def test_validate():
     ]
     ICPCstart = [
         "01-01-2020",
-        "01-01-2020",
+        "01-01-2020", #  Fails as ICPC before S47.
         "01-03-2020",
         "17-01-2020",
         pd.NA,
-        "01-01-2020",
+        "01-01-2020", #  Fails as ICPC before S47.
         "15-01-2020",
-        "01-01-2020",
+        "01-01-2020", #  Fails as ICPC with no S47.
     ]
     fake_dataframe = pd.DataFrame(
         {
