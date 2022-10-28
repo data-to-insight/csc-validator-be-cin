@@ -79,5 +79,32 @@ def test_cmd(rule, ruleset):
     pytest.main(test_files)
 
 
+@cli.command(name="xmltocsv")
+@click.argument("filename")
+def cli_converter(filename: str):
+    """Converts XML to CSV at selected filepath"""
+    if Path(filename).exists():
+        fulltree = ET.parse(filename)
+        root = fulltree.getroot()
+        data_files = XMLtoCSV(root)
+        cin_tables_dict = {
+            "Header": data_files.Header,
+            "ChildIdentifiers": data_files.ChildIdentifiers,
+            "ChildCharacteristics": data_files.ChildCharacteristics,
+            "ChildProtectionPlans": data_files.ChildProtectionPlans,
+            "CINdetails": data_files.CINdetails,
+            "CINplanDates": data_files.CINplanDates,
+            "Reviews": data_files.Reviews,
+            "Section47": data_files.Section47,
+        }
+        for k, v in cin_tables_dict.items():
+            #  TODO output CSVs as a zip file
+            filepath = Path(f'output_csvs/{k}.csv')  
+            filepath.parent.mkdir(parents=True, exist_ok=True)  
+            v.to_csv(filepath)  
+    else:
+        click.echo(f"{filename} can't be found, have you entered it correctly?")
+
+
 if __name__ == "__main__":
     cli()

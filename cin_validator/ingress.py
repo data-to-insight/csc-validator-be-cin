@@ -143,9 +143,9 @@ class XMLtoCSV:
         header_dict = get_values(collection_elements, header_dict, collection_details)
 
         # define collection period based on year.
-        self.collection_start, self.collection_end = make_census_period(
-            collection_year=header_dict["Year"]
-        )
+        #self.collection_start, self.collection_end = make_census_period(
+        #    collection_year=header_dict["Year"]
+        #)
 
         source = header.find("Source")
         source_elements = [
