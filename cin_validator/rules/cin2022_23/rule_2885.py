@@ -13,13 +13,12 @@ CINdetails = CINTable.CINdetails
 Section47 = CINTable.Section47
 
 CPPstartDate = ChildProtectionPlans.CPPstartDate
-# is it necessary to get LAchildID per table?
+# TODO is it necessary to get LAchildID per table involved?
 LAchildID = ChildProtectionPlans.LAchildID
 CINdetailsID = ChildProtectionPlans.CINdetailsID
 # TODO is it redundant to have both of them here?
 DateOfInitialCPC = Section47.DateOfInitialCPC
 DateOfInitialCPC = CINdetails.DateOfInitialCPC
-
 
 # Reference date in header is needed to define the period of census.
 Header = CINTable.Header
@@ -38,7 +37,7 @@ ReferenceDate = Header.ReferenceDate
     affected_fields=[
         CPPstartDate,
         DateOfInitialCPC,
-    ],  # TODO Should DateOfInitialCPC be ignored here?, since the naming was changed above to prevent ambiguity.
+    ],  # TODO How can we indicate that the DateOfInitialCPC comes from both tables. Is it necessary?
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -46,9 +45,8 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildProtectionPlans with the name of the table you need.
-    df_cpp = data_container[
-        ChildProtectionPlans
-    ].copy()  # TODO Is it necessary to copy? How else can we ensure that the original data is protected?.
+    df_cpp = data_container[ChildProtectionPlans].copy()
+    # TODO Is it necessary to copy? How else can we ensure that the original data is not changed in each rule.?.
     df_47 = data_container[Section47].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -59,7 +57,7 @@ def validate(
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with this?: for df in [df_cpp, df_47, df_cin]
+    # TODO summarise with a for loop? e.g for df in [df_cpp, df_47, df_cin]
     df_cpp.reset_index(inplace=True)
     df_47.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
@@ -82,18 +80,27 @@ def validate(
     )
     df_cpp = df_cpp[start_date_present & within_period]
 
-    # since not all the children in the cpp table have to be considered, merge left.
     # left merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
+
+    # get only the section47 rows where cppstartdate exists and is within period.
     df_cpp_47 = df_cpp.copy().merge(
         df_47.copy(), on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
     )
+    # get only the cindetails rows where cppstartdate exists and is within period.
     df_cpp_cin = df_cpp.copy().merge(
         df_cin.copy(),
         on=[LAchildID, CINdetailsID],
         how="left",
         suffixes=["_cpp", "_cin"],
     )
-    merged_df = df_cpp_47.merge(df_cpp_cin)
+    # Create a dataframe that contains all the cin_details and cpp information for children whose cppstartdate exists and is within period.
+    merged_df = df_cpp_47.merge(
+        df_cpp_cin,
+        # since the cpp columns are common in both dfs, merge on them. TODO: is this okay?
+        on=[LAchildID, CPPstartDate, "CINdetailsID", "ROW_ID_cpp"],
+        suffixes=["_47", "_cin"],
+        # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
+    )
     # check that the the dates being compared existed in the same CIN event period and belong to the same child.
     condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_47"]) & (
         merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_cin"]
@@ -103,14 +110,19 @@ def validate(
     # condition = (merged_df[CPPstartDate] != merged_df[DateOfInitialCPC_47]) & merged_df[DateOfInitialCPC_47].notna()
     #                | (merged_df[DateOfInitialCPC_47].isna()&(merged_df[CPPstartDate] != merged_df[DateOfInitialCPC_cin]))
 
-    # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
+    # get all the data that fits the failing condition.
     merged_df = merged_df[condition].reset_index()
 
-    # create an identifier for each error instance
+    # create an identifier for each error instance.
+    # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
+    # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
+    # You could also consider that CPPstartDate, unlike DateOfInitialCPC, is the leading column against which columns from the other tables are compared. So it is included in the zip.
     merged_df["ERROR_ID"] = tuple(
         zip(merged_df[LAchildID], merged_df[CINdetailsID], merged_df[CPPstartDate])
     )
 
+    # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
+    # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_cpp")
         .groupby("ERROR_ID")["ROW_ID"]
@@ -173,13 +185,13 @@ def test_validate():
             },
             {  # fail
                 "LAchildID": "child3",
-                "CPPstartDate": "14/03/2008",  # 5 fail. Different from both cin_dates in its cindetails group
+                "CPPstartDate": "07/02/2001",  # 5 fail. Different from both cin_dates in its cindetails group
                 "CINdetailsID": "cinID3",
             },
             {  # section47 date is absent, same as cin date.
                 # If grouping is not done well, this date could cause (LAchildID3, CINdetailsID3) above to pass.
                 "LAchildID": "child3",
-                "CPPstartDate": "14/03/2008",  # 6 pass [Should fail if other condition is used]
+                "CPPstartDate": "14/03/2001",  # 6 pass [Should fail if other condition is used]
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -257,7 +269,7 @@ def test_validate():
             },
             {  # 6 pass
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "14/03/2008",
+                "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -266,11 +278,17 @@ def test_validate():
     sample_cpp[CPPstartDate] = pd.to_datetime(
         sample_cpp[CPPstartDate], format="%d/%m/%Y", errors="coerce"
     )
+    sample_section47["DateOfInitialCPC"] = pd.to_datetime(
+        sample_section47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
+    sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
+        sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
     sample_header = pd.DataFrame(
         [{ReferenceDate: "31/03/2001"}]  # the census start date here will be 01/04/2000
     )
 
-    # Run rule function passing in our sample data
+    # Run the rule function, passing in our sample data.
     result = run_rule(
         validate,
         {
@@ -284,15 +302,15 @@ def test_validate():
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
     assert len(issues_list) == 3
-    """    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
+    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
     issues = issues_list[1]
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
+    # get table name and check it. Replace Section47 with the name of your table.
     issue_table = issues.table
     assert issue_table == Section47
 
-    # check that the right columns were returned. Replace CPPstartDate  with a list of your columns.
+    # check that the right columns were returned. Replace DateOfInitialCPC  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [DateOfInitialCPC]
 
@@ -305,7 +323,7 @@ def test_validate():
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
     # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
+    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on, in your zip, earlier.
     # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
 
     # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
@@ -315,9 +333,8 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",  # ChildID
                     "cinID1",  # CINdetailsID
-                    pd.to_datetime(
-                        "26/05/2000", format="%d/%m/%Y", errors="coerce"
-                    ),  # corresponding CPPstartDate
+                    # corresponding CPPstartDate
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [3],
             },
@@ -325,7 +342,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",
                     "cinID3",
-                    pd.to_datetime("14/03/2008", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("07/02/2001", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
             },
@@ -334,8 +351,8 @@ def test_validate():
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
-    """
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+
+    # replace 2885 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 2885
     assert (
         result.definition.message
