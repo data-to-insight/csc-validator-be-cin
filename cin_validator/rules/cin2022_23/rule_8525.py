@@ -3,6 +3,7 @@ from typing import Mapping
 import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rules.cin2022_23.rule_8535Q import PersonDeathDate
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -39,12 +40,16 @@ def validate(
     # Put the description as a comment above the implementation as shown.
 
     # Either Date of Birth or Expected Date of Birth must be provided (but not both)
-    condition_1 = df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].isna()
+    # condition_1 = (df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].isna())
+    condition_1 = (df[PersonBirthDate].isna() == True) & (
+        df[ExpectedPersonBirthDate].isna() == True
+    )
     condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition_1] & df[condition_2]
-    df_issues.reset_index(inplace=True)
+    df_issues_1 = df[condition_1]
+    df_issues_2 = df[condition_2]
+    df_issues = pd.concat([df_issues_1, df_issues_2]).reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -57,13 +62,19 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[PersonBirthDate], df_issues[ExpectedPersonBirthDate])
+        zip(
+            df_issues[LAchildID],
+            df_issues[PersonBirthDate],
+            df_issues[ExpectedPersonBirthDate],
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=ChildIdentifiers, columns=[PersonBirthDate, ExpectedPersonBirthDate], row_df=df_issues
+        table=ChildIdentifiers,
+        columns=[PersonBirthDate, ExpectedPersonBirthDate],
+        row_df=df_issues,
     )
 
 
@@ -85,7 +96,7 @@ def test_validate():
                 "LAchildID": "child4",
                 "PersonBirthDate": pd.NA,
                 "ExpectedPersonBirthDate": "26/05/1999",
-            },  
+            },
             {
                 "LAchildID": "child4",
                 "PersonBirthDate": "26/05/2000",
