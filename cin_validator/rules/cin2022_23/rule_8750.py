@@ -22,7 +22,7 @@ GenderCurrent = ChildIdentifiers.GenderCurrent
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Gender must equal 0 for an unborn child",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[GenderCurrent, ExpectedPersonBirthDate],
+    affected_fields=[GenderCurrent, PersonBirthDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -61,7 +61,7 @@ def validate(
         zip(
             df_issues[LAchildID],
             df_issues[GenderCurrent],
-            df_issues[ExpectedPersonBirthDate],
+            df_issues[PersonBirthDate],
         )
     )
     df_issues["ERROR_ID"] = link_id
@@ -69,7 +69,7 @@ def validate(
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=ChildIdentifiers,
-        columns=[GenderCurrent, ExpectedPersonBirthDate],
+        columns=[GenderCurrent, PersonBirthDate],
         row_df=df_issues,
     )
 
@@ -130,7 +130,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [GenderCurrent, ExpectedPersonBirthDate]
+    assert issue_columns == [GenderCurrent, PersonBirthDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -151,7 +151,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child4",
                     "2",
-                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    pd.NaT,
                 ),
                 "ROW_ID": [4],
             },
