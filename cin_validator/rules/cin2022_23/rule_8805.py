@@ -38,10 +38,10 @@ def validate(
     # Put the description as a comment above the implementation as shown.
 
     # If <CINclosureDate> (N00102) is present then <ReasonForClosure> (N00103) must also be present
-    # return rows where CINClosureDate is present but ReasonForClosure is not. 
-    # If CINclosureDate is not null and ReasonForClosure is null 
+    # return rows where CINClosureDate is present but ReasonForClosure is not.
+    # If CINclosureDate is not null and ReasonForClosure is null
     condition = df[CINclosureDate].notna() & df[ReasonForClosure].isna()
-    
+
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -56,13 +56,15 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[CINclosureDate], df_issues[ReasonForClosure])
+        zip(
+            df_issues[LAchildID], df_issues[CINclosureDate], df_issues[ReasonForClosure]
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table= CINDetails, columns=[CINclosureDate,ReasonForClosure], row_df=df_issues
+        table=CINDetails, columns=[CINclosureDate, ReasonForClosure], row_df=df_issues
     )
 
 
@@ -74,50 +76,50 @@ def test_validate():
                 "LAchildID": "child1",
                 "CINclosureDate": "26/05/2000",
                 "ReasonForClosure": "26/05/2000",
-                #"CINclosureDate": "26/05/2000",
+                # "CINclosureDate": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
                 "CINclosureDate": pd.NA,
                 "ReasonForClosure": "26/05/2000",
-                #"CINclosureDate": pd.NA,
+                # "CINclosureDate": pd.NA,
             },
             {
                 "LAchildID": "child3",
                 "CINclosureDate": "26/05/1999",
                 "ReasonForClosure": "26/05/2000",
-                #"CINclosureDate": "26/05/1999",
-            }, 
+                # "CINclosureDate": "26/05/1999",
+            },
             {
                 "LAchildID": "child3",
                 "CINclosureDate": "26/05/2000",
                 "ReasonForClosure": pd.NA,
-                #"CINclosureDate": "26/05/2000",
-            },#fail because CINClosureDate is populated and ReasonForClosure isn't
+                # "CINclosureDate": "26/05/2000",
+            },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child4",
                 "CINclosureDate": "25/05/2000",
                 "ReasonForClosure": pd.NA,
-                #"CINclosureDate": "25/05/2000",
-            }, #fail because CINClosureDate is populated and ReasonForClosure isn't
+                # "CINclosureDate": "25/05/2000",
+            },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child5",
                 "CINclosureDate": pd.NA,
                 "ReasonForClosure": pd.NA,
-                #"CINclosureDate": pd.NA,
+                # "CINclosureDate": pd.NA,
             },
         ]
     )
 
-    #Date values not checked so no datetime conversion required 
+    # Date values not checked so no datetime conversion required
 
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    #child_protection_plans[CPPstartDate] = pd.to_datetime(
-   #     child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
-   # )
-   # child_protection_plans[CPPendDate] = pd.to_datetime(
-   #     child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
-   # )
+    # child_protection_plans[CPPstartDate] = pd.to_datetime(
+    #     child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
+    # )
+    # child_protection_plans[CPPendDate] = pd.to_datetime(
+    #     child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
+    # )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {CINDetails: fake_date_frame})
@@ -153,7 +155,6 @@ def test_validate():
                     "child3",
                     "26/05/2000",
                     pd.NA,
-                    
                 ),
                 "ROW_ID": [3],
             },
@@ -162,7 +163,6 @@ def test_validate():
                     "child4",
                     "25/05/2000",
                     pd.NA,
-                    
                 ),
                 "ROW_ID": [4],
             },
