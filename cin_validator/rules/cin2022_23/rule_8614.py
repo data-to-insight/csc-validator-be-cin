@@ -37,9 +37,9 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # If <AssessmentAuthorisationDate> (N00160) is missing, 
+    # If <AssessmentAuthorisationDate> (N00160) is missing,
     # <AssessmentFactors> (N00181) within the same module must also be missing
-    # fails if AssessmentAuthoriationDate is null and AssessmentFactors  is not null 
+    # fails if AssessmentAuthoriationDate is null and AssessmentFactors  is not null
     condition = df[AssessmentAuthorisationDate].isna() & df[AssessmentFactors].notna()
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
@@ -56,13 +56,19 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[AssessmentAuthorisationDate], df_issues[AssessmentFactors])
+        zip(
+            df_issues[LAchildID],
+            df_issues[AssessmentAuthorisationDate],
+            df_issues[AssessmentFactors],
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=Assessments, columns=[AssessmentAuthorisationDate, AssessmentFactors], row_df=df_issues
+        table=Assessments,
+        columns=[AssessmentAuthorisationDate, AssessmentFactors],
+        row_df=df_issues,
     )
 
 
@@ -102,14 +108,14 @@ def test_validate():
             },
         ]
     )
-    # Date check not required 
+    # Date check not required
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    #child_protection_plans[CPPstartDate] = pd.to_datetime(
+    # child_protection_plans[CPPstartDate] = pd.to_datetime(
     #    child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
-    #)
-    #child_protection_plans[CPPendDate] = pd.to_datetime(
+    # )
+    # child_protection_plans[CPPendDate] = pd.to_datetime(
     #    child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
-    #)
+    # )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {Assessments: fake_data})
