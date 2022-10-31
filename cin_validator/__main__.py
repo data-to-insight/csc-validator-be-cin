@@ -80,7 +80,7 @@ def test_cmd(rule, ruleset):
 
 
 @cli.command(name="xmltocsv")
-@click.argument("filename")
+@click.argument("filename", type=click.Path(), required=True)
 def cli_converter(filename: str):
     """Converts XML to CSV at selected filepath"""
     if Path(filename).exists():
