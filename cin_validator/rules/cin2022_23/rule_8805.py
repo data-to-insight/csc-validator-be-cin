@@ -76,50 +76,36 @@ def test_validate():
                 "LAchildID": "child1",
                 "CINclosureDate": "26/05/2000",
                 "ReasonForClosure": "26/05/2000",
-                # "CINclosureDate": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
                 "CINclosureDate": pd.NA,
                 "ReasonForClosure": "26/05/2000",
-                # "CINclosureDate": pd.NA,
             },
             {
                 "LAchildID": "child3",
                 "CINclosureDate": "26/05/1999",
                 "ReasonForClosure": "26/05/2000",
-                # "CINclosureDate": "26/05/1999",
             },
             {
                 "LAchildID": "child3",
                 "CINclosureDate": "26/05/2000",
                 "ReasonForClosure": pd.NA,
-                # "CINclosureDate": "26/05/2000",
             },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child4",
                 "CINclosureDate": "25/05/2000",
                 "ReasonForClosure": pd.NA,
-                # "CINclosureDate": "25/05/2000",
             },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child5",
                 "CINclosureDate": pd.NA,
                 "ReasonForClosure": pd.NA,
-                # "CINclosureDate": pd.NA,
             },
         ]
     )
 
     # Date values not checked so no datetime conversion required
-
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    # child_protection_plans[CPPstartDate] = pd.to_datetime(
-    #     child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
-    # )
-    # child_protection_plans[CPPendDate] = pd.to_datetime(
-    #     child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
-    # )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {CINDetails: fake_date_frame})
