@@ -9,16 +9,17 @@ from cin_validator.utils import make_census_period
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
-CPPstartDate =  ChildProtectionPlans.CPPstartDate
+CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
 CPPID_CPP = ChildProtectionPlans.CPPID
+
 Reviews = CINTable.Reviews
-CPPreviewDate = Reviews.CPPreviewDate 
+CPPreviewDate = Reviews.CPPreviewDate
 CPPID_reviews = Reviews.CPPID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
+    # write the rule code here
     code=8841,
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
@@ -29,7 +30,7 @@ CPPID_reviews = Reviews.CPPID
     affected_fields=[
         CPPstartDate,
         CPPreviewDate,
-    ],  # TODO How can we indicate that the DateOfInitialCPC comes from both tables. Is it necessary?
+    ],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -40,15 +41,12 @@ def validate(
     df_cpp = data_container[ChildProtectionPlans].copy()
     df_reviews = data_container[Reviews].copy()
 
-
-
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_cpp.index.name = "ROW_ID"
     df_reviews.index.name = "ROW_ID"
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with a for loop? e.g for df in [df_cpp, df_47, df_cin]
     df_cpp.reset_index(inplace=True)
     df_reviews.reset_index(inplace=True)
 
@@ -58,29 +56,33 @@ def validate(
 
     # Within a <ChildProtectionPlans> group, there should be no <CPPreviewDate> (N00116) that is the same as or before the <CPPstartDate> (N00105)
     # Issues dfs should return rows where CPPreviewDate is less than or equal to the CPPstartDate
-    
+
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
-    df_cpp = df_cpp[CPPID_CPP].notna()
-    df_reviews = df_reviews[CPPID_reviews].notna()
+    df_cpp = df_cpp[df_cpp[CPPstartDate].notna()]
+    df_reviews = df_reviews[df_reviews[CPPreviewDate].notna()]
 
     #  Merge tables to get corresponding CP plan group and reviews
-    df_merged = df_cpp.merge(df_reviews, left_on='CPPID_CPP', right_on='CPPID_reviews', how='inner', suffixes=('_cpp', '_reviews'))
-    df_merged.drop('CPPID_CPP')
-    df_merged.rename(columns={'CPPID_reviews':'CPPID'})
+    df_merged = df_cpp.merge(
+        df_reviews,
+        left_on=["CPPID", "LAchildID"],
+        right_on=["CPPID", "LAchildID"],
+        how="left",
+        suffixes=("_cpp", "_reviews"),
+    )
 
     #  Get rows where CPPreviewDate is less than or equal to CPPstartDate
     condition = df_merged[CPPreviewDate] <= df_merged[CPPstartDate]
     df_merged = df_merged[condition].reset_index()
 
+    print(df_merged)
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
-    # You could also consider that CPPstartDate, unlike DateOfInitialCPC, is the leading column against which columns from the other tables are compared. So it is included in the zip.
+    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
+    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged[CPPreviewDate], df_merged[CPPstartDate])
+        zip(df_merged[LAchildID], df_merged[CPPstartDate], df_merged[CPPreviewDate])
     )
 
-    # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpp")
@@ -108,134 +110,89 @@ def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     sample_cpp = pd.DataFrame(
         [
-            {  # same as Section47 date, different from cin date
+            {
                 "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",  # 0 pass
-                "CINdetailsID": "cinID1",
+                "CPPstartDate": "26/05/2000",  # Fails as dates are the same
+                "CPPID": "cinID1",
             },
-            {  # would've failed but ignored. Not in period of census
+            {
                 "LAchildID": "child1",
-                "CPPstartDate": "27/06/2002",  # 1 ignored
-                "CINdetailsID": "cinID2",
+                "CPPstartDate": "27/06/2002",  #  Fails, review (26/5/2000) before start
+                "CPPID": "cinID2",
             },
-            {  # same as cin_date, different from section47
+            {
+                "LAchildID": "child3",
+                "CPPstartDate": "07/02/2001",  # Fails as review is before start (26/5/2000)
+                "CPPID": "cinID6",
+            },
+            {
                 "LAchildID": "child2",
-                "CPPstartDate": "26/05/2000",  # 2 pass [Should fail if other condition is used and section47 is present]
-                "CINdetailsID": "cinID1",
+                "CPPstartDate": "26/05/2000",  # Passes as Start is before Review (30/05/2000)
+                "CPPID": "cinID3",
             },
-            {  # different from both dates
+            {
                 "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",  # 3 fail
-                "CINdetailsID": "cinID1",
+                "CPPstartDate": "26/05/2000",  # Passes
+                "CPPID": "cinID4",
             },
-            {  # absent
+            {
                 "LAchildID": "child3",
-                "CPPstartDate": pd.NA,  # 4 ignore
-                "CINdetailsID": "cinID2",
+                "CPPstartDate": pd.NA,  # Ignored as rows with no start and end are dropped (this is picked up by other rules)
+                "CPPID": "cinID5",
             },
-            {  # fail
+            {
                 "LAchildID": "child3",
-                "CPPstartDate": "07/02/2001",  # 5 fail. Different from both cin_dates in its cindetails group
-                "CINdetailsID": "cinID3",
-            },
-            {  # section47 date is absent, same as cin date.
-                # If grouping is not done well, this date could cause (LAchildID3, CINdetailsID3) above to pass.
-                "LAchildID": "child3",
-                "CPPstartDate": "14/03/2001",  # 6 pass [Should fail if other condition is used]
-                "CINdetailsID": "cinID4",
+                "CPPstartDate": "14/03/2001",  # Ignored as there is no review date
+                "CPPID": "cinID7",
             },
         ]
     )
-    sample_section47 = pd.DataFrame(
+    sample_reviews = pd.DataFrame(
         [
-            {  # 0 pass
-                "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID1",
+            {
+                "LAchildID": "child1",  # Fails
+                "CPPreviewDate": "26/05/2000",
+                "CPPID": "cinID1",
             },
-            {  # 1 ignored
-                "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID2",
+            {
+                "LAchildID": "child1",  # Fails
+                "CPPreviewDate": "26/05/2000",
+                "CPPID": "cinID2",
             },
-            {  # 2 pass
+            {
+                "LAchildID": "child3",  # Fails
+                "CPPreviewDate": "26/05/2000",
+                "CPPID": "cinID6",
+            },
+            {
                 "LAchildID": "child2",
-                "DateOfInitialCPC": "30/05/2000",
-                "CINdetailsID": "cinID1",
+                "CPPreviewDate": "30/05/2000",
+                "CPPID": "cinID3",
             },
-            {  # 3 fail
+            {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "27/05/2000",
-                "CINdetailsID": "cinID1",
+                "CPPreviewDate": "27/05/2000",
+                "CPPID": "cinID4",
             },
-            {  # 4 absent, ignored
+            {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID2",
+                "CPPreviewDate": "26/05/2000",
+                "CPPID": "cinID5",
             },
-            {  # 5 fail
+            {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID3",
-            },
-            {  # 6 pass
-                "LAchildID": "child3",
-                "DateOfInitialCPC": pd.NA,
-                "CINdetailsID": "cinID4",
+                "CPPreviewDate": pd.NA,
+                "CPPID": "cinID7",
             },
         ]
     )
-    sample_cin_details = pd.DataFrame(
-        [
-            {  # 0 pass
-                "LAchildID": "child1",
-                "DateOfInitialCPC": "26/10/1999",
-                "CINdetailsID": "cinID1",
-            },
-            {  # 1 ignore
-                "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID2",
-            },
-            {  # 2 pass
-                "LAchildID": "child2",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID1",
-            },
-            {  # 3 fail
-                "LAchildID": "child3",
-                "DateOfInitialCPC": "28/05/2000",
-                "CINdetailsID": "cinID1",
-            },
-            {  # 4 ignore
-                "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
-                "CINdetailsID": "cinID2",
-            },
-            {  # 5 fail
-                "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2003",
-                "CINdetailsID": "cinID3",
-            },
-            {  # 6 pass
-                "LAchildID": "child3",
-                "DateOfInitialCPC": "14/03/2001",
-                "CINdetailsID": "cinID4",
-            },
-        ]
-    )
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
+
+    # If rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     sample_cpp[CPPstartDate] = pd.to_datetime(
         sample_cpp[CPPstartDate], format="%d/%m/%Y", errors="coerce"
     )
-    sample_section47["DateOfInitialCPC"] = pd.to_datetime(
-        sample_section47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
-    )
-    sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
-        sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
-    )
-    sample_header = pd.DataFrame(
-        [{ReferenceDate: "31/03/2001"}]  # the census start date here will be 01/04/2000
+    sample_reviews["CPPreviewDate"] = pd.to_datetime(
+        sample_reviews["CPPreviewDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run the rule function, passing in our sample data.
@@ -243,31 +200,32 @@ def test_validate():
         validate,
         {
             ChildProtectionPlans: sample_cpp,
-            Section47: sample_section47,
-            CINdetails: sample_cin_details,
-            Header: sample_header,
+            Reviews: sample_reviews,
+            ChildProtectionPlans: sample_cpp,
         },
     )
 
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
-    assert len(issues_list) == 3
+    assert (
+        len(issues_list) == 2
+    )  #  Tambe, am I right in thinking this is the number of tables with issues?
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
     issues = issues_list[1]
 
-    # get table name and check it. Replace Section47 with the name of your table.
+    # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
-    assert issue_table == Section47
+    assert issue_table == Reviews
 
-    # check that the right columns were returned. Replace DateOfInitialCPC  with a list of your columns.
+    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [DateOfInitialCPC]
+    assert issue_columns == [CPPreviewDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    # replace 3 with the number of failing points you expect from the sample data.
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -281,20 +239,33 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    "child3",  # ChildID
-                    "cinID1",  # CINdetailsID
-                    # corresponding CPPstartDate
+                    "child1",  # ChildID
+                    # Start Date
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    # Review date
                     pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [3],
+                "ROW_ID": [0],
             },
             {
                 "ERROR_ID": (
-                    "child3",
-                    "cinID3",
-                    pd.to_datetime("07/02/2001", format="%d/%m/%Y", errors="coerce"),
+                    "child1",  # ChildID
+                    # Start date
+                    pd.to_datetime("27/06/2002", format="%d/%m/%Y", errors="coerce"),
+                    # Review date
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [5],
+                "ROW_ID": [1],
+            },
+            {
+                "ERROR_ID": (
+                    "child3",  # ChildID
+                    # Start date
+                    pd.to_datetime("07/02/2001", format="%d/%m/%Y", errors="coerce"),
+                    # Review date
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [2],
             },
         ]
     )
@@ -303,8 +274,8 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 2885 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 2885
+    assert result.definition.code == 8841
     assert (
         result.definition.message
-        == "Child protection plan shown as starting a different day to the initial child protection conference"
+        == "The review date cannot be on the same day or before the Child protection Plan start date."
     )
