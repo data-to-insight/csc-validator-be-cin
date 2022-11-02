@@ -74,7 +74,6 @@ def validate(
     condition = df_merged[CPPreviewDate] <= df_merged[CPPstartDate]
     df_merged = df_merged[condition].reset_index()
 
-    print(df_merged)
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
