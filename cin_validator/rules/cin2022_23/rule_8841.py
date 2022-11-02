@@ -200,7 +200,6 @@ def test_validate():
         {
             ChildProtectionPlans: sample_cpp,
             Reviews: sample_reviews,
-            ChildProtectionPlans: sample_cpp,
         },
     )
 
