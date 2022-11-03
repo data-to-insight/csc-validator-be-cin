@@ -2,8 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 CINdetails = CINTable.CINdetails
@@ -30,10 +29,11 @@ def validate(
 
     df.index.name = "ROW_ID"
 
-    df.query(
-        "(CINclosureDate < CINreferralDate) and CINclosureDate.notna() and CINreferralDate.notna()",
-        inplace=True,
-    )
+    df = df[
+        (df[CINclosureDate] < df[CINreferralDate])
+        & df[CINclosureDate].notna()
+        & df[CINreferralDate].notna()
+    ]
 
     df_issues = df.reset_index()
 
@@ -87,17 +87,17 @@ def test_validate():
     ]
     fake_dataframe = pd.DataFrame(
         {
-            "LAchildID": IDS_are,
-            "CINreferralDate": RefStart,
-            "CINclosureDate": CINClose,
+            LAchildID: IDS_are,
+            CINreferralDate: RefStart,
+            CINclosureDate: CINClose,
         }
     )
 
-    fake_dataframe["CINreferralDate"] = pd.to_datetime(
-        fake_dataframe["CINreferralDate"], format=r"%d-%m-%Y", errors="coerce"
+    fake_dataframe[CINreferralDate] = pd.to_datetime(
+        fake_dataframe[CINreferralDate], format=r"%d-%m-%Y", errors="coerce"
     )
-    fake_dataframe["CINclosureDate"] = pd.to_datetime(
-        fake_dataframe["CINclosureDate"], format=r"%d-%m-%Y", errors="coerce"
+    fake_dataframe[CINclosureDate] = pd.to_datetime(
+        fake_dataframe[CINclosureDate], format=r"%d-%m-%Y", errors="coerce"
     )
 
     result = run_rule(validate, {CINdetails: fake_dataframe})
