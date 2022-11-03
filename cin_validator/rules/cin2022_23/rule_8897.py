@@ -43,14 +43,16 @@ def validate(
 
     # Where present, if <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then one or more <AssessmentFactors> (N00181) must be present within the same assessment module and must be a valid code
     # Get collection period
-    header=data_container[Header]
+    header = data_container[Header]
     ref_date_series = header[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_date_series)
-    condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (df[AssessmentAuthorisationDate].notna())
+    condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (
+        df[AssessmentAuthorisationDate].notna()
+    )
     condition2 = df[AssessmentFactors].isna()
 
-      # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition1&condition2].reset_index()
+    # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
+    df_issues = df[condition1 & condition2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -63,13 +65,19 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[AssessmentAuthorisationDate], df_issues[AssessmentFactors])
+        zip(
+            df_issues[LAchildID],
+            df_issues[AssessmentAuthorisationDate],
+            df_issues[AssessmentFactors],
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=Assessments, columns=[AssessmentAuthorisationDate, AssessmentFactors], row_df=df_issues
+        table=Assessments,
+        columns=[AssessmentAuthorisationDate, AssessmentFactors],
+        row_df=df_issues,
     )
 
 
@@ -91,17 +99,17 @@ def test_validate():
                 "LAchildID": "child3",
                 "AssessmentAuthorisationDate": "26/05/2000",
                 "AssessmentFactors": "9A",
-            },  
+            },
             {
                 "LAchildID": "child3",
                 "AssessmentAuthorisationDate": "26/05/2000",
                 "AssessmentFactors": pd.NA,
-            }, #Fails as no factor selected
+            },  # Fails as no factor selected
             {
                 "LAchildID": "child4",
                 "AssessmentAuthorisationDate": "26/05/2000",
                 "AssessmentFactors": "8C",
-            },  
+            },
             {
                 "LAchildID": "child5",
                 "AssessmentAuthorisationDate": pd.NA,
@@ -110,13 +118,15 @@ def test_validate():
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    
-    Assessments[AssessmentAuthorisationDate] = pd.to_datetime(
-        Assessments[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
+
+    fake_data[AssessmentAuthorisationDate] = pd.to_datetime(
+        fake_data[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
     )
 
+    sample_header = pd.DataFrame([{ReferenceDate: "31/03/2001"}])
+
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Assessments: fake_data})
+    result = run_rule(validate, {Assessments: fake_data, Header: sample_header})
 
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
