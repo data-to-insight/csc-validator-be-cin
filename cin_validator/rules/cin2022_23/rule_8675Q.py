@@ -4,6 +4,7 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
+from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -31,21 +32,29 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
+    from datetime import timedelta
     # PREPARING DATA
 
     # Replace ChildIdentifiers with the name of the table you need.
-    df = data_container[ChildProtectionPlans]
+    df = data_container[Section47]
+    header = data_container[Header]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
+
+    ref_date_series = header[ReferenceDate]
+    collection_start, collection_end = make_census_period(ref_date_series)
 
     # lOGIC
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # If present <CPPendDate> (N00115) must be on or after the <CPPstartDate> (N00105)
-    condition = df[CPPendDate] < df[CPPstartDate]
+    # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false 
+    # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
+    condition_1 = (df[DateOfInitialCPC].isna()) & (df[ICPCnotReqiured]=="false")
+    condition_2 = (df[S47ActualStartDate] < (collection_end - timedelta(days=15)) #This needs to be 15 working days, how?
+)
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition].reset_index()
+    df_issues = df[condition_1 & condition_2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -58,13 +67,13 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[CPPstartDate], df_issues[CPPendDate])
+        zip(df_issues[LAchildID], df_issues[S47ActualStartDate], df_issues[ICPCnotReqiured])
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=ChildProtectionPlans, columns=[CPPstartDate, CPPendDate], row_df=df_issues
+        table=Section47, columns=[DateOfInitialCPC, ICPCnotReqiured, S47ActualStartDate], row_df=df_issues
     )
 
 
