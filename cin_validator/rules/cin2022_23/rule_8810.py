@@ -10,6 +10,7 @@ from cin_validator.test_engine import run_rule
 CINdetails = CINTable.CINdetails
 ReasonForClosure = CINdetails.ReasonForClosure
 CINclosureDate = CINdetails.CINclosureDate
+CINdetailsID = CINdetails.CINdetailsID
 LAchildID = CINdetails.LAchildID
 
 # define characteristics of rule
@@ -55,7 +56,7 @@ def validate(
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
         zip(
-            df_issues[LAchildID], df_issues[ReasonForClosure], df_issues[CINclosureDate]
+            df_issues[LAchildID], df_issues[ReasonForClosure], df_issues[CINdetailsID]
         )
     )
     df_issues["ERROR_ID"] = link_id
@@ -72,31 +73,37 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "CINdetailsID": "CINID1",
                 "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
+                "CINdetailsID": "CINID2",
                 "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": "26/05/2001",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CINID3",
                 "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
             {
                 "LAchildID": "child4",
+                "CINdetailsID": "CINID4",
                 "ReasonForClosure": "26/05/2000",
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
             {
                 "LAchildID": "child4",
+                "CINdetailsID": "CINID5",
                 "ReasonForClosure": pd.NA,
                 "CINclosureDate": "25/05/2000",
             },
             {
                 "LAchildID": "child5",
+                "CINdetailsID": "CINID6",
                 "ReasonForClosure": pd.NA,
                 "CINclosureDate": pd.NA,
             },
@@ -137,7 +144,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",
                     "26/05/2000",
-                    pd.NA,
+                    "CINID3",
                 ),
                 "ROW_ID": [2],
             },
@@ -145,7 +152,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child4",
                     "26/05/2000",
-                    pd.NA,
+                    "CINID4",
                 ),
                 "ROW_ID": [3],
             },
