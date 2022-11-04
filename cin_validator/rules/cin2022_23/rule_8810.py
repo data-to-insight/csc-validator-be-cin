@@ -55,9 +55,7 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(
-            df_issues[LAchildID], df_issues[ReasonForClosure], df_issues[CINdetailsID]
-        )
+        zip(df_issues[LAchildID], df_issues[ReasonForClosure], df_issues[CINdetailsID])
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
