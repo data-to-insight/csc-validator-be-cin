@@ -2,43 +2,45 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
+# Replace ChildProtectionPlans with the table name, and LAChildID with the column name you want.
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
-CPPendDate = ChildProtectionPlans.CPPendDate
-CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
+CPPstartDate = ChildProtectionPlans.CPPstartDate
+CPPendDate = ChildProtectionPlans.CPPendDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
-    code=8925,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    # write the rule code here, in place of 8840
+    code=8840,
+    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Child Protection Plan End Date earlier than Start Date",
+    message="Child Protection Plan cannot start and end on the same day",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[CPPstartDate, CPPendDate],
+    affected_fields=[ChildProtectionPlans, CPPstartDate, CPPendDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # PREPARING DATA
-
-    # Replace ChildIdentifiers with the name of the table you need.
+    # Replace ChildProtectionPlans with the name of the table you need.
     df = data_container[ChildProtectionPlans]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
-    # lOGIC
-    # Implement rule logic as described by the Github issue.
-    # Put the description as a comment above the implementation as shown.
+    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    # If present <CPPendDate> (N00115) must be on or after the <CPPstartDate> (N00105)
-    condition = df[CPPendDate] < df[CPPstartDate]
+    #  Determine if the dates are the same by finding if the difference between dates is 0
+    condition = df["CPPstartDate"] == df["CPPendDate"]
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -65,52 +67,38 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
+
+    #  Fails rows 0, 1, and 3
     child_protection_plans = pd.DataFrame(
-        [
-            {
-                "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/2000",
-            },
-            {
-                "LAchildID": "child2",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/2001",
-            },
-            {
-                "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/1999",
-            },  # 2 error: end is before start
-            {
-                "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": pd.NA,
-            },
-            {
-                "LAchildID": "child4",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "25/05/2000",
-            },  # 4 error: end is before start
-            {
-                "LAchildID": "child5",
-                "CPPstartDate": pd.NA,
-                "CPPendDate": pd.NA,
-            },
-        ]
+        {
+            "LAchildID": ["child1", "child2", "child3", "child4", "child5"],
+            "CPPstartDate": [
+                "08/10/1989",
+                "05/12/1993",
+                "05/12/1993",
+                "05/12/1997",
+                pd.NA,
+            ],
+            "CPPendDate": [
+                "08/10/1989",
+                "05/12/1993",
+                "12/09/2022",
+                "05/12/1997",
+                pd.NA,
+            ],
+        }
     )
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    child_protection_plans[CPPstartDate] = pd.to_datetime(
-        child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
+    child_protection_plans["CPPstartDate"] = pd.to_datetime(
+        child_protection_plans["CPPstartDate"], format="%d/%m/%Y", errors="coerce"
     )
-    child_protection_plans[CPPendDate] = pd.to_datetime(
-        child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
+    child_protection_plans["CPPendDate"] = pd.to_datetime(
+        child_protection_plans["CPPendDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: child_protection_plans})
 
-    # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
+    # The result contains a NamedTuple of issues encountered
     issues = result.type1_issues
 
     # get table name and check it. Replace ChildProtectionPlans with the name of your table.
@@ -123,34 +111,41 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
+
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
+    # replace the table and column name as done earlier.
+    # The last numbers represent the index values where you expect the sample data to fail the validation check.
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
-
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
-    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
 
     # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
             {
                 "ERROR_ID": (
-                    "child3",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime("26/05/1999", format="%d/%m/%Y", errors="coerce"),
+                    "child1",
+                    pd.to_datetime("08/10/1989", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("08/10/1989", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [2],
+                "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child2",
+                    pd.to_datetime("05/12/1993", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("05/12/1993", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [1],
             },
             {
                 "ERROR_ID": (
                     "child4",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("05/12/1997", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("05/12/1997", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [4],
+                "ROW_ID": [3],
             },
         ]
     )
@@ -158,9 +153,9 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8925
+    # replace 8840 with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == 8840
     assert (
         result.definition.message
-        == "Child Protection Plan End Date earlier than Start Date"
+        == "Child Protection Plan cannot start and end on the same day"
     )

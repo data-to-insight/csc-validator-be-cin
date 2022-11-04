@@ -15,7 +15,7 @@ from cin_validator.utils import make_census_period
 ChildIdentifiers = CINTable.ChildIdentifiers
 Header = CINTable.Header
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
-Year = Header.Year
+ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
@@ -31,17 +31,17 @@ def validate(
     df = data_container[ChildIdentifiers]
     df_ref = data_container[Header]
 
-    """
-    If present, <PersonDeathDate> (N00108) must be within [Period_of_Census]
-    """
+    # If present, <PersonDeathDate> (N00108) must be within [Period_of_Census]
 
     df = df[[PersonDeathDate]]
 
     # Death date must not be null, invalid text dates are made null in the line above
     df = df[df[PersonDeathDate].notna()]
 
-    collection_year = df_ref[Year]
-    collection_start, collection_end = make_census_period(collection_year)
+    # Select out only the ReferenceDate column from the DataFrame
+    ref_date_series = df_ref[ReferenceDate]
+    collection_start, collection_end = make_census_period(ref_date_series)
+
     # DeathDate isn't in the financial year
     df = df[
         ~(
@@ -76,7 +76,7 @@ def test_validate():
     )
 
     fake_ident = pd.DataFrame({PersonDeathDate: p_death})
-    fake_head = pd.DataFrame({Year: ["2022"]})
+    fake_head = pd.DataFrame({ReferenceDate: ["31/03/2022"]})
 
     result = run_rule(validate, {ChildIdentifiers: fake_ident, Header: fake_head})
 

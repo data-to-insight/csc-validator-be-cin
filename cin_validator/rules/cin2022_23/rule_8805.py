@@ -7,21 +7,21 @@ from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
-ChildProtectionPlans = CINTable.ChildProtectionPlans
-CPPendDate = ChildProtectionPlans.CPPendDate
-CPPstartDate = ChildProtectionPlans.CPPstartDate
-LAchildID = ChildProtectionPlans.LAchildID
+CINDetails = CINTable.CINdetails
+CINclosureDate = CINDetails.CINclosureDate
+ReasonForClosure = CINDetails.ReasonForClosure
+LAchildID = CINDetails.LAchildID
 
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8500
-    code=8925,
+    code=8805,
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
-    module=CINTable.ChildProtectionPlans,
+    module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Child Protection Plan End Date earlier than Start Date",
+    message="A CIN case cannot have a CIN closure date without a Reason for Closure",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[CPPstartDate, CPPendDate],
+    affected_fields=[CINclosureDate, ReasonForClosure],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -29,7 +29,7 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildIdentifiers with the name of the table you need.
-    df = data_container[ChildProtectionPlans]
+    df = data_container[CINDetails]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
@@ -37,8 +37,11 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # If present <CPPendDate> (N00115) must be on or after the <CPPstartDate> (N00105)
-    condition = df[CPPendDate] < df[CPPstartDate]
+    # If <CINclosureDate> (N00102) is present then <ReasonForClosure> (N00103) must also be present
+    # return rows where CINClosureDate is present but ReasonForClosure is not.
+    # If CINclosureDate is not null and ReasonForClosure is null
+    condition = df[CINclosureDate].notna() & df[ReasonForClosure].isna()
+
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -53,73 +56,70 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[CPPstartDate], df_issues[CPPendDate])
+        zip(
+            df_issues[LAchildID], df_issues[CINclosureDate], df_issues[ReasonForClosure]
+        )
     )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=ChildProtectionPlans, columns=[CPPstartDate, CPPendDate], row_df=df_issues
+        table=CINDetails, columns=[CINclosureDate, ReasonForClosure], row_df=df_issues
     )
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    child_protection_plans = pd.DataFrame(
+    fake_date_frame = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/2000",
+                "CINclosureDate": "26/05/2000",
+                "ReasonForClosure": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/2001",
+                "CINclosureDate": pd.NA,
+                "ReasonForClosure": "26/05/2000",
             },
             {
                 "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/05/1999",
-            },  # 2 error: end is before start
+                "CINclosureDate": "26/05/1999",
+                "ReasonForClosure": "26/05/2000",
+            },
             {
                 "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": pd.NA,
-            },
+                "CINclosureDate": "26/05/2000",
+                "ReasonForClosure": pd.NA,
+            },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child4",
-                "CPPstartDate": "26/05/2000",
-                "CPPendDate": "25/05/2000",
-            },  # 4 error: end is before start
+                "CINclosureDate": "25/05/2000",
+                "ReasonForClosure": pd.NA,
+            },  # fail because CINClosureDate is populated and ReasonForClosure isn't
             {
                 "LAchildID": "child5",
-                "CPPstartDate": pd.NA,
-                "CPPendDate": pd.NA,
+                "CINclosureDate": pd.NA,
+                "ReasonForClosure": pd.NA,
             },
         ]
     )
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-    child_protection_plans[CPPstartDate] = pd.to_datetime(
-        child_protection_plans[CPPstartDate], format="%d/%m/%Y", errors="coerce"
-    )
-    child_protection_plans[CPPendDate] = pd.to_datetime(
-        child_protection_plans[CPPendDate], format="%d/%m/%Y", errors="coerce"
-    )
+
+    # Date values not checked so no datetime conversion required
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {ChildProtectionPlans: child_protection_plans})
+    result = run_rule(validate, {CINDetails: fake_date_frame})
 
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
     # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
-    assert issue_table == ChildProtectionPlans
+    assert issue_table == CINDetails
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [CPPstartDate, CPPendDate]
+    assert issue_columns == [CINclosureDate, ReasonForClosure]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -139,16 +139,16 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child3",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime("26/05/1999", format="%d/%m/%Y", errors="coerce"),
+                    "26/05/2000",
+                    pd.NA,
                 ),
-                "ROW_ID": [2],
+                "ROW_ID": [3],
             },
             {
                 "ERROR_ID": (
                     "child4",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    "25/05/2000",
+                    pd.NA,
                 ),
                 "ROW_ID": [4],
             },
@@ -159,8 +159,8 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8925 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8925
+    assert result.definition.code == 8805
     assert (
         result.definition.message
-        == "Child Protection Plan End Date earlier than Start Date"
+        == "A CIN case cannot have a CIN closure date without a Reason for Closure"
     )
