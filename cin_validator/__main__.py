@@ -48,7 +48,7 @@ def run_all(filename: str, ruleset):
 
         ctx = RuleContext(rule)
         rule.func(data_files, ctx)
-        #  TODO determine what to use for the group_keys argument 
+        #  TODO determine what to use for the group_keys argument
         print(rule.code, len(list(ctx.issues)))
 
 
