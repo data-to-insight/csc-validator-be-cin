@@ -21,14 +21,29 @@ def make_census_period(reference_date):
     # reference_date is a pandas series. Get it's value as a string by indexing the series' values array.
     reference_date = reference_date.values[0]
 
-    # the ReferenceDate value is always the collection_end date
-    collection_end = pd.to_datetime(reference_date, format="%d/%m/%Y")
-    # the collection start is the 1st of April of the previous year.
-    collection_start = (
-        pd.to_datetime(reference_date, format="%d/%m/%Y")
-        - pd.DateOffset(years=1)
-        + pd.DateOffset(days=1)
-    )
+    #  Try/except to allow for different datetime formats
+    try:
+        # the ReferenceDate value is always the collection_end date
+        collection_end = pd.to_datetime(reference_date, format="%d/%m/%Y")
+
+        # the collection start is the 1st of April of the previous year.
+        collection_start = (
+            pd.to_datetime(reference_date, format="%d/%m/%Y")
+            - pd.DateOffset(years=1)
+            + pd.DateOffset(days=1)
+        )
+    except:
+        # the ReferenceDate value is always the collection_end date
+        collection_end = pd.to_datetime(
+            reference_date, format="%Y/%m/%d", errors="coerce"
+        )
+
+        # the collection start is the 1st of April of the previous year.
+        collection_start = (
+            pd.to_datetime(reference_date, format="%Y/%m/%d", errors="coerce")
+            - pd.DateOffset(years=1)
+            + pd.DateOffset(days=1)
+        )
 
     return collection_start, collection_end
 
