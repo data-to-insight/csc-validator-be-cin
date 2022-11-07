@@ -46,11 +46,10 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    child_identifiers = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[NumberOfPreviousCPP])
-
+    fake_data = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[NumberOfPreviousCPP])
+    
     # Run rule function passing in our sample data
-    result = run_rule(validate, {ChildProtectionPlans: child_identifiers})
-
+    result = run_rule(validate, {ChildProtectionPlans: fake_data})
     # The result contains a list of issues encountered
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.
@@ -58,12 +57,12 @@ def test_validate():
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
-        IssueLocator(CINTable.ChildIdentifiers, NumberOfPreviousCPP, 1),
-        IssueLocator(CINTable.ChildIdentifiers, NumberOfPreviousCPP, 2),
+        IssueLocator(CINTable.ChildProtectionPlans, NumberOfPreviousCPP, 1),
+        IssueLocator(CINTable.ChildProtectionPlans, NumberOfPreviousCPP, 2),
     ]
 
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8500
-    assert result.definition.message == "LA Child ID missing"
+    assert result.definition.code == 8730
+    assert result.definition.message == "Total Number of previous Child Protection Plans missing"
