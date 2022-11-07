@@ -28,11 +28,11 @@ def validate(
 ):
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildProtectionPlans]
-    
+
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
-    
+
     # Where a CPP module is present, <NumberOfPreviousCPP> (N00106) must be greater than or equal to zero
-    # Change the line below to ensure values are >=0 ie not null 
+    # Change the line below to ensure values are >=0 ie not null
 
     # <LAchildID> (N00097) must be present
     failing_indices = df[df[NumberOfPreviousCPP].isna()].index
@@ -47,7 +47,7 @@ def validate(
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     fake_data = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[NumberOfPreviousCPP])
-    
+
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: fake_data})
     # The result contains a list of issues encountered
@@ -65,4 +65,7 @@ def test_validate():
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8730
-    assert result.definition.message == "Total Number of previous Child Protection Plans missing"
+    assert (
+        result.definition.message
+        == "Total Number of previous Child Protection Plans missing"
+    )
