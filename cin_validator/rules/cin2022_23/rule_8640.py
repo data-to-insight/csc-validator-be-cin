@@ -33,12 +33,14 @@ def validate(
 
     # Reason for Closure must be a valid reason for closure code value as shown in the list below
 
-    valid_reason = ["RC1","RC2","RC3","RC4","RC5","RC6","RC7","RC8","RC9"]
+    valid_reason = ["RC1", "RC2", "RC3", "RC4", "RC5", "RC6", "RC7", "RC8", "RC9"]
 
     # Check if the Reason For Closure is not in the list of valid reasons and a value has been entered.
 
-    df = df[~(df["ReasonForClosure"].isin(valid_reason)) & df["ReasonForClosure"].notna()]
-    
+    df = df[
+        ~(df["ReasonForClosure"].isin(valid_reason)) & df["ReasonForClosure"].notna()
+    ]
+
     failing_indices = df.index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
@@ -47,10 +49,11 @@ def validate(
         table=CINdetails, field=ReasonForClosure, row=failing_indices
     )
 
+
 def test_validate():
-    # Sample test all will pass the validation with the exception RC13 and RC0 which are not valid Closure codes. 
-    fake_data = ["RC1","RC13",pd.NA,"RC0"]
-    
+    # Sample test all will pass the validation with the exception RC13 and RC0 which are not valid Closure codes.
+    fake_data = ["RC1", "RC13", pd.NA, "RC0"]
+
     fake_dataframe = pd.DataFrame({"ReasonForClosure": fake_data})
 
     # Run rule function passing in our sample test data
@@ -70,4 +73,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 8640
-    assert result.definition.message == "CIN Reason for closure code invalid (see Reason for Closure table in CIN Census code set)"
+    assert (
+        result.definition.message
+        == "CIN Reason for closure code invalid (see Reason for Closure table in CIN Census code set)"
+    )
