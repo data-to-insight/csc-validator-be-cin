@@ -47,9 +47,14 @@ def run_all(filename: str, ruleset):
     for rule in registry:
 
         ctx = RuleContext(rule)
+
         rule.func(data_files, ctx)
         #  TODO determine what to use for the group_keys argument
-        print(rule.code, len(list(ctx.issues)))
+        if len(list(ctx.issues)) == 0:
+            print(rule.code, len(list(ctx.issues)))
+        else:
+            for i in range(len(list(ctx.issues))):
+                print(rule.code, list(ctx.issues)[i], rule.message)
 
 
 @cli.command(name="test")
