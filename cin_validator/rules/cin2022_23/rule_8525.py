@@ -47,9 +47,7 @@ def validate(
     condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues_1 = df[condition_1]
-    df_issues_2 = df[condition_2]
-    df_issues = pd.concat([df_issues_1, df_issues_2]).reset_index()
+    df_issues = df[condition_1 | condition_2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -109,7 +107,7 @@ def test_validate():
                 "LAchildID": "child6",
                 "PersonBirthDate": pd.NA,
                 "ExpectedPersonBirthDate": pd.NA,
-            },  # Fails becasue there is no DOB or expected DOB
+            },  # Fails because there is no DOB or expected DOB
         ]
     )
     # Date values not checked so no datetime conversion
