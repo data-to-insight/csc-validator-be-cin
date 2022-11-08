@@ -144,27 +144,19 @@ def test_validate():
     expected_df = pd.DataFrame(
         [
             {
-                "ERROR_ID": (
-                    "child1",
-                ),
+                "ERROR_ID": ("child1",),
                 "ROW_ID": [0],
             },
             {
-                "ERROR_ID": (
-                    "child2",
-                ),
+                "ERROR_ID": ("child2",),
                 "ROW_ID": [1],
             },
             {
-                "ERROR_ID": (
-                    "child5",
-                ),
+                "ERROR_ID": ("child5",),
                 "ROW_ID": [4],
             },
             {
-                "ERROR_ID": (
-                    "child6",
-                ),
+                "ERROR_ID": ("child6",),
                 "ROW_ID": [5],
             },
         ]
