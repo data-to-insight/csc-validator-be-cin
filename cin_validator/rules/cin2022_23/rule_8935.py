@@ -106,7 +106,8 @@ def test_validate():
             },
         ]
     )
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
+    # if rule requires columns containing date values, convert those columns to
+    # datetime objects first. Do it here in the test_validate function, not above.
     sample_ChildProtectionPlans[CPPendDate] = pd.to_datetime(
         sample_ChildProtectionPlans[CPPendDate],
         format="%d/%m/%Y",
