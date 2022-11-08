@@ -41,24 +41,16 @@ def validate(
 
     # Either Date of Birth or Expected Date of Birth must be provided (but not both)
     # condition_1 = (df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].isna())
-    condition_1 = (df[PersonBirthDate].isna() == True) & (
-        df[ExpectedPersonBirthDate].isna() == True
-    )
+    condition_1 = (df[PersonBirthDate].isna()) & (df[ExpectedPersonBirthDate].isna())
     condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition_1 | condition_2].reset_index()
 
-    # SUBMIT ERRORS
-    # Generate a unique ID for each instance of an error. In this case,
-    # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
-    # We don't want that because in reality, a child can have multiple instances of an error.
-    # - If we use the LAchildID-CPPstartDate combination, that artificially cancels out the instances where a start date repeats for the same child.
-    # Another rule checks for that condition. Not this one.
-    # - It is very unlikely that a combination of LAchildID-CPPstartDate-CPPendDate will repeat in the DataFrame.
-    # Hence, it can be used as a unique identifier of the row.
+    # (LAchildID,PersonBirthDate,ExpectedPersonBirthDate) could have been used. However, in some failing conditions,
+    # both (PersonBirthDate,ExpectedPersonBirthDate) can be null so their combination does not serve as a unique ID.
+    # Since this is the ChildIdentifiers table and LAchildID is typically unique in it. We use that to serve as a last resort ID.
 
-    # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
         zip(
             df_issues[LAchildID],
