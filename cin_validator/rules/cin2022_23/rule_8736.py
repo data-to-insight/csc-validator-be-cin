@@ -20,13 +20,9 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=8736,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="For an Assessment that has not been completed, the start date must fall within the census year",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[AssessmentAuthorisationDate, AssessmentActualStartDate],
 )
 def validate(
@@ -43,7 +39,6 @@ def validate(
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
      
-
     # lOGIC
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
@@ -55,7 +50,6 @@ def validate(
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition_1 & condition_2].reset_index()
     
-
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
     # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
