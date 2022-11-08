@@ -64,8 +64,6 @@ def validate(
     link_id = tuple(
         zip(
             df_issues[LAchildID],
-            df_issues[PersonBirthDate],
-            df_issues[ExpectedPersonBirthDate],
         )
     )
     df_issues["ERROR_ID"] = link_id
@@ -148,32 +146,24 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    "26/05/2000",
-                    "26/05/2000",
                 ),
                 "ROW_ID": [0],
             },
             {
                 "ERROR_ID": (
                     "child2",
-                    "26/05/2000",
-                    "26/05/2001",
                 ),
                 "ROW_ID": [1],
             },
             {
                 "ERROR_ID": (
                     "child5",
-                    "26/05/2000",
-                    "25/05/2000",
                 ),
                 "ROW_ID": [4],
             },
             {
                 "ERROR_ID": (
                     "child6",
-                    pd.NA,
-                    pd.NA,
                 ),
                 "ROW_ID": [5],
             },
