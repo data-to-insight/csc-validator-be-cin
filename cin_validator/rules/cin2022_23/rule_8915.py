@@ -96,7 +96,7 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",  # Pass, same date
+                "CPPstartDate": pd.NA,  # Pass, no CP plan
             },
             {
                 "LAchildID": "child2",
