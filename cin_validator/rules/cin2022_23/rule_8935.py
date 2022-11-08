@@ -64,7 +64,7 @@ def validate(
 
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
-    rule_context.push_type_1(
+    rule_context.push_type_3(
         table=ChildProtectionPlans, columns=[CPPendDate], row_df=df_issues
     )
 
@@ -116,8 +116,8 @@ def test_validate():
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: sample_ChildProtectionPlans})
 
-    # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
-    issues = result.type1_issues
+    # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
+    issues = result.type3_issues
 
     # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
