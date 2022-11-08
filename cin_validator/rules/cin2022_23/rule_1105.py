@@ -69,7 +69,7 @@ def validate(
     df["ERROR_ID"] = tuple(zip(df["LAchildID"], df[CPPstartDate], df[CINreferralDate]))
 
     df_CPP_issues = (
-        df_CPP.merge(df, left_on="ROW_ID", right_on="ROW_ID_CIN")
+        df_CPP.merge(df, left_on="ROW_ID", right_on="ROW_ID_CPP")
         .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
@@ -77,7 +77,7 @@ def validate(
     print(df_CPP_issues)
 
     df_CIN_issues = (
-        df_CIN.merge(df, left_on="ROW_ID", right_on="ROW_ID_CPP")
+        df_CIN.merge(df, left_on="ROW_ID", right_on="ROW_ID_CIN")
         .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
