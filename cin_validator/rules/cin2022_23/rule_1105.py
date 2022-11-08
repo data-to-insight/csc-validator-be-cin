@@ -1,10 +1,10 @@
-'''
+"""
 Rule number: 1105
 Module: Child protection plans
 Rule details: Where present, the <CPPStartDate> (N00105) must be on or after the <CINReferralDate> (N00100)
 Rule message: The child protection plan start date cannot be before the referral date
 
-'''
+"""
 from typing import Mapping
 
 import pandas as pd
@@ -27,15 +27,14 @@ CIN_CINdetailsID = CINDetails.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
-    code = 1105,
-    module = CINTable.ChildProtectionPlans,
-    message = "The child protection plan start date cannot be before the referral date",
-    affected_fields = [
+    code=1105,
+    module=CINTable.ChildProtectionPlans,
+    message="The child protection plan start date cannot be before the referral date",
+    affected_fields=[
         CPPstartDate,
         CINreferralDate,
     ],
 )
-
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
@@ -45,8 +44,8 @@ def validate(
     df_CPP.index.name = "ROW_ID"
     df_CIN.index.name = "ROW_ID"
 
-    df_CPP.reset_index(inplace = True)
-    df_CIN.reset_index(inplace = True)
+    df_CPP.reset_index(inplace=True)
+    df_CIN.reset_index(inplace=True)
 
     # Remove rows without CPP start date
 
@@ -58,36 +57,28 @@ def validate(
 
     df = df_CPP.merge(
         df_CIN,
-        left_on = ['LAchildID', 'CINdetailsID'],
-        right_on = ['LAchildID', 'CINdetailsID'],
-        how = "left",
-        suffixes = ("_CPP", "_CIN"),
+        left_on=["LAchildID", "CINdetailsID"],
+        right_on=["LAchildID", "CINdetailsID"],
+        how="left",
+        suffixes=("_CPP", "_CIN"),
     )
 
     # Return those where dates don't align
-    df = df[df['CINreferralDate'] > df['CPPstartDate']].reset_index()
+    df = df[df["CINreferralDate"] > df["CPPstartDate"]].reset_index()
 
-    df["ERROR_ID"] = tuple(
-        zip(df['LAchildID'],
-        df[CPPstartDate], df[CINreferralDate])
-    )
+    df["ERROR_ID"] = tuple(zip(df["LAchildID"], df[CPPstartDate], df[CINreferralDate]))
 
     df_CPP_issues = (
-        df_CPP.merge(
-            df,
-            left_on = "ROW_ID",
-            right_on = "ROW_ID_CIN"
-        ).groupby("ERROR_ID")["ROW_ID"]
+        df_CPP.merge(df, left_on="ROW_ID", right_on="ROW_ID_CIN")
+        .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
+    print(df_CPP_issues)
 
     df_CIN_issues = (
-        df_CIN.merge(
-            df,
-            left_on = "ROW_ID",
-            right_on = "ROW_ID_CPP"
-        ).groupby("ERROR_ID")["ROW_ID"]
+        df_CIN.merge(df, left_on="ROW_ID", right_on="ROW_ID_CPP")
+        .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
@@ -98,7 +89,6 @@ def validate(
     rule_context.push_type_2(
         table=CINDetails, columns=[CINreferralDate], row_df=df_CIN_issues
     )
-
 
 
 def test_validate():
@@ -112,7 +102,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child1",
-                "CPPstartDate": "27/06/2002",  # Pass, after referall 
+                "CPPstartDate": "27/06/2002",  # Pass, after referall
                 "CINdetailsID": "cinID2",
             },
             {
@@ -151,12 +141,12 @@ def test_validate():
                 "CINdetailsID": "cinID6",
             },
             {
-                "LAchildID": "child2", # Fail
+                "LAchildID": "child2",  # Fail
                 "CINreferralDate": "30/05/2000",
                 "CINdetailsID": "cinID3",
             },
             {
-                "LAchildID": "child3", #Pass
+                "LAchildID": "child3",  # Pass
                 "CINreferralDate": "27/05/2000",
                 "CINdetailsID": "cinID4",
             },
@@ -181,10 +171,8 @@ def test_validate():
 
     # The result contains a list of issues encountered
     issues_list = result.type2_issues
-    assert (
-        len(issues_list) == 2
-    )
-   
+    assert len(issues_list) == 2
+
     issues = issues_list[1]
 
     # get table name and check it. Replace Reviews with the name of your table.
@@ -207,16 +195,6 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    "child3",  # ChildID
-                    # Start Date
-                    pd.to_datetime("07/02/1999", format="%d/%m/%Y", errors="coerce"),
-                    # Referral date
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                ),
-                "ROW_ID": [2],
-            },
-            {
-                "ERROR_ID": (
                     "child2",  # ChildID
                     # Start date
                     pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
@@ -225,10 +203,23 @@ def test_validate():
                 ),
                 "ROW_ID": [3],
             },
+            {
+                "ERROR_ID": (
+                    "child3",  # ChildID
+                    # Start Date
+                    pd.to_datetime("07/02/1999", format="%d/%m/%Y", errors="coerce"),
+                    # Referral date
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [2],
+            },
         ]
     )
 
     assert issue_rows.equals(expected_df)
 
     assert result.definition.code == 1105
-    assert result.definition.message == "The child protection plan start date cannot be before the referral date"
+    assert (
+        result.definition.message
+        == "The child protection plan start date cannot be before the referral date"
+    )
