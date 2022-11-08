@@ -72,25 +72,25 @@ def test_validate():
             {
                 "LAchildID": "child1",
                 "CINdetailsID": "CINID1",
-                "ReasonForClosure": "26/05/2000",
+                "ReasonForClosure": "aaa",
                 "CINclosureDate": "26/05/2000",
             },
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "CINID2",
-                "ReasonForClosure": "26/05/2000",
+                "ReasonForClosure": "aaa",
                 "CINclosureDate": "26/05/2001",
             },
             {
                 "LAchildID": "child3",
                 "CINdetailsID": "CINID3",
-                "ReasonForClosure": "26/05/2000",
+                "ReasonForClosure": "aaa",
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "CINID4",
-                "ReasonForClosure": "26/05/2000",
+                "ReasonForClosure": "aaa",
                 "CINclosureDate": pd.NA,
             },  #  Fails because there is a ReasonForClosure and no CINclosureDate
             {
@@ -141,7 +141,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child3",
-                    "26/05/2000",
+                    "aaa",
                     "CINID3",
                 ),
                 "ROW_ID": [2],
@@ -149,7 +149,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child4",
-                    "26/05/2000",
+                    "aaa",
                     "CINID4",
                 ),
                 "ROW_ID": [3],
