@@ -29,11 +29,10 @@ def validate(
 
     df.index.name = "ROW_ID"
 
-    df = df[
-        (df[CINclosureDate] < df[CINreferralDate])
-        & df[CINclosureDate].notna()
-        & df[CINreferralDate].notna()
-    ]
+    df.query(
+        "(CINclosureDate < CINreferralDate) and CINclosureDate.notna() and CINreferralDate.notna()",
+        inplace=True,
+    )
 
     df_issues = df.reset_index()
 
