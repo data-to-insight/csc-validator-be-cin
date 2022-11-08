@@ -59,7 +59,7 @@ def validate(
         df_CIN,
         left_on=["LAchildID", "CINdetailsID"],
         right_on=["LAchildID", "CINdetailsID"],
-        how="left",
+        how="left", 
         suffixes=("_CPP", "_CIN"),
     )
 
