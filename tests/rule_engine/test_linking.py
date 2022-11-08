@@ -67,3 +67,23 @@ def test_type2():
     assert issues.table == "table_three"
     assert issues.columns == ["column4", "column5"]
     assert issues.row_df.equals(df_issues_3)
+
+
+def test_type3():
+    """Rules that check relationships within a group."""
+    rule_context = RuleContext(Mock())
+    df_issues = pd.DataFrame(
+        [
+            {"ERROR_ID": (2, 8, 5), "ROW_ID": [23, 24]},
+            {"ERROR_ID": (3, 7, 2), "ROW_ID": [9]},
+        ]
+    )
+    rule_context.push_type_3("table_name", ["column1"], df_issues)
+
+    issues = rule_context.type3_issues
+    assert issues.table == "table_name"
+    assert len(issues.columns) == 1
+    assert issues.columns == [
+        "column1",
+    ]
+    assert issues.row_df.equals(df_issues)
