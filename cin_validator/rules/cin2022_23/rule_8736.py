@@ -12,7 +12,7 @@ Assessments = CINTable.Assessments
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 AssessmentActualStartDate = Assessments.AssessmentActualStartDate
 LAchildID = Assessments.LAchildID
-#CINdetailsID = CINTable.Assessments
+# CINdetailsID = CINTable.Assessments
 
 
 Header = CINTable.Header
@@ -38,18 +38,20 @@ def validate(
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
-     
+
     # lOGIC
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
     # Where present, if an <Assessments> group does not contain the <AssessmentAuthorisationDate> (N00160) then the <AssessmentActualStartDate> (N00159) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
-    condition_1 = df[AssessmentAuthorisationDate].isna 
-    condition_2 = ((df[AssessmentActualStartDate] >= collection_start) & (df[AssessmentActualStartDate] <= collection_end))
-    
+    condition_1 = df[AssessmentAuthorisationDate].isna
+    condition_2 = (df[AssessmentActualStartDate] >= collection_start) & (
+        df[AssessmentActualStartDate] <= collection_end
+    )
+
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition_1 & condition_2].reset_index()
-    
+
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
     # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
@@ -61,13 +63,17 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[AssessmentAuthorisationDate], df_issues[AssessmentActualStartDate])
+        zip(
+            df_issues[AssessmentAuthorisationDate], df_issues[AssessmentActualStartDate]
         )
+    )
     df_issues["ERROR_ID"] = link_id
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=Assessments, columns=[AssessmentAuthorisationDate, AssessmentActualStartDate], row_df=df_issues
+        table=Assessments,
+        columns=[AssessmentAuthorisationDate, AssessmentActualStartDate],
+        row_df=df_issues,
     )
 
 
@@ -75,7 +81,7 @@ def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
 
     fake_header = pd.DataFrame(
-        [{ReferenceDate: "31/03/2022"}] # the census start date here will be 01/04/2021
+        [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
     )
 
     child_assessments = pd.DataFrame(
@@ -84,7 +90,6 @@ def test_validate():
                 "LAchildID": "child1",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentActualStartDate": "27/05/2021",
-                 
             },
             {
                 "LAchildID": "child2",
@@ -95,29 +100,30 @@ def test_validate():
                 "LAchildID": "child3",
                 "AssessmentAuthorisationDate": "27/06/2021",
                 "AssessmentActualStartDate": "10/07/2021",
-            },  
+            },
             {
                 "LAchildID": "child4",
                 "AssessmentAuthorisationDate": "10/10/2021",
                 "AssessmentActualStartDate": "10/04/2022",
-                # 3 error: start date is outside the reporting period 
+                # 3 error: start date is outside the reporting period
             },
             {
                 "LAchildID": "child5",
                 "AssessmentAuthorisationDate": "30/03/2022",
                 "AssessmentActualStartDate": "31/03/2022",
-            },  
+            },
             {
                 "LAchildID": "child6",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentActualStartDate": pd.NA,
-                
             },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     child_assessments[AssessmentAuthorisationDate] = pd.to_datetime(
-        child_assessments[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
+        child_assessments[AssessmentAuthorisationDate],
+        format="%d/%m/%Y",
+        errors="coerce",
     )
     child_assessments[AssessmentActualStartDate] = pd.to_datetime(
         child_assessments[AssessmentActualStartDate], format="%d/%m/%Y", errors="coerce"
