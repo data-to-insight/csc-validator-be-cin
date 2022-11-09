@@ -34,6 +34,11 @@ def validate(
 
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Assessments]
+
+    header = data_container[Header]
+    ref_date_series = header[ReferenceDate]
+    collection_start, collection_end = make_census_period(ref_date_series)
+
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
@@ -41,18 +46,61 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # Where present, if <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then one or more <AssessmentFactors> (N00181) must be present within the same assessment module and must be a valid code
+    # Where present, if <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then one or more <AssessmentFactors>
+    # (N00181) must be present within the same assessment module and must be a valid code
     # Get collection period
-    header = data_container[Header]
-    ref_date_series = header[ReferenceDate]
-    collection_start, collection_end = make_census_period(ref_date_series)
+    factors_list = [
+        "1A",
+        "1B",
+        "1C",
+        "2A",
+        "2B",
+        "2C",
+        "3A",
+        "3B",
+        "3C",
+        "4A",
+        "4B",
+        "4C",
+        "5A",
+        "5B",
+        "5C",
+        "6A",
+        "6B",
+        "6C",
+        "7A",
+        "8B",
+        "8C",
+        "8D",
+        "8E",
+        "8F",
+        "9A",
+        "10A",
+        "11A",
+        "12A",
+        "13A",
+        "14A",
+        "15A",
+        "16A",
+        "17A",
+        "18B",
+        "18C",
+        "19B",
+        "19C",
+        "20",
+        "21",
+        "22A",
+        "23A",
+        "24A",
+    ]
+
     condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (
         df[AssessmentAuthorisationDate].notna()
     )
-    condition2 = df[AssessmentFactors].isna()
+    condition2 = (df[AssessmentFactors].notna()) & (df[AssessmentFactors].isin(factors_list))
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition1 & condition2].reset_index()
+    df_issues = df[condition1 & ~condition2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -87,18 +135,18 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "AssessmentFactors": pd.NA,
                 "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": "20",
-            },
+            }, #Fails as no assessment factor code
             {
                 "LAchildID": "child2",
+                "AssessmentFactors": "99",
                 "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": "21",
-            },
+            },# Fails as incorrect assessment factor code
             {
                 "LAchildID": "child3",
+                "AssessmentFactors": "1A",
                 "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": "9A",
             },
             {
                 "LAchildID": "child3",
@@ -107,13 +155,18 @@ def test_validate():
             },  # Fails as no factor selected
             {
                 "LAchildID": "child4",
+                "AssessmentFactors": "1A",
                 "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": "8C",
             },
             {
                 "LAchildID": "child5",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentFactors": pd.NA,
+            },
+            {
+                "LAchildID": "child5",
+                "AssessmentAuthorisationDate": "26/05/1945",
+                "AssessmentFactors": pd.NA, # Passes as before census year
             },
         ]
     )
@@ -142,7 +195,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -154,6 +207,22 @@ def test_validate():
     # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
+            {
+                "ERROR_ID": (
+                    "child1",
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    pd.NA,
+                ),
+                "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child2",
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    "99",
+                ),
+                "ROW_ID": [1],
+            },
             {
                 "ERROR_ID": (
                     "child3",
