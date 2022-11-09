@@ -12,10 +12,12 @@ ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
 CPPID_CPP = ChildProtectionPlans.CPPID
+CINdetailsCPP = ChildProtectionPlans.CINdetailsID
 
 Reviews = CINTable.Reviews
 CPPreviewDate = Reviews.CPPreviewDate
 CPPID_reviews = Reviews.CPPID
+CINdetailsReviews = Reviews.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
@@ -64,8 +66,8 @@ def validate(
     #  Merge tables to get corresponding CP plan group and reviews
     df_merged = df_cpp.merge(
         df_reviews,
-        left_on=["CPPID", "LAchildID"],
-        right_on=["CPPID", "LAchildID"],
+        left_on=["CPPID", "LAchildID", "CINdetailsID"],
+        right_on=["CPPID", "LAchildID", "CINdetailsID"],
         how="left",
         suffixes=("_cpp", "_reviews"),
     )
@@ -111,36 +113,43 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "CINdetailsID": "CDID1",
                 "CPPstartDate": "26/05/2000",  # Fails as dates are the same
                 "CPPID": "cinID1",
             },
             {
                 "LAchildID": "child1",
+                "CINdetailsID": "CDID2",
                 "CPPstartDate": "27/06/2002",  #  Fails, review (26/5/2000) before start
                 "CPPID": "cinID2",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID6",
                 "CPPstartDate": "07/02/2001",  # Fails as review is before start (26/5/2000)
                 "CPPID": "cinID6",
             },
             {
                 "LAchildID": "child2",
+                "CINdetailsID": "CDID3",
                 "CPPstartDate": "26/05/2000",  # Passes as Start is before Review (30/05/2000)
                 "CPPID": "cinID3",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID4",
                 "CPPstartDate": "26/05/2000",  # Passes
                 "CPPID": "cinID4",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID5",
                 "CPPstartDate": pd.NA,  # Ignored as rows with no start and end are dropped (this is picked up by other rules)
                 "CPPID": "cinID5",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID7",
                 "CPPstartDate": "14/03/2001",  # Ignored as there is no review date
                 "CPPID": "cinID7",
             },
@@ -150,36 +159,43 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",  # Fails
+                "CINdetailsID": "CDID1",
                 "CPPreviewDate": "26/05/2000",
                 "CPPID": "cinID1",
             },
             {
                 "LAchildID": "child1",  # Fails
+                "CINdetailsID": "CDID2",
                 "CPPreviewDate": "26/05/2000",
                 "CPPID": "cinID2",
             },
             {
                 "LAchildID": "child3",  # Fails
+                "CINdetailsID": "CDID6",
                 "CPPreviewDate": "26/05/2000",
                 "CPPID": "cinID6",
             },
             {
                 "LAchildID": "child2",
+                "CINdetailsID": "CDID3",
                 "CPPreviewDate": "30/05/2000",
                 "CPPID": "cinID3",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID4",
                 "CPPreviewDate": "27/05/2000",
                 "CPPID": "cinID4",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID5",
                 "CPPreviewDate": "26/05/2000",
                 "CPPID": "cinID5",
             },
             {
                 "LAchildID": "child3",
+                "CINdetailsID": "CDID7",
                 "CPPreviewDate": pd.NA,
                 "CPPID": "cinID7",
             },
@@ -207,7 +223,7 @@ def test_validate():
     issues_list = result.type2_issues
     assert (
         len(issues_list) == 2
-    )  #  Tambe, am I right in thinking this is the number of tables with issues?
+    )
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
     issues = issues_list[1]
