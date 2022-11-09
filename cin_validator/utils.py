@@ -10,6 +10,15 @@ def get_values(xml_elements, table_dict, xml_block):
     return table_dict
 
 
+def make_date(date):
+    try:
+        date = pd.to_datetime(date, format="%Y/%m/%d", errors="coerce")
+    except:
+        date = pd.to_datetime(date, format="%d/%m/%Y", errors="coerce")
+
+    return date
+
+
 def make_census_period(reference_date):
     """Generates the census period.
     input [pd.Series]: ReferenceDate
@@ -22,29 +31,14 @@ def make_census_period(reference_date):
     reference_date = reference_date.values[0]
 
     #  Try/except to allow for different datetime formats
-    # TODO can this be DRYed up?
-    try:
-        # the ReferenceDate value is always the collection_end date
-        collection_end = pd.to_datetime(reference_date, format="%d/%m/%Y")
 
-        # the collection start is the 1st of April of the previous year.
-        collection_start = (
-            pd.to_datetime(reference_date, format="%d/%m/%Y")
-            - pd.DateOffset(years=1)
-            + pd.DateOffset(days=1)
-        )
-    except:
-        # the ReferenceDate value is always the collection_end date
-        collection_end = pd.to_datetime(
-            reference_date, format="%Y/%m/%d", errors="coerce"
-        )
+    # the ReferenceDate value is always the collection_end date
+    collection_end = make_date(reference_date)
 
-        # the collection start is the 1st of April of the previous year.
-        collection_start = (
-            pd.to_datetime(reference_date, format="%Y/%m/%d", errors="coerce")
-            - pd.DateOffset(years=1)
-            + pd.DateOffset(days=1)
-        )
+    # the collection start is the 1st of April of the previous year.
+    collection_start = (
+        make_date(reference_date) - pd.DateOffset(years=1) + pd.DateOffset(days=1)
+    )
 
     return collection_start, collection_end
 
