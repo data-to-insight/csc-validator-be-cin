@@ -48,7 +48,9 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    fake_data = pd.DataFrame([[1234], [pd.NA], [pd.NA], [-1]], columns=[NumberOfPreviousCPP])
+    fake_data = pd.DataFrame(
+        [[1234], [pd.NA], [pd.NA], [-1]], columns=[NumberOfPreviousCPP]
+    )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: fake_data})
