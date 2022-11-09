@@ -22,6 +22,7 @@ def make_census_period(reference_date):
     reference_date = reference_date.values[0]
 
     #  Try/except to allow for different datetime formats
+    # TODO can this be DRYed up?
     try:
         # the ReferenceDate value is always the collection_end date
         collection_end = pd.to_datetime(reference_date, format="%d/%m/%Y")
