@@ -35,7 +35,9 @@ def validate(
     # Change the line below to ensure values are >=0 ie not null
 
     # <LAchildID> (N00097) must be present
-    failing_indices = df[df[NumberOfPreviousCPP].isna()].index
+    failing_indices = df[
+        (df[NumberOfPreviousCPP].isna()) | (df[NumberOfPreviousCPP] < 0)
+    ].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
@@ -46,19 +48,20 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    fake_data = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[NumberOfPreviousCPP])
+    fake_data = pd.DataFrame([[1234], [pd.NA], [pd.NA], [-1]], columns=[NumberOfPreviousCPP])
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildProtectionPlans: fake_data})
     # The result contains a list of issues encountered
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issues) == 2
+    assert len(issues) == 3
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
         IssueLocator(CINTable.ChildProtectionPlans, NumberOfPreviousCPP, 1),
         IssueLocator(CINTable.ChildProtectionPlans, NumberOfPreviousCPP, 2),
+        IssueLocator(CINTable.ChildProtectionPlans, NumberOfPreviousCPP, 3),
     ]
 
     # Check that the rule definition is what you wrote in the context above.
