@@ -97,7 +97,9 @@ def validate(
     condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (
         df[AssessmentAuthorisationDate].notna()
     )
-    condition2 = (df[AssessmentFactors].notna()) & (df[AssessmentFactors].isin(factors_list))
+    condition2 = (df[AssessmentFactors].notna()) & (
+        df[AssessmentFactors].isin(factors_list)
+    )
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition1 & ~condition2].reset_index()
@@ -137,12 +139,12 @@ def test_validate():
                 "LAchildID": "child1",
                 "AssessmentFactors": pd.NA,
                 "AssessmentAuthorisationDate": "26/05/2000",
-            }, #Fails as no assessment factor code
+            },  # Fails as no assessment factor code
             {
                 "LAchildID": "child2",
                 "AssessmentFactors": "99",
                 "AssessmentAuthorisationDate": "26/05/2000",
-            },# Fails as incorrect assessment factor code
+            },  # Fails as incorrect assessment factor code
             {
                 "LAchildID": "child3",
                 "AssessmentFactors": "1A",
@@ -166,7 +168,7 @@ def test_validate():
             {
                 "LAchildID": "child5",
                 "AssessmentAuthorisationDate": "26/05/1945",
-                "AssessmentFactors": pd.NA, # Passes as before census year
+                "AssessmentFactors": pd.NA,  # Passes as before census year
             },
         ]
     )
