@@ -47,6 +47,7 @@ class RuleContext:
         self.__definition = definition
         self.__issues = []
         self.__type2_issues = []
+        self.__type3_issues = []
 
     @property
     def definition(self):
@@ -66,7 +67,8 @@ class RuleContext:
 
     def push_type_3(self, table, columns, row_df):
         """One Table, values are checked per group"""
-        self.__type3_issues = Type1(table, columns, row_df)
+        table_tuple = Type1(table, columns, row_df)
+        self.__type3_issues.append(table_tuple)
 
     @property
     def issues(self):
