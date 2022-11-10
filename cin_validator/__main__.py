@@ -51,10 +51,10 @@ def run_all(filename: str, ruleset):
         rule.func(data_files, ctx)
         ruleID = rule.code
         ruleID = ErrorReport(
-            codes = rule.code,
-            number = len(list(ctx.issues)),
-            locations = list(ctx.issues),
-            message = rule.message,
+            codes=rule.code,
+            number=len(list(ctx.issues)),
+            locations=list(ctx.issues),
+            message=rule.message,
         )
         print(ruleID.codes)
         print(ruleID.number)
