@@ -49,7 +49,7 @@ def validate(
         )
     )
     df_issues["ERROR_ID"] = link_id
-    df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
+    df_issues = df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"].apply(list).reset_index()
 
     rule_context.push_type_1(
         table=CINplanDates, columns=[CINPlanEndDate, CINPlanStartDate], row_df=df_issues
