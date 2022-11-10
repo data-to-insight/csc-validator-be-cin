@@ -1,7 +1,7 @@
 """
 Rule number: 4004
 Module: CIN plan dates
-Rule details: Within a <CINDetails> module, there must be only one <CINPlanDates> group where the <CINPlanEnd Date> (N00690) is missing
+Rule details: Within a <CINDetails> module, there must be only one <CINplanDates> group where the <CINPlanEnd Date> (N00690) is missing
 Rule message: This child is showing more than one open CIN Plan, i.e. with no End Date
 
 """
@@ -15,28 +15,28 @@ from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-CINdetails = CINTable.CINdetails
-LAchildID = CINdetails.LAchildID
-CINPlanEndDate = CINdetails.CINPlanEndDate
-CINdetailsID = CINdetails.CINdetailsID
+CINplanDates = CINTable.CINplanDates
+LAchildID = CINplanDates.LAchildID
+CINPlanEndDate = CINplanDates.CINPlanEndDate
+CINdetailsID = CINplanDates.CINdetailsID
 
 
 # define characteristics of rule
 @rule_definition(
     code=4004,
-    module=CINTable.CINdetails,
+    module=CINTable.CINplanDates,
     message="This child is showing more than one open CIN Plan, i.e. with no End Date",
     affected_fields=[CINPlanEndDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    df = data_container[CINdetails]
+    df = data_container[CINplanDates]
     # Rename and reset index
     df.index.name = "ROW_ID"
     df.reset_index(inplace=True)
 
-    # There must be only one <CINPlanDates> group where the <CINPlanEnd Date> (N00690) is missing
+    # There must be only one <CINplanDates> group where the <CINPlanEnd Date> (N00690) is missing
 
     df_check = df.copy()
     df_check = df_check[df_check[CINPlanEndDate].isna()]
@@ -58,13 +58,13 @@ def validate(
 
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     rule_context.push_type_3(
-        table=CINdetails, columns=[CINPlanEndDate], row_df=df_issues
+        table=CINplanDates, columns=[CINPlanEndDate], row_df=df_issues
     )
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    sample_CINdetails = pd.DataFrame(
+    sample_CINplanDates = pd.DataFrame(
         [  # child1
             {
                 LAchildID: "child1",
@@ -101,21 +101,21 @@ def test_validate():
     )
     # if rule requires columns containing date values, convert those columns to
     # datetime objects first. Do it here in the test_validate function, not above.
-    sample_CINdetails[CINPlanEndDate] = pd.to_datetime(
-        sample_CINdetails[CINPlanEndDate],
+    sample_CINplanDates[CINPlanEndDate] = pd.to_datetime(
+        sample_CINplanDates[CINPlanEndDate],
         format="%d/%m/%Y",
         errors="coerce",
     )
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {CINdetails: sample_CINdetails})
+    result = run_rule(validate, {CINplanDates: sample_CINplanDates})
 
     # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
     issues = result.type3_issues
 
-    # get table name and check it. Replace CINdetails with the name of your table.
+    # get table name and check it. Replace CINplanDates with the name of your table.
     issue_table = issues.table
-    assert issue_table == CINdetails
+    assert issue_table == CINplanDates
 
     # check that the right columns were returned. Replace CINPlanEndDate with a list of your columns.
     issue_columns = issues.columns
