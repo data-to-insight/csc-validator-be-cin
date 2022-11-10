@@ -61,7 +61,11 @@ def validate(
         )
     )
     df_issues["ERROR_ID"] = link_id
-    df_issues = df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"].apply(list).reset_index()
+    df_issues = (
+        df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=Assessments,
