@@ -1,3 +1,5 @@
+import pandas as pd
+
 import importlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -44,27 +46,22 @@ def run_all(filename: str, ruleset):
     data_files = DataContainerWrapper(XMLtoCSV(root))
 
     importlib.import_module(f"cin_validator.{ruleset}")
+
+    error_df = pd.DataFrame()
     for rule in registry:
 
         ctx = RuleContext(rule)
 
         rule.func(data_files, ctx)
-        ruleID = rule.code
-        ruleID = ErrorReport(
-            codes=rule.code,
-            number=len(list(ctx.issues)),
-            locations=list(ctx.issues),
-            message=rule.message,
-        )
-        print(ruleID.codes)
-        print(ruleID.number)
-        print(ruleID.message)
-        print(ruleID.locations)
-        # if len(list(ctx.issues)) == 0:
-        #     print(rule.code, len(list(ctx.issues)))
-        # else:
-        #     for i in range(len(list(ctx.issues))):
-        #         print(rule.code, list(ctx.issues)[i], rule.message)
+
+        if len(list(ctx.issues)) == 0:
+            dict = {'code': rule.code,
+                    'number' : 0,}
+        else:
+            dict = {'code': rule.code,
+                    'number': len(list(ctx.issues))}
+        error_df = error_df.append(dict, ignore_index=True)
+    print(error_df)      
 
 
 @cli.command(name="test")
