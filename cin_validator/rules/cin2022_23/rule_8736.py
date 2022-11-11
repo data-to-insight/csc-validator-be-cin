@@ -80,7 +80,6 @@ def validate(
         columns=[AssessmentAuthorisationDate, AssessmentActualStartDate],
         row_df=df_issues,
     )
-    print(df_issues)
 
 
 def test_validate():

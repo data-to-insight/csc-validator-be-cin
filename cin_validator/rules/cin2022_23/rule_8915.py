@@ -73,7 +73,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_CPP_issues)
 
     df_CI_issues = (
         df_CI.merge(df, left_on="ROW_ID", right_on="ROW_ID_CI")
