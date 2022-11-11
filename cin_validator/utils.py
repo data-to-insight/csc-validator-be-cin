@@ -10,13 +10,14 @@ def get_values(xml_elements, table_dict, xml_block):
     return table_dict
 
 
-def make_date(date):
-    try:
-        date = pd.to_datetime(date, format="%Y/%m/%d", errors="coerce")
-    except:
-        date = pd.to_datetime(date, format="%d/%m/%Y", errors="coerce")
-
+def make_date(date_input):
+    """Allows Ymd or dmY date inputs, used for make_cancus_period.
+    Important for test_validate functions"""
+    date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
+    if pd.isna(date):
+        date = pd.to_datetime(date_input, format="%d/%m/%Y", errors="coerce")
     return date
+
 
 
 def make_census_period(reference_date):
