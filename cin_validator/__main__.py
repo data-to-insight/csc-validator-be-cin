@@ -45,6 +45,7 @@ def run_all(filename: str, ruleset):
 
     importlib.import_module(f"cin_validator.{ruleset}")
     for rule in registry:
+
         try:
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
@@ -55,6 +56,8 @@ def run_all(filename: str, ruleset):
                 for i in range(len(list(ctx.issues))):
                     print(rule.code, list(ctx.issues)[i], rule.message)
         except:
+            ctx = RuleContext(rule)
+            #rule.func(data_files, ctx)
             print("Error with rule " + str(rule.code))
 
 
