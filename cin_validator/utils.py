@@ -51,3 +51,12 @@ class DataContainerWrapper:
         return getattr(self.value, name.name)
 
 
+class ErrorReport:
+    """Class containing rules, number of errors per rule, and locations
+    per rule."""
+
+    def __init__(self, codes: int, number: int, locations, message: str):
+        self.codes = codes
+        self.number = number
+        self.locations = locations
+        self.message = message
