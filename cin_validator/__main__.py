@@ -7,7 +7,7 @@ import pytest
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper
+from cin_validator.utils import DataContainerWrapper, ErrorReport
 
 
 @click.group()
@@ -47,8 +47,24 @@ def run_all(filename: str, ruleset):
     for rule in registry:
 
         ctx = RuleContext(rule)
+
         rule.func(data_files, ctx)
-        print(rule.code, len(list(ctx.issues)))
+        ruleID = rule.code
+        ruleID = ErrorReport(
+            codes=rule.code,
+            number=len(list(ctx.issues)),
+            locations=list(ctx.issues),
+            message=rule.message,
+        )
+        print(ruleID.codes)
+        print(ruleID.number)
+        print(ruleID.message)
+        print(ruleID.locations)
+        # if len(list(ctx.issues)) == 0:
+        #     print(rule.code, len(list(ctx.issues)))
+        # else:
+        #     for i in range(len(list(ctx.issues))):
+        #         print(rule.code, list(ctx.issues)[i], rule.message)
 
 
 @cli.command(name="test")
