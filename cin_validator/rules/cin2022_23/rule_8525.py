@@ -33,6 +33,7 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
+    df = df.drop(columns=['ROW_ID'], errors='ignore')
     df.index.name = "ROW_ID"
 
     # lOGIC
