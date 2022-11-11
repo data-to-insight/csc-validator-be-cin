@@ -69,7 +69,7 @@ def validate(
 
     df_CPP_issues = (
         df_CPP.merge(df, left_on="ROW_ID", right_on="ROW_ID_CPP")
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
@@ -77,7 +77,7 @@ def validate(
 
     df_CI_issues = (
         df_CI.merge(df, left_on="ROW_ID", right_on="ROW_ID_CI")
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )

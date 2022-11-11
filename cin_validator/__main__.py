@@ -56,10 +56,10 @@ def run_all(filename: str, ruleset):
             locations=list(ctx.issues),
             message=rule.message,
         )
-        print(ruleID.codes)
-        print(ruleID.number)
-        print(ruleID.message)
-        print(ruleID.locations)
+        # print(ruleID.codes)
+        # print(ruleID.number)
+        # print(ruleID.message)
+        # print(ruleID.locations)
         # if len(list(ctx.issues)) == 0:
         #     print(rule.code, len(list(ctx.issues)))
         # else:
