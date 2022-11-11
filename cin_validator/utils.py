@@ -19,7 +19,6 @@ def make_date(date_input):
     return date
 
 
-
 def make_census_period(reference_date):
     """Generates the census period.
     input [pd.Series]: ReferenceDate

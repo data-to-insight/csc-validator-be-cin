@@ -55,13 +55,14 @@ def run_all(filename: str, ruleset):
         rule.func(data_files, ctx)
 
         if len(list(ctx.issues)) == 0:
-            dict = {'code': rule.code,
-                    'number' : 0,}
+            dict = {
+                "code": rule.code,
+                "number": 0,
+            }
         else:
-            dict = {'code': rule.code,
-                    'number': len(list(ctx.issues))}
+            dict = {"code": rule.code, "number": len(list(ctx.issues))}
         error_df = error_df.append(dict, ignore_index=True)
-    print(error_df)      
+    print(error_df)
 
 
 @cli.command(name="test")
