@@ -41,12 +41,16 @@ def validate(
 
     # Either Date of Birth or Expected Date of Birth must be provided (but not both)
     # condition_1 = (df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].isna())
-    condition_1 = (df[PersonBirthDate].isna()) & (df[ExpectedPersonBirthDate].isna())
-    condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
+
+    # condition_1 = (df[PersonBirthDate].isna()) & (df[ExpectedPersonBirthDate].isna())
+    # condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
+
+    mega_condition = (
+        df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].notna()
+    ) | (df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].isna())
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition_1 | condition_2].reset_index()
-
+    df_issues = df[~mega_condition].reset_index()
 
     # (LAchildID,PersonBirthDate,ExpectedPersonBirthDate) could have been used. However, in some failing conditions,
     # both (PersonBirthDate,ExpectedPersonBirthDate) can be null so their combination does not serve as a unique ID.

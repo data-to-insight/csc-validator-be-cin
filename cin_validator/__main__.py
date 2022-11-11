@@ -57,7 +57,7 @@ def run_all(filename: str, ruleset):
                     print(rule.code, list(ctx.issues)[i], rule.message)
         except:
             ctx = RuleContext(rule)
-            #rule.func(data_files, ctx)
+            # rule.func(data_files, ctx)
             print("Error with rule " + str(rule.code))
 
 
