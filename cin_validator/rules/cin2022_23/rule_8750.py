@@ -22,7 +22,7 @@ GenderCurrent = ChildIdentifiers.GenderCurrent
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Gender must equal 0 for an unborn child",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[GenderCurrent, PersonBirthDate],
+    affected_fields=[GenderCurrent, PersonBirthDate, ExpectedPersonBirthDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -61,18 +61,19 @@ def validate(
         zip(
             df_issues[LAchildID],
             df_issues[GenderCurrent],
-            df_issues[PersonBirthDate],
+            df_issues[ExpectedPersonBirthDate],
         )
     )
     df_issues["ERROR_ID"] = link_id
+    print ('df_issues with link_id \n', df_issues)
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=ChildIdentifiers,
-        columns=[GenderCurrent, PersonBirthDate],
+        columns=[GenderCurrent, PersonBirthDate, ExpectedPersonBirthDate],
         row_df=df_issues,
     )
-
+    print ('df_issues after groupby \n', df_issues)
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
@@ -108,6 +109,12 @@ def test_validate():
                 "ExpectedPersonBirthDate": "25/05/2000",
                 "GenderCurrent": "2",
             },
+            {  # 5 - Fail - Unborn with Gender = 1
+                "LAchildID": "child4",
+                "PersonBirthDate": pd.NA,
+                "ExpectedPersonBirthDate": "25/05/2000",
+                "GenderCurrent": "1",
+            },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
@@ -130,12 +137,12 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [GenderCurrent, PersonBirthDate]
+    assert issue_columns == [GenderCurrent, PersonBirthDate, ExpectedPersonBirthDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -151,12 +158,22 @@ def test_validate():
                 "ERROR_ID": (
                     "child4",
                     "2",
-                    pd.NaT,
+                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [4],
             },
+            {
+                "ERROR_ID": (
+                    "child4",
+                    "1",
+                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [5],
+            },
         ]
     )
+    print ('issue_rows \n', issue_rows)
+    print ('expected_df \n', expected_df)
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
