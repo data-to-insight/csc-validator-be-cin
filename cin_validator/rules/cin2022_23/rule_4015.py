@@ -35,19 +35,11 @@ def validate(
     df_cindetail = data_container[CINdetails].copy()
     df_cinplan = data_container[CINplanDates].copy()
 
-    print(df_cindetail)
-    print(df_cinplan)
-
     df_cindetail.index.name = "ROW_ID"
     df_cinplan.index.name = "ROW_ID"
 
     df_cindetail.reset_index(inplace=True)
     df_cinplan.reset_index(inplace=True)
-
-    df_cindetail = df_cindetail[
-        ["ROW_ID", "LAchildID", "CINdetailsID", "CINreferralDate"]
-    ]
-    df_cinplan = df_cinplan[["ROW_ID", "LAchildID", "CINdetailsID", "CINPlanStartDate"]]
 
     df_cinplan = df_cinplan[df_cinplan[CINPlanStartDate].notna()]
 
