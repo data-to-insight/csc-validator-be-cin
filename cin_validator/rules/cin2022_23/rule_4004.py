@@ -56,7 +56,11 @@ def validate(
     df["ERROR_ID"] = tuple(zip(df[LAchildID], df[CINdetailsID]))
     df_issues = df[df.ERROR_ID.isin(issue_ids)]
 
-    df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
+    df_issues = (
+        df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
     rule_context.push_type_3(
         table=CINplanDates, columns=[CINPlanEndDate], row_df=df_issues
     )
