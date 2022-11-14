@@ -66,7 +66,11 @@ def validate(
     df["ERROR_ID"] = tuple(zip(df[LAchildID], df[CINdetailsID]))
     df_issues = df[df.ERROR_ID.isin(issue_ids)]
 
-    df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
+    df_issues = (
+        df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_3(
         table=Assessments, columns=[AssessmentAuthorisationDate], row_df=df_issues
@@ -121,7 +125,11 @@ def test_validate():
     result = run_rule(validate, {Assessments: sample_assessments})
 
     # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
-    issues = result.type3_issues
+    issues_list = result.type3_issues
+    # Issues list contains the objects pushed in their respective order. Since push_type3 was only used once, there will be one object in issues_list.
+    assert len(issues_list) == 1
+
+    issues = issues_list[0]
 
     # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table

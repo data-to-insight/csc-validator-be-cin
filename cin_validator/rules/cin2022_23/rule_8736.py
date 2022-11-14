@@ -10,7 +10,8 @@ from cin_validator.utils import make_census_period
 
 Assessments = CINTable.Assessments
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
-AssessmentFactors = Assessments.AssessmentFactors
+AssessmentActualStartDate = Assessments.AssessmentActualStartDate
+CINdetailsID = Assessments.CINdetailsID
 LAchildID = Assessments.LAchildID
 
 Header = CINTable.Header
@@ -18,14 +19,10 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
-    code=8897,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    code=8736,
     module=CINTable.Assessments,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Parental or child factors at assessment information is missing from a completed assessment",
-    # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[AssessmentAuthorisationDate, AssessmentFactors],
+    message="For an Assessment that has not been completed, the start date must fall within the census year",
+    affected_fields=[AssessmentAuthorisationDate, AssessmentActualStartDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -34,7 +31,6 @@ def validate(
 
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Assessments]
-
     header = data_container[Header]
     ref_date_series = header[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_date_series)
@@ -46,63 +42,14 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # Where present, if <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then one or more <AssessmentFactors>
-    # (N00181) must be present within the same assessment module and must be a valid code
-    # Get collection period
-    factors_list = [
-        "1A",
-        "1B",
-        "1C",
-        "2A",
-        "2B",
-        "2C",
-        "3A",
-        "3B",
-        "3C",
-        "4A",
-        "4B",
-        "4C",
-        "5A",
-        "5B",
-        "5C",
-        "6A",
-        "6B",
-        "6C",
-        "7A",
-        "8B",
-        "8C",
-        "8D",
-        "8E",
-        "8F",
-        "9A",
-        "10A",
-        "11A",
-        "12A",
-        "13A",
-        "14A",
-        "15A",
-        "16A",
-        "17A",
-        "18B",
-        "18C",
-        "19B",
-        "19C",
-        "20",
-        "21",
-        "22A",
-        "23A",
-        "24A",
-    ]
-
-    condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (
-        df[AssessmentAuthorisationDate].notna()
-    )
-    condition2 = (df[AssessmentFactors].notna()) & (
-        df[AssessmentFactors].isin(factors_list)
+    # Where present, if an <Assessments> group does not contain the <AssessmentAuthorisationDate> (N00160) then the <AssessmentActualStartDate> (N00159) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
+    condition_1 = (df[CINdetailsID].notna()) & (df[AssessmentAuthorisationDate].isna())
+    condition_2 = (collection_start <= df[AssessmentActualStartDate]) & (
+        df[AssessmentActualStartDate] <= collection_end
     )
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition1 & ~condition2].reset_index()
+    df_issues = df[condition_1 & ~condition_2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -117,8 +64,8 @@ def validate(
     link_id = tuple(
         zip(
             df_issues[LAchildID],
-            df_issues[AssessmentAuthorisationDate],
-            df_issues[AssessmentFactors],
+            df_issues[CINdetailsID],
+            df_issues[AssessmentActualStartDate],
         )
     )
     df_issues["ERROR_ID"] = link_id
@@ -130,62 +77,73 @@ def validate(
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=Assessments,
-        columns=[AssessmentAuthorisationDate, AssessmentFactors],
+        columns=[AssessmentAuthorisationDate, AssessmentActualStartDate],
         row_df=df_issues,
     )
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    fake_data = pd.DataFrame(
+
+    fake_header = pd.DataFrame(
+        [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
+    )
+
+    child_assessments = pd.DataFrame(
         [
             {
+                "CINdetailsID": pd.NA,
                 "LAchildID": "child1",
-                "AssessmentFactors": pd.NA,
-                "AssessmentAuthorisationDate": "26/05/2000",
-            },  # Fails as no assessment factor code
+                "AssessmentAuthorisationDate": pd.NA,
+                "AssessmentActualStartDate": "27/05/2021",
+            },
             {
+                "CINdetailsID": "1",
                 "LAchildID": "child2",
-                "AssessmentFactors": "99",
-                "AssessmentAuthorisationDate": "26/05/2000",
-            },  # Fails as incorrect assessment factor code
-            {
-                "LAchildID": "child3",
-                "AssessmentFactors": "1A",
-                "AssessmentAuthorisationDate": "26/05/2000",
+                "AssessmentAuthorisationDate": pd.NA,
+                "AssessmentActualStartDate": "26/03/2020",
+                # 1 error: start date is outside the reporting period
             },
             {
+                "CINdetailsID": "1",
                 "LAchildID": "child3",
-                "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": pd.NA,
-            },  # Fails as no factor selected
+                "AssessmentAuthorisationDate": "27/06/2021",
+                "AssessmentActualStartDate": "27/05/2021",
+            },
             {
+                "CINdetailsID": "1",
                 "LAchildID": "child4",
-                "AssessmentFactors": "1A",
-                "AssessmentAuthorisationDate": "26/05/2000",
+                "AssessmentAuthorisationDate": pd.NA,
+                "AssessmentActualStartDate": "10/04/2024",
+                # 3 error: start date is outside the reporting period
             },
             {
+                "CINdetailsID": "1",
                 "LAchildID": "child5",
                 "AssessmentAuthorisationDate": pd.NA,
-                "AssessmentFactors": pd.NA,
+                "AssessmentActualStartDate": "27/05/2022",
+                # 4 error: start date is outside the reporting period
             },
             {
-                "LAchildID": "child5",
-                "AssessmentAuthorisationDate": "26/05/1945",
-                "AssessmentFactors": pd.NA,  # Passes as before census year
+                "CINdetailsID": pd.NA,
+                "LAchildID": "child6",
+                "AssessmentAuthorisationDate": pd.NA,
+                "AssessmentActualStartDate": pd.NA,
             },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
-
-    fake_data[AssessmentAuthorisationDate] = pd.to_datetime(
-        fake_data[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
+    child_assessments[AssessmentAuthorisationDate] = pd.to_datetime(
+        child_assessments[AssessmentAuthorisationDate],
+        format="%d/%m/%Y",
+        errors="coerce",
+    )
+    child_assessments[AssessmentActualStartDate] = pd.to_datetime(
+        child_assessments[AssessmentActualStartDate], format="%d/%m/%Y", errors="coerce"
     )
 
-    sample_header = pd.DataFrame([{ReferenceDate: "31/03/2001"}])
-
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Assessments: fake_data, Header: sample_header})
+    result = run_rule(validate, {Assessments: child_assessments, Header: fake_header})
 
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
@@ -196,7 +154,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [AssessmentAuthorisationDate, AssessmentFactors]
+    assert issue_columns == [AssessmentAuthorisationDate, AssessmentActualStartDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -215,27 +173,27 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    "child1",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.NA,
-                ),
-                "ROW_ID": [0],
-            },
-            {
-                "ERROR_ID": (
                     "child2",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    "99",
+                    "1",
+                    pd.to_datetime("26/03/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
             },
             {
                 "ERROR_ID": (
-                    "child3",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.NA,
+                    "child4",
+                    "1",
+                    pd.to_datetime("10/04/2024", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [3],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    "1",
+                    pd.to_datetime("27/05/2022", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [4],
             },
         ]
     )
@@ -244,8 +202,8 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8925 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8897
+    assert result.definition.code == 8736
     assert (
         result.definition.message
-        == "Parental or child factors at assessment information is missing from a completed assessment"
+        == "For an Assessment that has not been completed, the start date must fall within the census year"
     )

@@ -9,7 +9,7 @@ import pytest
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper, ErrorReport
+from cin_validator.utils import DataContainerWrapper
 
 
 @click.group()
@@ -50,19 +50,19 @@ def run_all(filename: str, ruleset):
     error_df = pd.DataFrame()
     for rule in registry:
 
-        ctx = RuleContext(rule)
-
-        rule.func(data_files, ctx)
-
-        if len(list(ctx.issues)) == 0:
-            dict = {
-                "code": rule.code,
-                "number": 0,
-            }
-        else:
-            dict = {"code": rule.code, "number": len(list(ctx.issues))}
-        error_df = error_df.append(dict, ignore_index=True)
-    print(error_df)
+        try:
+            ctx = RuleContext(rule)
+            rule.func(data_files, ctx)
+            if len(list(ctx.issues)) == 0:
+                print(rule.code, len(list(ctx.issues)))
+            else:
+                pass
+                for i in range(len(list(ctx.issues))):
+                    print(rule.code, list(ctx.issues)[i], rule.message)
+        except:
+            ctx = RuleContext(rule)
+            # rule.func(data_files, ctx)
+            print("Error with rule " + str(rule.code))
 
 
 @cli.command(name="test")
