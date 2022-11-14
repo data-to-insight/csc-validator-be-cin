@@ -1,15 +1,14 @@
-import pandas as pd
-
 import importlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
+import pandas as pd
 import pytest
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper
+from cin_validator.utils import DataContainerWrapper, process_issues
 
 
 @click.group()
@@ -54,34 +53,43 @@ def run_all(filename: str, ruleset):
         try:
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
-            if len(list(ctx.issues)) == 0:
-                error_dict = {
-                    "code": rule.code,
-                    "number": 0,
-                }
-            else:
-                error_dict = {"code": rule.code, "number": len(list(ctx.issues))}
-                for i in range(len(list(ctx.issues))):
-                    individual_error_dict = {
-                        "code": rule.code,
-                        "table": str(list(ctx.issues)[i].table)[9:],
-                        "field": str(list(ctx.issues)[i].field),
-                        "row": str(list(ctx.issues)[i].row),
-                    }
-                    individual_error_dict_df = pd.DataFrame([individual_error_dict])
-                    individual_error_df = pd.concat(
-                        [individual_error_df, individual_error_dict_df],
-                        ignore_index=True,
-                    )
+            # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
+            lst_ctx = pd.Series(
+                [
+                    len(list(ctx.issues)),
+                    len(ctx.type1_issues),
+                    len(list(ctx.type2_issues)),
+                    len(list(ctx.type3_issues)),
+                ]
+            )
+            print(f"{rule.code} {lst_ctx.idxmax()}")
+
+            # rule_type = pd.concat(rule_type, pd.DataFrame({"code":str(rule.code), "type":str(lst_ctx.idxmax())}))
+            # if lst_ctx.max() == 0:
+            #     # if the rule didn't push to any of the issue accumulators
+            #     error_dict = {
+            #         "code": rule.code,
+            #         "number": 0,
+            #     }
+            # else:
+            #     ind = lst_ctx.idxmax()
+            #     if ind==0:
+            #         # if the rule pushed to context.issue i.e it is a beginner rule.
+            #         error_dict, individual_error_df = process_issues(rule, ctx, individual_error_df)
+            #     elif ind==1:
+            #         # handle like a type_1 rule.
+            #         pass
         except:
-            ctx = RuleContext(rule)
             print("Error with rule " + str(rule.code))
-        error_dict_df = pd.DataFrame([error_dict])
-        error_df_overview = pd.concat(
-            [error_df_overview, error_dict_df], ignore_index=True
-        )
-    print(error_df_overview)
-    print(individual_error_df)
+
+    #     error_dict_df = pd.DataFrame([error_dict])
+    #     error_df_overview = pd.concat(
+    #         [error_df_overview, error_dict_df], ignore_index=True
+    #     )
+    # # why does this print the same thing when included in the for loop
+    # print(error_df_overview)
+    # print(individual_error_df)
+    # print(rule_type)
 
 
 @cli.command(name="test")

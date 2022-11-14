@@ -28,6 +28,11 @@ class Type1:
     columns: List[str]
     row_df: pd.DataFrame
 
+    def __len__(self):
+        # self.type1_issues contains only this object.
+        # This dunder method defines what happens when len(self.type1_issues) is run
+        return len([self.table])
+
 
 class IssueLocatorLists:
     def __init__(self, table, field, row):
@@ -45,7 +50,12 @@ class IssueLocatorLists:
 class RuleContext:
     def __init__(self, definition: RuleDefinition):
         self.__definition = definition
+        # TODO create list of rules according to types to prevent checking all attributes each time a rule is run.
+        # Possibly classify rule code by adding it to a list of rules with a similar type, when push is done.
+
         self.__issues = []
+        # type1 issues are also initialised here so that errors that don't push to it should still have it as an attribute and not raise an error when checked.
+        self.__type1_issues = []
         self.__type2_issues = []
         self.__type3_issues = []
 
