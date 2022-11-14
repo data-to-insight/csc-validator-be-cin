@@ -47,22 +47,34 @@ def run_all(filename: str, ruleset):
 
     importlib.import_module(f"cin_validator.{ruleset}")
 
-    error_df = pd.DataFrame()
+    error_df_overview = pd.DataFrame()
+    individual_error_df = pd.DataFrame()
     for rule in registry:
 
         try:
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
             if len(list(ctx.issues)) == 0:
-                print(rule.code, len(list(ctx.issues)))
+                error_dict = {
+                    "code": rule.code,
+                    "number": 0,
+                }
             else:
-                pass
+                error_dict = {"code": rule.code, "number": len(list(ctx.issues))}
                 for i in range(len(list(ctx.issues))):
-                    print(rule.code, list(ctx.issues)[i], rule.message)
+                    individual_error_dict = {
+                                             "code":rule.code,
+                                             "location":str(list(ctx.issues)[i]),
+                    }
+                    individual_error_dict_df = pd.DataFrame([individual_error_dict])  
+                    individual_error_df = pd.concat([individual_error_df, individual_error_dict_df], ignore_index=True)
         except:
             ctx = RuleContext(rule)
-            # rule.func(data_files, ctx)
             print("Error with rule " + str(rule.code))
+        error_dict_df = pd.DataFrame([error_dict])
+        error_df_overview = pd.concat([error_df_overview, error_dict_df], ignore_index=True)  
+    print(error_df_overview)
+    print(individual_error_df)
 
 
 @cli.command(name="test")
