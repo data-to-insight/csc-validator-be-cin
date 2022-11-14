@@ -4,14 +4,12 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPendDate = ChildProtectionPlans.CPPendDate
 LAchildID = ChildProtectionPlans.LAchildID
-#CPP_Planid = ChildProtectionPlans.LAchildID
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
@@ -19,14 +17,9 @@ LAchildID = ChildIdentifiers.LAchildID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here
     code=8920,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
-    # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildProtectionPlans,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child Protection Plan cannot end after the child’s Date of Death",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         PersonDeathDate,
         CPPendDate,
@@ -54,14 +47,14 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # Within a <ChildProtectionPlans> group, there should be no <CPPreviewDate> (N00116) that is the same as or before the <CPPstartDate> (N00105)
-    # Issues dfs should return rows where CPPreviewDate is less than or equal to the CPPstartDate
+    # f <PersonDeathDate> (N00108) is present, then <CPPendDate> (N00115) must be on or before <PersonDeathDate> (N00108)
+    # Issues dfs should return rows where PersonDeathDate is less than or equal to the CPPendDate
 
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
     df_cpp = df_cpp[df_cpp[CPPendDate].notna()]
     df_child = df_child[df_child[PersonDeathDate].notna()]
 
-    #  Merge tables to get corresponding CP plan group and reviews
+    #  Merge tables to get corresponding CP plan group for the child
     df_merged = df_cpp.merge(
         df_child,
         left_on=["LAchildID", "CINdetailsID"],
@@ -70,18 +63,19 @@ def validate(
         suffixes=("_cpp", "_reviews"),
     )
 
-    #  Get rows where CPPendDate is on or before PersonDeathDate
-    condition = df_merged[CPPendDate] >= df_merged[PersonDeathDate]
+    #  Get rows where CPPendDate is after PersonDeathDate
+    condition = df_merged[CPPendDate] > df_merged[PersonDeathDate]
     df_merged = df_merged[condition].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
+    # In this case, the rule is checked for each CPPendDate against the PersonDeathDate for that child.
+    # A child may have multiple CP Plans but only 1 should be current at anytime and requires a CPPendDate
+    
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged[CPPendDate], df_merged[PersonDeathDate])
     )
 
-    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of cpp_df and child_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpp")
@@ -111,76 +105,76 @@ def test_validate():
             {
                 "LAchildID": "child1",
                 "CINdetailsID": "CDID1",
-                "CPPendDate": "26/05/2000",  # Fails as dates are the same
+                "CPPendDate": "26/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "CDID2",
-                "CPPendDate": "27/06/2002",  #  Fails, review (26/5/2000) before start
+                "CPPendDate": "27/06/2002",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child3",
                 "CINdetailsID": "CDID3",
-                "CPPendDate": "07/02/2001",  # Fails as review is before start (26/5/2000)
+                "CPPendDate": "07/02/2001",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "CDID4",
-                "CPPstartDate": "26/05/2000",  # Passes as Start is before Review (30/05/2000)
+                "CPPendDate": "26/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "CDID5",
-                "CPPendDate": "26/05/2000",  # Passes
+                "CPPendDate": "26/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child6",
                 "CINdetailsID": "CDID6",
-                "CPPendDate": pd.NA,  # Ignored as rows with no start and end are dropped (this is picked up by other rules)
+                "CPPendDate": pd.NA,  # Ignored as rows with no CPPendDate are dropped (this is picked up by other rules)
             },
             {
                 "LAchildID": "child7",
                 "CINdetailsID": "CDID7",
-                "CPPendDate": "14/03/2001",  # Ignored as there is no review date
+                "CPPendDate": "14/03/2001",  # Ignored as rows with no PersonDeathDate are dropped (this is picked up by other rules)
             },
         ]
     )
     sample_children = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  # Fails as Death Date is before CPP end date
+                "LAchildID": "child1",  
                 "CINdetailsID": "CDID1",
-                "PersonDeathDate": "25/05/2000",
+                "PersonDeathDate": "25/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child2",  # Fails
+                "LAchildID": "child2",  
                 "CINdetailsID": "CDID2",
-                "PersonDeathDate": "29/05/2000",
+                "PersonDeathDate": "29/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child3",  # Fails
+                "LAchildID": "child3",  
                 "CINdetailsID": "CDID3",
-                "PersonDeathDate": "26/03/2000",
+                "PersonDeathDate": "26/03/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "CDID4",
-                "PersonDeathDate": "30/05/2000",
+                "PersonDeathDate": "30/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "CDID5",
-                "PersonDeathDate": "27/05/2000",
+                "PersonDeathDate": "27/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child6",
                 "CINdetailsID": "CDID6",
-                "PersonDeathDate": "26/05/2000",
+                "PersonDeathDate": "26/05/2000",  # Ignored as rows with no CPPendDate are dropped (this is picked up by other rules)
             },
             {
                 "LAchildID": "child7",
                 "CINdetailsID": "CDID7",
-                "PersonDeathDate": pd.NA,
+                "PersonDeathDate": pd.NA,  # Ignored as rows with no PersonDeathDate are dropped (this is picked up by other rules)
             },
         ]
     )
@@ -204,7 +198,7 @@ def test_validate():
 
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
-    assert len(issues_list) == 3
+    assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
     issues = issues_list[1]
@@ -215,7 +209,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [CPPendDate]
+    assert issue_columns == [PersonDeathDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -244,7 +238,7 @@ def test_validate():
             },
             {
                 "ERROR_ID": (
-                    "child1",  # ChildID
+                    "child2",  # ChildID
                     # CPP End Date
                     pd.to_datetime("27/06/2002", format="%d/%m/%Y", errors="coerce"),
                     # Person Death Date
