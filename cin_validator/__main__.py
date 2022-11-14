@@ -72,7 +72,7 @@ def run_all(filename: str, ruleset):
                     individual_error_df = pd.concat(
                         [individual_error_df, individual_error_dict_df],
                         ignore_index=True,
-                    )              
+                    )
         except:
             ctx = RuleContext(rule)
             print("Error with rule " + str(rule.code))
