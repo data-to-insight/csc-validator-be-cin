@@ -64,7 +64,7 @@ def run_all(filename: str, ruleset):
                 for i in range(len(list(ctx.issues))):
                     individual_error_dict = {
                         "code": rule.code,
-                        "table": str(list(ctx.issues)[i].table),
+                        "table": str(list(ctx.issues)[i].table)[9:],
                         "field": str(list(ctx.issues)[i].field),
                         "row": str(list(ctx.issues)[i].row),
                     }
