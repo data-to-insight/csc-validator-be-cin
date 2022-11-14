@@ -64,13 +64,15 @@ def run_all(filename: str, ruleset):
                 for i in range(len(list(ctx.issues))):
                     individual_error_dict = {
                         "code": rule.code,
-                        "location": str(list(ctx.issues)[i]),
+                        "table": str(list(ctx.issues)[i].table),
+                        "field": str(list(ctx.issues)[i].field),
+                        "row": str(list(ctx.issues)[i].row),
                     }
                     individual_error_dict_df = pd.DataFrame([individual_error_dict])
                     individual_error_df = pd.concat(
                         [individual_error_df, individual_error_dict_df],
                         ignore_index=True,
-                    )
+                    )              
         except:
             ctx = RuleContext(rule)
             print("Error with rule " + str(rule.code))
