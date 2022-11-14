@@ -1,4 +1,4 @@
-from typing import Mapping
+ffrom typing import Mapping
 
 import pandas as pd
 
@@ -57,10 +57,10 @@ def validate(
     #  Merge tables to get corresponding CP plan group for the child
     df_merged = df_cpp.merge(
         df_child,
-        left_on=["LAchildID", "CINdetailsID"],
-        right_on=["LAchildID", "CINdetailsID"],
+        left_on=["LAchildID"],
+        right_on=["LAchildID"],
         how="left",
-        suffixes=("_cpp", "_reviews"),
+        suffixes=("_cpp", "_child"),
     )
 
     #  Get rows where CPPendDate is after PersonDeathDate
@@ -70,7 +70,7 @@ def validate(
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPendDate against the PersonDeathDate for that child.
     # A child may have multiple CP Plans but only 1 should be current at anytime and requires a CPPendDate
-
+    
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged[CPPendDate], df_merged[PersonDeathDate])
     )
@@ -84,7 +84,7 @@ def validate(
         .reset_index()
     )
     df_reviews_issues = (
-        df_child.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_reviews")
+        df_child.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_child")
         .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
@@ -98,44 +98,36 @@ def validate(
         table=ChildIdentifiers, columns=[PersonDeathDate], row_df=df_reviews_issues
     )
 
-
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     sample_cpp = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "CDID1",
                 "CPPendDate": "26/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child2",
-                "CINdetailsID": "CDID2",
                 "CPPendDate": "27/06/2002",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child3",
-                "CINdetailsID": "CDID3",
                 "CPPendDate": "07/02/2001",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child4",
-                "CINdetailsID": "CDID4",
                 "CPPendDate": "26/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child5",
-                "CINdetailsID": "CDID5",
                 "CPPendDate": "26/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child6",
-                "CINdetailsID": "CDID6",
                 "CPPendDate": pd.NA,  # Ignored as rows with no CPPendDate are dropped (this is picked up by other rules)
             },
             {
                 "LAchildID": "child7",
-                "CINdetailsID": "CDID7",
                 "CPPendDate": "14/03/2001",  # Ignored as rows with no PersonDeathDate are dropped (this is picked up by other rules)
             },
         ]
@@ -143,38 +135,31 @@ def test_validate():
     sample_children = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",
-                "CINdetailsID": "CDID1",
+                "LAchildID": "child1",  
                 "PersonDeathDate": "25/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child2",
-                "CINdetailsID": "CDID2",
+                "LAchildID": "child2",  
                 "PersonDeathDate": "29/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child3",
-                "CINdetailsID": "CDID3",
+                "LAchildID": "child3",  
                 "PersonDeathDate": "26/03/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
                 "LAchildID": "child4",
-                "CINdetailsID": "CDID4",
                 "PersonDeathDate": "30/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child5",
-                "CINdetailsID": "CDID5",
                 "PersonDeathDate": "27/05/2000",  # Passes as PersonDeathDate is after the CPPendDate
             },
             {
                 "LAchildID": "child6",
-                "CINdetailsID": "CDID6",
                 "PersonDeathDate": "26/05/2000",  # Ignored as rows with no CPPendDate are dropped (this is picked up by other rules)
             },
             {
                 "LAchildID": "child7",
-                "CINdetailsID": "CDID7",
                 "PersonDeathDate": pd.NA,  # Ignored as rows with no PersonDeathDate are dropped (this is picked up by other rules)
             },
         ]
@@ -269,3 +254,4 @@ def test_validate():
         result.definition.message
         == "Child Protection Plan cannot end after the child’s Date of Death"
     )
+
