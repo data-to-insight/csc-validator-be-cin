@@ -36,7 +36,7 @@ LAchildID = CINdetails.LAchildID
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         PersonDeathDate,
-        CINreferralDate,      
+        CINreferralDate,
     ],
 )
 def validate(
@@ -53,7 +53,9 @@ def validate(
     df_ChildIdentifiers.reset_index(inplace=True)
 
     # Remove rows with no death date
-    df_ChildIdentifiers = df_ChildIdentifiers[df_ChildIdentifiers[PersonDeathDate].notna()]
+    df_ChildIdentifiers = df_ChildIdentifiers[
+        df_ChildIdentifiers[PersonDeathDate].notna()
+    ]
 
     # <CINreferralDate> (N00100) must be on or before the <PersonDeathDate> (N00108)
 
@@ -72,7 +74,9 @@ def validate(
 
     # Error identifier
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged[CINreferralDate], df_merged[PersonDeathDate])
+        zip(
+            df_merged[LAchildID], df_merged[CINreferralDate], df_merged[PersonDeathDate]
+        )
     )
     print(df_merged)
     df_CINDetails_issues = (
@@ -82,7 +86,9 @@ def validate(
         .reset_index()
     )
     df_ChildIdentifiers_issues = (
-        df_ChildIdentifiers.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_ChildIdentifiers")
+        df_ChildIdentifiers.merge(
+            df_merged, left_on="ROW_ID", right_on="ROW_ID_ChildIdentifiers"
+        )
         .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
@@ -93,12 +99,14 @@ def validate(
         table=CINdetails, columns=[CINreferralDate], row_df=df_CINDetails_issues
     )
     rule_context.push_type_2(
-        table=ChildIdentifiers, columns=[PersonDeathDate], row_df=df_ChildIdentifiers_issues
+        table=ChildIdentifiers,
+        columns=[PersonDeathDate],
+        row_df=df_ChildIdentifiers_issues,
     )
 
 
 def test_validate():
-    # Create dummy data 
+    # Create dummy data
     sample_CINDetails = pd.DataFrame(
         [
             {
@@ -138,11 +146,11 @@ def test_validate():
                 "PersonDeathDate": "26/05/2000",
             },
             {
-                "LAchildID": "child4", # Pass
+                "LAchildID": "child4",  # Pass
                 "PersonDeathDate": "26/05/2000",
             },
             {
-                "LAchildID": "child5", # Pass
+                "LAchildID": "child5",  # Pass
                 "PersonDeathDate": pd.NA,
             },
         ]
@@ -205,7 +213,6 @@ def test_validate():
                 ),
                 "ROW_ID": [1],
             },
-           
         ]
     )
     assert issue_rows.equals(expected_df)
