@@ -76,24 +76,26 @@ def run_all(filename: str, ruleset):
                 # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
                 ind = lst_ctx.idxmax()
                 if ind == 0:
-                    pass
                     # if the rule pushed to context.issue i.e it is a beginner rule.
-                    # error_dict, individual_error_df = process_issues(rule, ctx, individual_error_df)
-                elif ind == 1:
-                    # handle like a type_1 rule.
-                    individual_error_df = process_type1_issues(
+                    error_dict, individual_error_df = process_issues(
                         rule, ctx, individual_error_df
                     )
+                elif ind == 1:
+                    # handle like a type_1 rule.
+                    error_dict = process_type1_issues(rule, ctx, individual_error_df)
+                else:
+                    error_dict = {"code": rule.code, "number": 0, "type": ind}
+                    pass
         except:
             print("Error with rule " + str(rule.code))
 
-        # error_dict_df = pd.DataFrame([error_dict])
-        # error_df_overview = pd.concat(
-        #     [error_df_overview, error_dict_df], ignore_index=True
-        # )
+        error_dict_df = pd.DataFrame([error_dict])
+        error_df_overview = pd.concat(
+            [error_df_overview, error_dict_df], ignore_index=True
+        )
     # # why does this print the same thing when included in the for loop
-    # print(error_df_overview)
-    print(individual_error_df)
+    print(error_df_overview)
+    # print(individual_error_df)
 
 
 @cli.command(name="test")

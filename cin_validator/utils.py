@@ -61,7 +61,7 @@ def process_issues(rule, ctx, individual_error_df):
 
 
 def process_type1_issues(rule, ctx, individual_error_df):
-    # error_dict = {"code": rule.code, "number": len(list(ctx.issues)), "type":1}
+    error_dict = {"code": rule.code, "number": len(list(ctx.issues)), "type": 1}
     issues = ctx.type1_issues
     row_df = issues.row_df
     print(f"{rule.code} {issues.table} {issues.columns}")
@@ -70,11 +70,11 @@ def process_type1_issues(rule, ctx, individual_error_df):
     individual_error_dict_df = pd.DataFrame()
     # individual_error_dict_df["Table"] = str(issues.table)[9:]
     # individual_error_dict_df["Columns"] = issues.columns
-    individual_error_df = pd.concat(
-        [individual_error_df, individual_error_dict_df],
-        ignore_index=True,
-    )
-    return individual_error_df
+    # individual_error_df = pd.concat(
+    #     [individual_error_df, individual_error_dict_df],
+    #     ignore_index=True,
+    # )
+    return error_dict
 
 
 class DataContainerWrapper:
