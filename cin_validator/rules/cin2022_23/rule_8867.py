@@ -69,7 +69,7 @@ def validate(
     )
 
     #  Get rows where CPPreviewDate is less than or equal to CPPstartDate
-    condition = df_merged[AssessmentAuthorisationDate].isna()
+    condition = df_merged[AssessmentAuthorisationDate].isna() | df_merged[CINclosureDate]> df_merged[AssessmentAuthorisationDate]
     df_merged = df_merged[condition].reset_index()
 
     # create an identifier for each error instance.
@@ -125,7 +125,7 @@ def test_validate():
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "CDID4",
-                "CINclosureDate": "10/01/2022",  # Passes 
+                "CINclosureDate": pd.NA,  # Ignored 
             },
             {
                 "LAchildID": "child5",
@@ -147,7 +147,7 @@ def test_validate():
                 "AssessmentAuthorisationDate": "26/10/2002",
             },
             {
-                "LAchildID": "child3",  # Fails
+                "LAchildID": "child3",  # Passes
                 "CINdetailsID": "CDID3",
                 "AssessmentAuthorisationDate": "26/05/2000",
             },
