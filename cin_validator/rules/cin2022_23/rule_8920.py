@@ -1,4 +1,4 @@
-ffrom typing import Mapping
+from typing import Mapping
 
 import pandas as pd
 
@@ -70,7 +70,7 @@ def validate(
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPendDate against the PersonDeathDate for that child.
     # A child may have multiple CP Plans but only 1 should be current at anytime and requires a CPPendDate
-    
+
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged[CPPendDate], df_merged[PersonDeathDate])
     )
@@ -97,6 +97,7 @@ def validate(
     rule_context.push_type_2(
         table=ChildIdentifiers, columns=[PersonDeathDate], row_df=df_reviews_issues
     )
+
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
@@ -135,15 +136,15 @@ def test_validate():
     sample_children = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  
+                "LAchildID": "child1",
                 "PersonDeathDate": "25/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child2",  
+                "LAchildID": "child2",
                 "PersonDeathDate": "29/05/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
-                "LAchildID": "child3",  
+                "LAchildID": "child3",
                 "PersonDeathDate": "26/03/2000",  # Fails as PersonDeathDate is before the CPPendDate
             },
             {
@@ -254,4 +255,3 @@ def test_validate():
         result.definition.message
         == "Child Protection Plan cannot end after the child’s Date of Death"
     )
-
