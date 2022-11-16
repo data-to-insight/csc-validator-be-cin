@@ -42,8 +42,11 @@ def test_type_one():
             {"ERROR_ID": (3, 7, 2), "ROW_ID": [9]},
         ]
     )
-    rule_context.push_type_1("table_name", ["column1", "column2"], df_issues)
+    # check type_one_issues value for rules that don't push to it. i.e non-type1 rules.
+    assert rule_context.type_one_issues == []
 
+    # check behaviour for rules that run push_type1
+    rule_context.push_type_1("table_name", ["column1", "column2"], df_issues)
     issues = rule_context.type_one_issues
     assert (
         issues["ERROR_ID"]

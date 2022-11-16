@@ -52,6 +52,7 @@ def run_all(filename: str, ruleset):
 
     error_df_overview = pd.DataFrame()
     individual_error_df = pd.DataFrame()
+    rules_passed = []
     for rule in registry:
 
         try:
@@ -60,42 +61,40 @@ def run_all(filename: str, ruleset):
             # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
             lst_ctx = pd.Series(
                 [
-                    len(list(ctx.issues)),
-                    len(ctx.type1_issues),
-                    len(list(ctx.type2_issues)),
-                    len(list(ctx.type3_issues)),
+                    len(ctx.issues),
+                    len(ctx.type_one_issues),
+                    len(ctx.type_two_issues),
+                    len(ctx.type_three_issues),
                 ]
             )
             if lst_ctx.max() == 0:
                 # if the rule didn't push to any of the issue accumulators
-                error_dict = {
-                    "code": rule.code,
-                    "number": 0,
-                }
+                rules_passed.append(rule.code)
             else:
                 # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
                 ind = lst_ctx.idxmax()
-                if ind == 0:
-                    # if the rule pushed to context.issue i.e it is a beginner rule.
-                    error_dict, individual_error_df = process_issues(
-                        rule, ctx, individual_error_df
-                    )
-                elif ind == 1:
-                    # handle like a type_1 rule.
-                    error_dict = process_type1_issues(rule, ctx, individual_error_df)
-                else:
-                    error_dict = {"code": rule.code, "number": 0, "type": ind}
-                    pass
+                error_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
+                error_dict_df = pd.DataFrame([error_dict])
+                error_df_overview = pd.concat(
+                    [error_df_overview, error_dict_df], ignore_index=True
+                )
+                # if ind == 0:
+                #     # if the rule pushed to context.issue i.e it is a beginner rule.
+                #     error_dict, individual_error_df = process_issues(
+                #         rule, ctx, individual_error_df
+                #     )
+                # elif ind == 1:
+                #     # handle like a type_1 rule.
+                #     error_dict = process_type1_issues(rule, ctx, individual_error_df)
+                # else:
+                #     error_dict = {"code": rule.code, "number": 0, "type": ind}
+                #     pass
         except:
             print("Error with rule " + str(rule.code))
 
-        error_dict_df = pd.DataFrame([error_dict])
-        error_df_overview = pd.concat(
-            [error_df_overview, error_dict_df], ignore_index=True
-        )
-    # # why does this print the same thing when included in the for loop
     print(error_df_overview)
     # print(individual_error_df)
+    print(f" Rules that raised no issues\n {rules_passed}")
 
 
 @cli.command(name="test")

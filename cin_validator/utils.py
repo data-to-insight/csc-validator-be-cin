@@ -89,7 +89,6 @@ def create_issue_locs(issues):
             - columns_affected
             - tables_affected
     """
-
     df_issue_locs = issues.row_df
     df_issue_locs = df_issue_locs.explode("ROW_ID")
 

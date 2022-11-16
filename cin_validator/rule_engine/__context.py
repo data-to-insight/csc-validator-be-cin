@@ -96,18 +96,66 @@ class RuleContext:
         return self.__type1_issues
 
     @property
-    def type_one_issues(self):
-        """expands issue object into a dataframe where each row represents a location in the data
-        by a unique table-column-index combination"""
-        issues = self.__type1_issues
-        df_issue_locs = create_issue_locs(issues)
-
-        return df_issue_locs
-
-    @property
     def type2_issues(self):
         return self.__type2_issues
 
     @property
     def type3_issues(self):
         return self.__type3_issues
+
+    @property
+    def type_one_issues(self):
+        """expands type1 issue object into a dataframe where each row represents a location in the data
+        by a unique table-column-index combination"""
+        try:
+            # if it is a type1 rule i.e __type1_issues.row_df exists, do this.
+            issues = self.__type1_issues
+            df_issue_locs = create_issue_locs(issues)
+            return df_issue_locs
+
+        except:
+            # all non-type1 rules run this.
+            return []
+
+    # TODO decide if type_one_issues and type_two_issues should be combined to make them DRY or left apart for readability.
+    @property
+    def type_two_issues(self):
+        """expands type2 issue object into a dataframe where each row represents a location in the data
+        by a unique table-column-index combination"""
+        try:
+            # if it is a type2 rule i.e __type2_issues.row_df exists, do this.
+            issues_per_table = self.__type2_issues
+            df_issue_locs_lst = []
+            for issues in issues_per_table:
+                # create a dataframe of issue locations for each table.
+                df_issue_loc_table = create_issue_locs(issues)
+                # append all table dataframes to a list.
+                df_issue_locs_lst.append(df_issue_loc_table)
+            # generate a dataframe that contains that data of all tables involved.
+            df_issue_locs = pd.concat(df_issue_locs_lst, ignore_index=True)
+            return df_issue_locs
+
+        except:
+            # all non-type2 rules run this.
+            return []
+
+    @property
+    def type_three_issues(self):
+        """expands type3 issue object into a dataframe where each row represents a location in the data
+        by a unique table-column-index combination"""
+        try:
+            # if it is a type3 rule i.e __type3_issues.row_df exists, do this.
+            issues_per_table = self.__type3_issues
+            df_issue_locs_lst = []
+            for issues in issues_per_table:
+                # create a dataframe of issue locations for each table.
+                df_issue_loc_table = create_issue_locs(issues)
+                # append all table dataframes to a list.
+                df_issue_locs_lst.append(df_issue_loc_table)
+            # generate a dataframe that contains that data of all tables involved.
+            df_issue_locs = pd.concat(df_issue_locs_lst, ignore_index=True)
+            return df_issue_locs
+
+        except:
+            # all non-type3 rules return this.
+            return []
