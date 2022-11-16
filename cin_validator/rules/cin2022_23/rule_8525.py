@@ -33,6 +33,7 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
+    df = df.drop(columns=["ROW_ID"], errors="ignore")
     df.index.name = "ROW_ID"
 
     # lOGIC
@@ -41,11 +42,16 @@ def validate(
 
     # Either Date of Birth or Expected Date of Birth must be provided (but not both)
     # condition_1 = (df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].isna())
-    condition_1 = (df[PersonBirthDate].isna()) & (df[ExpectedPersonBirthDate].isna())
-    condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
+
+    # condition_1 = (df[PersonBirthDate].isna()) & (df[ExpectedPersonBirthDate].isna())
+    # condition_2 = df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].notna()
+
+    mega_condition = (
+        df[PersonBirthDate].isna() & df[ExpectedPersonBirthDate].notna()
+    ) | (df[PersonBirthDate].notna() & df[ExpectedPersonBirthDate].isna())
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition_1 | condition_2].reset_index()
+    df_issues = df[~mega_condition].reset_index()
 
     # (LAchildID,PersonBirthDate,ExpectedPersonBirthDate) could have been used. However, in some failing conditions,
     # both (PersonBirthDate,ExpectedPersonBirthDate) can be null so their combination does not serve as a unique ID.
@@ -57,7 +63,11 @@ def validate(
         )
     )
     df_issues["ERROR_ID"] = link_id
-    df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
+    df_issues = (
+        df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=ChildIdentifiers,
