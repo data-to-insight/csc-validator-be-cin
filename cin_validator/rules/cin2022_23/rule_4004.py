@@ -115,7 +115,11 @@ def test_validate():
     result = run_rule(validate, {CINplanDates: sample_CINplanDates})
 
     # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
-    issues = result.type3_issues
+    issues_list = result.type3_issues
+
+    # Issues list contains the objects pushed in their respective order. Since push_type3 was only used once, there will be one object in issues_list.
+    assert len(issues_list) == 1
+    issues = issues_list[0]
 
     # get table name and check it. Replace CINplanDates with the name of your table.
     issue_table = issues.table
