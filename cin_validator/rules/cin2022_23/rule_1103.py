@@ -56,7 +56,7 @@ def validate(
     df_ass = df_ass[df_ass[AssessmentActualStartDate].notna()]
     df_refs = df_refs[df_refs[CINreferralDate].notna()]
 
-    #  Merge tables to get corresponding Assessment group and referrals 
+    #  Merge tables to get corresponding Assessment group and referrals
     df_merged = df_ass.merge(
         df_refs,
         left_on=["LAchildID"],
@@ -73,7 +73,11 @@ def validate(
     # In this case, the rule is checked for each Assessment Start Date
     # So, a combination of LAchildID, Assessment Actual Start Date and Referral Start Date identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged[AssessmentActualStartDate], df_merged[CINreferralDate])
+        zip(
+            df_merged[LAchildID],
+            df_merged[AssessmentActualStartDate],
+            df_merged[CINreferralDate],
+        )
     )
 
     # The merges were done on copies of fs_ass and df_refs so that the column names in dataframes themselves aren't affected by the suffixes.
@@ -110,42 +114,42 @@ def test_validate():
             },
             {
                 "LAchildID": "child2",
-                "AssessmentActualStartDate": "10/09/2021", #  Passes as assessment starts after referal start date
+                "AssessmentActualStartDate": "10/09/2021",  #  Passes as assessment starts after referal start date
             },
             {
                 "LAchildID": "child3",
-                "AssessmentActualStartDate": pd.NA,   # Ignored as no Assessment Date recorded
+                "AssessmentActualStartDate": pd.NA,  # Ignored as no Assessment Date recorded
             },
             {
                 "LAchildID": "child4",
-                "AssessmentActualStartDate": "01/12/2021", # Fails as assessment starts after referral start date
+                "AssessmentActualStartDate": "01/12/2021",  # Fails as assessment starts after referral start date
             },
             {
                 "LAchildID": "child5",
-                "AssessmentActualStartDate": "10/02/2022", # Fails as no Referral Start Date recorded
+                "AssessmentActualStartDate": "10/02/2022",  # Fails as no Referral Start Date recorded
             },
         ]
     )
     sample_refs = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  #Fails
+                "LAchildID": "child1",  # Fails
                 "CINreferralDate": "01/07/2021",
             },
             {
-                "LAchildID": "child2",  #Passes
+                "LAchildID": "child2",  # Passes
                 "CINreferralDate": "01/09/2021",
             },
             {
-                "LAchildID": "child3",  #Ignored
+                "LAchildID": "child3",  # Ignored
                 "CINreferralDate": "26/05/2000",
             },
             {
-                "LAchildID": "child4", #Fails
+                "LAchildID": "child4",  # Fails
                 "CINreferralDate": "10/12/2021",
             },
             {
-                "LAchildID": "child5", # Ignored
+                "LAchildID": "child5",  # Ignored
                 "CINreferralDate": pd.NA,
             },
         ]
