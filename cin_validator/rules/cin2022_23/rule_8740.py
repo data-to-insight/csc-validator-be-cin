@@ -48,13 +48,16 @@ def validate(
     # lOGIC
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
-    print ('\n initial df \n', df)
+    print("\n initial df \n", df)
     # If a <Section47> group does not contain the <DateOfInitialCPC> (N00110) and <ICPCnotRequired> (N00111) is false
     # then the <S47ActualStartDate> (N00148) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
     condition = (
-        df[DateOfInitialCPC].isna() 
+        df[DateOfInitialCPC].isna()
         & (df[ICPCnotRequired].astype(str) == "0")
-        & ( (df[S47ActualStartDate] < collection_start) | (df[S47ActualStartDate] > reference_date) )
+        & (
+            (df[S47ActualStartDate] < collection_start)
+            | (df[S47ActualStartDate] > reference_date)
+        )
     )
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
@@ -71,7 +74,7 @@ def validate(
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(zip(df_issues[LAchildID], df_issues[S47ActualStartDate]))
     df_issues["ERROR_ID"] = link_id
-    print ('\n df_issues with link_id \n', df_issues)
+    print("\n df_issues with link_id \n", df_issues)
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
@@ -79,7 +82,8 @@ def validate(
         columns=[S47ActualStartDate, DateOfInitialCPC, ICPCnotRequired],
         row_df=df_issues,
     )
-    print ('\n df_issues after groupby \n', df_issues)
+    print("\n df_issues after groupby \n", df_issues)
+
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
@@ -188,8 +192,8 @@ def test_validate():
         ]
     )
     assert issue_rows.equals(expected_df)
-    print ('\n issue_rows \n', issue_rows)
-    print ('\n expected_df \n', expected_df)
+    print("\n issue_rows \n", issue_rows)
+    print("\n expected_df \n", expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
 
