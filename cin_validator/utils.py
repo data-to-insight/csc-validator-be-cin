@@ -77,6 +77,35 @@ def process_type1_issues(rule, ctx, individual_error_df):
     return error_dict
 
 
+def create_issue_locs(issues):
+    """
+    input: NamedTuple-like object with fields
+            - table
+            - columns
+            - row_df
+    output: DataFrame with fields
+            - ERROR_ID
+            - ROW_ID
+            - columns_affected
+            - tables_affected
+    """
+
+    df_issue_locs = issues.row_df
+    df_issue_locs = df_issue_locs.explode("ROW_ID")
+
+    df_issue_locs["columns_affected"] = df_issue_locs["ERROR_ID"].apply(
+        lambda x: issues.columns
+    )
+    df_issue_locs = df_issue_locs.explode("columns_affected")
+
+    df_issue_locs["tables_affected"] = issues.table
+
+    df_issue_locs.reset_index(inplace=True)
+    df_issue_locs.drop("index", axis=1, inplace=True)
+
+    return df_issue_locs
+
+
 class DataContainerWrapper:
     def __init__(self, value) -> None:
         self.value = value

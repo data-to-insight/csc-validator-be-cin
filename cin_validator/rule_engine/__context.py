@@ -5,14 +5,14 @@ from typing import List
 import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleDefinition
+from cin_validator.utils import create_issue_locs
 
-
-def _as_iterable(value):
-    if isinstance(value, str):
-        return [value]
-    elif isinstance(value, Enum):
-        return [value]
-    return value
+# def _as_iterable(value):
+#     if isinstance(value, str):
+#         return [value]
+#     elif isinstance(value, Enum):
+#         return [value]
+#     return value
 
 
 @dataclass(frozen=True, eq=True)
@@ -32,19 +32,20 @@ class Type1:
         # self.type1_issues contains only this object.
         # This dunder method defines what happens when len(self.type1_issues) is run
         return len([self.table])
+        # return len(self.row_df)
 
 
-class IssueLocatorLists:
-    def __init__(self, table, field, row):
-        self.table = _as_iterable(table)
-        self.field = _as_iterable(field)
-        self.row = _as_iterable(row)
+# class IssueLocatorLists:
+#     def __init__(self, table, field, row):
+#         self.table = _as_iterable(table)
+#         self.field = _as_iterable(field)
+#         self.row = _as_iterable(row)
 
-    def __iter__(self):
-        for table in self.table:
-            for field in self.field:
-                for row in self.row:
-                    yield IssueLocator(table, field, row)
+#     def __iter__(self):
+#         for table in self.table:
+#             for field in self.field:
+#                 for row in self.row:
+#                     yield IssueLocator(table, field, row)
 
 
 class RuleContext:
@@ -63,8 +64,12 @@ class RuleContext:
     def definition(self):
         return self.__definition
 
+    # def push_issue(self, table, field, row):
+    #     self.__issues.append(IssueLocatorLists(table, field, row))
+
     def push_issue(self, table, field, row):
-        self.__issues.append(IssueLocatorLists(table, field, row))
+        for i in row:
+            self.__issues.append(IssueLocator(table, field, i))
 
     def push_type_1(self, table, columns, row_df):
         """Many columns, One Table, no merge involved"""
@@ -82,12 +87,22 @@ class RuleContext:
 
     @property
     def issues(self):
-        for issues in self.__issues:
-            yield from issues
+        # for issues in self.__issues:
+        #     yield from issues
+        return self.__issues
 
     @property
     def type1_issues(self):
         return self.__type1_issues
+
+    @property
+    def type_one_issues(self):
+        """expands issue object into a dataframe where each row represents a location in the data
+        by a unique table-column-index combination"""
+        issues = self.__type1_issues
+        df_issue_locs = create_issue_locs(issues)
+
+        return df_issue_locs
 
     @property
     def type2_issues(self):

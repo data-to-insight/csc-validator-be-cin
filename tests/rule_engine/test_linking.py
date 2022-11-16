@@ -33,6 +33,51 @@ def test_type1():
     assert issues.row_df.equals(df_issues)
 
 
+def test_type_one():
+    """rules that involve columns in the same table which were not joined by merge."""
+    rule_context = RuleContext(Mock())
+    df_issues = pd.DataFrame(
+        [
+            {"ERROR_ID": (2, 8, 5), "ROW_ID": [23, 24]},
+            {"ERROR_ID": (3, 7, 2), "ROW_ID": [9]},
+        ]
+    )
+    rule_context.push_type_1("table_name", ["column1", "column2"], df_issues)
+
+    issues = rule_context.type_one_issues
+    assert (
+        issues["ERROR_ID"]
+        == pd.Series(
+            [
+                (2, 8, 5),
+                (2, 8, 5),
+                (2, 8, 5),
+                (2, 8, 5),
+                (3, 7, 2),
+                (3, 7, 2),
+            ]
+        )
+    ).all()
+    assert (issues["ROW_ID"] == pd.Series([23, 23, 24, 24, 9, 9])).all()
+    assert (
+        issues["columns_affected"]
+        == pd.Series(["column1", "column2", "column1", "column2", "column1", "column2"])
+    ).all()
+    assert (
+        issues["tables_affected"]
+        == pd.Series(
+            [
+                "table_name",
+                "table_name",
+                "table_name",
+                "table_name",
+                "table_name",
+                "table_name",
+            ]
+        )
+    ).all()
+
+
 def test_type2():
     """
     Stores linked error locations for rules that involve mutiple columns in multiple tables
