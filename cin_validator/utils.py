@@ -10,6 +10,15 @@ def get_values(xml_elements, table_dict, xml_block):
     return table_dict
 
 
+def make_date(date_input):
+    """Allows Ymd or dmY date inputs, used for make_cancus_period.
+    Important for test_validate functions"""
+    date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
+    if pd.isna(date):
+        date = pd.to_datetime(date_input, format="%d/%m/%Y", errors="coerce")
+    return date
+
+
 def make_census_period(reference_date):
     """Generates the census period.
     input [pd.Series]: ReferenceDate
@@ -21,13 +30,14 @@ def make_census_period(reference_date):
     # reference_date is a pandas series. Get it's value as a string by indexing the series' values array.
     reference_date = reference_date.values[0]
 
+    #  Try/except to allow for different datetime formats
+
     # the ReferenceDate value is always the collection_end date
-    collection_end = pd.to_datetime(reference_date, format="%d/%m/%Y")
+    collection_end = make_date(reference_date)
+
     # the collection start is the 1st of April of the previous year.
     collection_start = (
-        pd.to_datetime(reference_date, format="%d/%m/%Y")
-        - pd.DateOffset(years=1)
-        + pd.DateOffset(days=1)
+        make_date(reference_date) - pd.DateOffset(years=1) + pd.DateOffset(days=1)
     )
 
     return collection_start, collection_end
@@ -39,3 +49,14 @@ class DataContainerWrapper:
 
     def __getitem__(self, name):
         return getattr(self.value, name.name)
+
+
+class ErrorReport:
+    """Class containing rules, number of errors per rule, and locations
+    per rule."""
+
+    def __init__(self, codes: int, number: int, locations, message: str):
+        self.codes = codes
+        self.number = number
+        self.locations = locations
+        self.message = message
