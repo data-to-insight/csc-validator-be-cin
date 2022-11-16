@@ -12,10 +12,12 @@ from cin_validator.utils import make_census_period
 Assessments = CINTable.Assessments
 AssessmentActualStartDate = Assessments.AssessmentActualStartDate
 LAchildID = Assessments.LAchildID
+Assdetailsid = Assessments.CINdetailsID
 
 CINdetails = CINTable.CINdetails
 CINreferralDate = CINdetails.CINreferralDate
 LAchildID = CINdetails.LAchildID
+CINdetailsID = CINdetails.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
@@ -25,6 +27,7 @@ LAchildID = CINdetails.LAchildID
     affected_fields=[
         AssessmentActualStartDate,
         CINreferralDate,
+        CINdetailsID,
     ],
 )
 def validate(
@@ -111,22 +114,27 @@ def test_validate():
             {
                 "LAchildID": "child1",
                 "AssessmentActualStartDate": "30/06/2021",  # Fails as referral date is after assessment start
+                "CINdetailsID": "CIN1",
             },
             {
                 "LAchildID": "child2",
                 "AssessmentActualStartDate": "10/09/2021",  #  Passes as assessment starts after referal start date
+                "CINdetailsID": "CIN2",
             },
             {
                 "LAchildID": "child3",
                 "AssessmentActualStartDate": pd.NA,  # Ignored as no Assessment Date recorded
+                "CINdetailsID": "CIN3",
             },
             {
                 "LAchildID": "child4",
                 "AssessmentActualStartDate": "01/12/2021",  # Fails as assessment starts after referral start date
+                "CINdetailsID": "CIN4",
             },
             {
                 "LAchildID": "child5",
                 "AssessmentActualStartDate": "10/02/2022",  # Fails as no Referral Start Date recorded
+                "CINdetailsID": "CIN5",
             },
         ]
     )
@@ -135,22 +143,27 @@ def test_validate():
             {
                 "LAchildID": "child1",  # Fails
                 "CINreferralDate": "01/07/2021",
+                "CINdetailsID": "CIN1",
             },
             {
                 "LAchildID": "child2",  # Passes
                 "CINreferralDate": "01/09/2021",
+                "CINdetailsID": "CIN2",
             },
             {
                 "LAchildID": "child3",  # Ignored
                 "CINreferralDate": "26/05/2000",
+                "CINdetailsID": "CIN3",
             },
             {
                 "LAchildID": "child4",  # Fails
                 "CINreferralDate": "10/12/2021",
+                "CINdetailsID": "CIN4",
             },
             {
                 "LAchildID": "child5",  # Ignored
                 "CINreferralDate": pd.NA,
+                "CINdetailsID": "CIN5",
             },
         ]
     )
