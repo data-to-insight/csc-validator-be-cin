@@ -43,22 +43,6 @@ def make_census_period(reference_date):
     return collection_start, collection_end
 
 
-def process_issues(rule, ctx, individual_issue_df):
-    for i in range(len(list(ctx.issues))):
-        individual_issue_dict = {
-            "code": rule.code,
-            "tables_affected": str(list(ctx.issues)[i].table)[9:],
-            "columns_affected": str(list(ctx.issues)[i].field),
-            "ROW_ID": str(list(ctx.issues)[i].row),
-        }
-        individual_issue_dict_df = pd.DataFrame([individual_issue_dict])
-        individual_issue_df = pd.concat(
-            [individual_issue_df, individual_issue_dict_df],
-            ignore_index=True,
-        )
-    return individual_issue_df
-
-
 def create_issue_locs(issues):
     """
     input: NamedTuple-like object with fields

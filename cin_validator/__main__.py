@@ -8,7 +8,7 @@ import pytest
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper, process_issues
+from cin_validator.utils import DataContainerWrapper
 
 
 @click.group()
@@ -55,24 +55,16 @@ def run_all(filename: str, ruleset):
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
             # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
-            lst_ctx = pd.Series(
-                [
-                    # len(ctx.type_zero_issues),
-                    len(ctx.issues),
-                    len(ctx.type_one_issues),
-                    len(ctx.type_two_issues),
-                    len(ctx.type_three_issues),
-                ]
-            )
             lst_types = pd.Series(
                 [
-                    # len(ctx.type_zero_issues),
-                    len(ctx.issues),
+                    ctx.type_zero_issues,
                     ctx.type_one_issues,
                     ctx.type_two_issues,
                     ctx.type_three_issues,
                 ]
             )
+            # lst_ctx is a list of lengths of all elements in lst_types respectively.
+            lst_ctx = pd.Series([len(x) for x in lst_types])
             if lst_ctx.max() == 0:
                 # if the rule didn't push to any of the issue accumulators
                 rules_passed.append(rule.code)
@@ -86,15 +78,14 @@ def run_all(filename: str, ruleset):
                     [issue_df_overview, issue_dict_df], ignore_index=True
                 )
 
-                if ind == 0:
-                    # if the rule pushed to context.issue i.e it is a beginner rule.
-                    individual_issue_df = process_issues(rule, ctx, individual_issue_df)
-                else:
-                    individual_issue_df = pd.concat(
-                        [individual_issue_df, lst_types[ind]],
-                        ignore_index=True,
-                    )
-                    print(f"non-type0 processed {len(individual_issue_df)}")
+                # temporary: add rule type to track if all types are in df.
+                lst_types[ind]["rule_type"] = ind
+
+                individual_issue_df = pd.concat(
+                    [individual_issue_df, lst_types[ind]],
+                    ignore_index=True,
+                )
+                #    print(f"non-type0 processed {len(individual_issue_df)}")
         except:
             print("Error with rule " + str(rule.code))
 
