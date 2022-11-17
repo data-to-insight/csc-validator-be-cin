@@ -27,7 +27,6 @@ CINdetailsID = CINdetails.CINdetailsID
     affected_fields=[
         AssessmentActualStartDate,
         CINreferralDate,
-        CINdetailsID,
     ],
 )
 def validate(
