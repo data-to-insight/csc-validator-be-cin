@@ -62,8 +62,8 @@ def validate(
     #  Merge tables to get corresponding Assessment group and referrals
     df_merged = df_ass.merge(
         df_refs,
-        left_on=["LAchildID","CINdetailsID"],
-        right_on=["LAchildID","CINdetailsID"],
+        left_on=["LAchildID", "CINdetailsID"],
+        right_on=["LAchildID", "CINdetailsID"],
         how="left",
         suffixes=("_ass", "_refs"),
     )
