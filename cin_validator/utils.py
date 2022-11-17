@@ -43,38 +43,20 @@ def make_census_period(reference_date):
     return collection_start, collection_end
 
 
-def process_issues(rule, ctx, individual_error_df):
-    error_dict = {"code": rule.code, "number": len(list(ctx.issues)), "type": 0}
+def process_issues(rule, ctx, individual_issue_df):
     for i in range(len(list(ctx.issues))):
-        individual_error_dict = {
+        individual_issue_dict = {
             "code": rule.code,
-            "Table": str(list(ctx.issues)[i].table)[9:],
-            "Columns": str(list(ctx.issues)[i].field),
+            "tables_affected": str(list(ctx.issues)[i].table)[9:],
+            "columns_affected": str(list(ctx.issues)[i].field),
             "ROW_ID": str(list(ctx.issues)[i].row),
         }
-        individual_error_dict_df = pd.DataFrame([individual_error_dict])
-        individual_error_df = pd.concat(
-            [individual_error_df, individual_error_dict_df],
+        individual_issue_dict_df = pd.DataFrame([individual_issue_dict])
+        individual_issue_df = pd.concat(
+            [individual_issue_df, individual_issue_dict_df],
             ignore_index=True,
         )
-    return error_dict, individual_error_df
-
-
-def process_type1_issues(rule, ctx, individual_error_df):
-    error_dict = {"code": rule.code, "number": len(list(ctx.issues)), "type": 1}
-    issues = ctx.type1_issues
-    row_df = issues.row_df
-    print(f"{rule.code} {issues.table} {issues.columns}")
-    print(pd.DataFrame({"columns": issues.columns, "Table": str(issues.table)[9:]}))
-    print(issues.row_df)
-    individual_error_dict_df = pd.DataFrame()
-    # individual_error_dict_df["Table"] = str(issues.table)[9:]
-    # individual_error_dict_df["Columns"] = issues.columns
-    # individual_error_df = pd.concat(
-    #     [individual_error_df, individual_error_dict_df],
-    #     ignore_index=True,
-    # )
-    return error_dict
+    return individual_issue_df
 
 
 def create_issue_locs(issues):

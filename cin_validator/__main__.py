@@ -8,11 +8,7 @@ import pytest
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import (
-    DataContainerWrapper,
-    process_issues,
-    process_type1_issues,
-)
+from cin_validator.utils import DataContainerWrapper, process_issues
 
 
 @click.group()
@@ -50,8 +46,8 @@ def run_all(filename: str, ruleset):
 
     importlib.import_module(f"cin_validator.{ruleset}")
 
-    error_df_overview = pd.DataFrame()
-    individual_error_df = pd.DataFrame()
+    issue_df_overview = pd.DataFrame()
+    individual_issue_df = pd.DataFrame()
     rules_passed = []
     for rule in registry:
 
@@ -61,10 +57,20 @@ def run_all(filename: str, ruleset):
             # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
             lst_ctx = pd.Series(
                 [
+                    # len(ctx.type_zero_issues),
                     len(ctx.issues),
                     len(ctx.type_one_issues),
                     len(ctx.type_two_issues),
                     len(ctx.type_three_issues),
+                ]
+            )
+            lst_types = pd.Series(
+                [
+                    # len(ctx.type_zero_issues),
+                    len(ctx.issues),
+                    ctx.type_one_issues,
+                    ctx.type_two_issues,
+                    ctx.type_three_issues,
                 ]
             )
             if lst_ctx.max() == 0:
@@ -73,27 +79,27 @@ def run_all(filename: str, ruleset):
             else:
                 # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
                 ind = lst_ctx.idxmax()
-                error_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
-                error_dict_df = pd.DataFrame([error_dict])
-                error_df_overview = pd.concat(
-                    [error_df_overview, error_dict_df], ignore_index=True
+
+                issue_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
+                issue_dict_df = pd.DataFrame([issue_dict])
+                issue_df_overview = pd.concat(
+                    [issue_df_overview, issue_dict_df], ignore_index=True
                 )
-                # if ind == 0:
-                #     # if the rule pushed to context.issue i.e it is a beginner rule.
-                #     error_dict, individual_error_df = process_issues(
-                #         rule, ctx, individual_error_df
-                #     )
-                # elif ind == 1:
-                #     # handle like a type_1 rule.
-                #     error_dict = process_type1_issues(rule, ctx, individual_error_df)
-                # else:
-                #     error_dict = {"code": rule.code, "number": 0, "type": ind}
-                #     pass
+
+                if ind == 0:
+                    # if the rule pushed to context.issue i.e it is a beginner rule.
+                    individual_issue_df = process_issues(rule, ctx, individual_issue_df)
+                else:
+                    individual_issue_df = pd.concat(
+                        [individual_issue_df, lst_types[ind]],
+                        ignore_index=True,
+                    )
+                    print(f"non-type0 processed {len(individual_issue_df)}")
         except:
             print("Error with rule " + str(rule.code))
 
-    print(error_df_overview)
-    # print(individual_error_df)
+    print(issue_df_overview)
+    print(individual_issue_df)
     print(f" Rules that raised no issues\n {rules_passed}")
 
 
