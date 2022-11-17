@@ -7,13 +7,6 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleDefinition
 from cin_validator.utils import create_issue_locs
 
-# def _as_iterable(value):
-#     if isinstance(value, str):
-#         return [value]
-#     elif isinstance(value, Enum):
-#         return [value]
-#     return value
-
 
 @dataclass(frozen=True, eq=True)
 class IssueLocator:
@@ -28,35 +21,12 @@ class Type1:
     columns: List[str]
     row_df: pd.DataFrame
 
-    def __len__(self):
-        # self.type1_issues contains only this object.
-        # This dunder method defines what happens when len(self.type1_issues) is run
-        return len([self.table])
-        # return len(self.row_df)
-
-
-# class IssueLocatorLists:
-#     def __init__(self, table, field, row):
-#         self.table = _as_iterable(table)
-#         self.field = _as_iterable(field)
-#         self.row = _as_iterable(row)
-
-#     def __iter__(self):
-#         for table in self.table:
-#             for field in self.field:
-#                 for row in self.row:
-#                     yield IssueLocator(table, field, row)
-
 
 class RuleContext:
     def __init__(self, definition: RuleDefinition):
         self.__definition = definition
-        # TODO create list of rules according to types to prevent checking all attributes each time a rule is run.
-        # Possibly classify rule code by adding it to a list of rules with a similar type, when push is done.
 
         self.__issues = []
-        # type1 issues are also initialised here so that errors that don't push to it should still have it as an attribute and not raise an error when checked.
-        self.__type1_issues = []
         self.__type2_issues = []
         self.__type3_issues = []
 
@@ -64,10 +34,12 @@ class RuleContext:
     def definition(self):
         return self.__definition
 
-    # def push_issue(self, table, field, row):
-    #     self.__issues.append(IssueLocatorLists(table, field, row))
+    # TODO create list of rules according to types to prevent checking all attributes each time a rule is run.
+    # Possibly classify rule code by adding it to a list of rules with a similar type, when push is done.
 
+    # METHODS THAT DEFINE HOW ERROR LOCATIONS SHOULD BE STORED PER RULE STRUCTURE
     def push_issue(self, table, field, row):
+        """Rules that use only 1 table and 1 column in it"""
         for i in row:
             self.__issues.append(IssueLocator(table, field, i))
 
@@ -85,6 +57,7 @@ class RuleContext:
         table_tuple = Type1(table, columns, row_df)
         self.__type3_issues.append(table_tuple)
 
+    # PROPERTIES FOR TEST_VALIDATE FUNCTIONS
     @property
     def issues(self):
         # for issues in self.__issues:
@@ -103,6 +76,7 @@ class RuleContext:
     def type3_issues(self):
         return self.__type3_issues
 
+    # PROPERTIES FOR CREATING THE ERROR REPORT
     @property
     def type_zero_issues(self):
         """expands issues object into a dataframe where each row represents a location in the data
@@ -114,7 +88,6 @@ class RuleContext:
             for locator in self.__issues:
                 # convert every IssueLocator object to a dictionary
                 locator_as_dict = {
-                    # "code": rule.code,
                     "tables_affected": str(locator.table)[9:],
                     "columns_affected": str(locator.field),
                     "ROW_ID": str(locator.row),
@@ -125,6 +98,7 @@ class RuleContext:
             return df_issue_locs
 
         else:
+            # for non-type0 rules, do this
             return []
 
     @property
@@ -141,7 +115,7 @@ class RuleContext:
             # all non-type1 rules run this.
             return []
 
-    # TODO decide if type_one_issues and type_two_issues should be combined to make them DRY or left apart for readability.
+    # TODO decide if type_one_issues and type_two_issues should be combined to ease maintainability or left apart for readability.
     @property
     def type_two_issues(self):
         """expands type2 issue object into a dataframe where each row represents a location in the data

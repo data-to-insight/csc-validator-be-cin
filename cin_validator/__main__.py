@@ -46,8 +46,8 @@ def run_all(filename: str, ruleset):
 
     importlib.import_module(f"cin_validator.{ruleset}")
 
-    issue_df_overview = pd.DataFrame()
-    individual_issue_df = pd.DataFrame()
+    issue_instances = pd.DataFrame()
+    all_rules_issue_locs = pd.DataFrame()
     rules_passed = []
     for rule in registry:
 
@@ -74,23 +74,25 @@ def run_all(filename: str, ruleset):
 
                 issue_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
                 issue_dict_df = pd.DataFrame([issue_dict])
-                issue_df_overview = pd.concat(
-                    [issue_df_overview, issue_dict_df], ignore_index=True
+                issue_instances = pd.concat(
+                    [issue_instances, issue_dict_df], ignore_index=True
                 )
+
+                lst_types[ind]["rule_code"] = rule.code
 
                 # temporary: add rule type to track if all types are in df.
                 lst_types[ind]["rule_type"] = ind
 
-                individual_issue_df = pd.concat(
-                    [individual_issue_df, lst_types[ind]],
+                all_rules_issue_locs = pd.concat(
+                    [all_rules_issue_locs, lst_types[ind]],
                     ignore_index=True,
                 )
-                #    print(f"non-type0 processed {len(individual_issue_df)}")
+
         except:
             print("Error with rule " + str(rule.code))
 
-    print(issue_df_overview)
-    print(individual_issue_df)
+    print(issue_instances)
+    print(all_rules_issue_locs)
     print(f" Rules that raised no issues\n {rules_passed}")
 
 

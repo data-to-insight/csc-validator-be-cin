@@ -63,7 +63,7 @@ def create_issue_locs(issues):
     )
     df_issue_locs = df_issue_locs.explode("columns_affected")
 
-    df_issue_locs["tables_affected"] = issues.table
+    df_issue_locs["tables_affected"] = str(issues.table)[9:]
 
     df_issue_locs.reset_index(inplace=True)
     df_issue_locs.drop("index", axis=1, inplace=True)
