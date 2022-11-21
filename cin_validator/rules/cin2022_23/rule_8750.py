@@ -65,7 +65,6 @@ def validate(
         )
     )
     df_issues["ERROR_ID"] = link_id
-    print ('df_issues with link_id \n', df_issues)
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
@@ -73,7 +72,6 @@ def validate(
         columns=[GenderCurrent, PersonBirthDate, ExpectedPersonBirthDate],
         row_df=df_issues,
     )
-    print ('df_issues after groupby \n', df_issues)
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
@@ -157,23 +155,21 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child4",
-                    "2",
-                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
-                ),
-                "ROW_ID": [4],
-            },
-            {
-                "ERROR_ID": (
-                    "child4",
                     "1",
                     pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
             },
+            {
+                "ERROR_ID": (
+                    "child4",
+                    "2",
+                    pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [4],
+            },
         ]
     )
-    print ('issue_rows \n', issue_rows)
-    print ('expected_df \n', expected_df)
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
