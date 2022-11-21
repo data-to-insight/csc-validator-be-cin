@@ -9,48 +9,68 @@ from cin_validator.rule_engine import (
     rule_definition,
 )
 from cin_validator.test_engine import run_rule
+from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 # Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 ChildIdentifiers = CINTable.ChildIdentifiers
-LAchildID = ChildIdentifiers.LAchildID
+Header = CINTable.Header
+PersonBirthDate = ChildIdentifiers.PersonBirthDate
+ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
-    code=8500,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    code=8520,
     module=CINTable.ChildIdentifiers,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="LA Child ID missing",
-    # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[LAchildID],
+    message="Date of Birth is after data collection period (must be on or before the end of the census period)",
+    affected_fields=[PersonBirthDate, ReferenceDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildIdentifiers]
+    df_ref = data_container[Header]
+
+    ref_data_series = df_ref[ReferenceDate]
+    collection_start, collection_end = make_census_period(ref_data_series)
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    # <LAchildID> (N00097) must be present
-    failing_indices = df[df[LAchildID].isna()].index
+    # <PersonBirthDate> (N00066) must be on or before <ReferenceDate> (N00603) or null
+
+    df = df[(df[PersonBirthDate] > collection_end)]
+
+    failing_indices = df.index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
-        table=ChildIdentifiers, field=LAchildID, row=failing_indices
+        table=ChildIdentifiers, field=PersonBirthDate, row=failing_indices
     )
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    child_identifiers = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[LAchildID])
+
+    test_dobs = pd.to_datetime(
+        [
+            "01/06/2021",  # 0 pass
+            "01/06/2022",  # 1 fail
+            "31/08/2021",  # 2 pass
+            "31/12/2022",  # 3 fail
+            pd.NA,  # 4 ignored
+        ],
+        format="%d/%m/%Y",
+        errors="coerce",
+    )
+
+    fake_dobs = pd.DataFrame({PersonBirthDate: test_dobs})
+    fake_header = pd.DataFrame({ReferenceDate: ["31/03/2022"]})
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {ChildIdentifiers: child_identifiers})
+    result = run_rule(validate, {ChildIdentifiers: fake_dobs, Header: fake_header})
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
@@ -59,12 +79,14 @@ def test_validate():
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
-        IssueLocator(CINTable.ChildIdentifiers, LAchildID, 1),
-        IssueLocator(CINTable.ChildIdentifiers, LAchildID, 2),
+        IssueLocator(CINTable.ChildIdentifiers, PersonBirthDate, 1),
+        IssueLocator(CINTable.ChildIdentifiers, PersonBirthDate, 3),
     ]
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8500
-    assert result.definition.message == "LA Child ID missing"
+    assert result.definition.code == 8520
+    assert (
+        result.definition.message
+        == "Date of Birth is after data collection period (must be on or before the end of the census period)"
+    )

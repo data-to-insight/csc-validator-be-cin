@@ -10,8 +10,13 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext, RuleType
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    RuleType,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -31,17 +36,16 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[Section47]
-    print(df)
 
     # <InitialCPCtarget> (N00109) should not be a Saturday, Sunday
     # Convert column to date format
     df[InitialCPCtarget] = pd.to_datetime(
         df[InitialCPCtarget], format="%d-%m-%Y", errors="coerce"
     )
-    print(df)
+
     # .weekday() returns the integer value for each day (0-6) with weekends being 5 and 6
     failing_indices = df[df[InitialCPCtarget].dt.weekday >= 5].index
-    print(failing_indices)
+
     rule_context.push_issue(
         table=Section47, field=InitialCPCtarget, row=failing_indices
     )

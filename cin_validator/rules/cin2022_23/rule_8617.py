@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -31,7 +35,7 @@ def validate(
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # Code 8A has been returned as an <AssessmentFactors> (N00181) code
-    failing_indices = df[df[AssessmentFactors]=='8A'].index
+    failing_indices = df[df[AssessmentFactors] == "8A"].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
@@ -42,7 +46,9 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    assessmentfactors = pd.DataFrame([["8B"], ["8A"], ["8A"], [pd.NA]], columns=[AssessmentFactors])
+    assessmentfactors = pd.DataFrame(
+        [["8B"], ["8A"], ["8A"], [pd.NA]], columns=[AssessmentFactors]
+    )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {Assessments: assessmentfactors})
@@ -62,4 +68,7 @@ def test_validate():
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8617
-    assert result.definition.message == "Code 8A has been returned. This code is not a valid code."
+    assert (
+        result.definition.message
+        == "Code 8A has been returned. This code is not a valid code."
+    )
