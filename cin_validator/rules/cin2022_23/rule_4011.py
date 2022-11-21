@@ -29,7 +29,7 @@ def validate(
 
     # Replace CINplanDates with the name of the table you need.
     df = data_container[CINplanDates]
-    # Before you begine, rename the index so that the initial row positions can be kept intact.
+    # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
     # <If present <CINPlanEndDate> (N00690) must be on or after the <CINPlanStartDate> (N00689)
