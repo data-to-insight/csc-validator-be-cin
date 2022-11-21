@@ -91,9 +91,10 @@ def run_all(filename: str, ruleset):
         except:
             print("Error with rule " + str(rule.code))
 
+    json_issue_report = all_rules_issue_locs.to_dict(orient="records")
     print(issue_instances)
     print(all_rules_issue_locs)
-    print(f" Rules that raised no issues\n {rules_passed}")
+    print(json_issue_report)
 
 
 @cli.command(name="test")

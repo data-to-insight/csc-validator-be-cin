@@ -34,7 +34,7 @@ def test_type1():
 
 
 def test_type_one():
-    """rules that involve columns in the same table which were not joined by merge."""
+    """Expands type1_issues object into a dataframe."""
     rule_context = RuleContext(Mock())
     df_issues = pd.DataFrame(
         [
@@ -46,8 +46,10 @@ def test_type_one():
     assert rule_context.type_one_issues == []
 
     # check behaviour for rules that run push_type1
-    rule_context.push_type_1("table_name", ["column1", "column2"], df_issues)
+    rule_context.push_type_1("CINTable.table_name", ["column1", "column2"], df_issues)
     issues = rule_context.type_one_issues
+
+    # check that the dataframe columns are generated as expected when push_type1 is used.
     assert (
         issues["ERROR_ID"]
         == pd.Series(
@@ -66,19 +68,8 @@ def test_type_one():
         issues["columns_affected"]
         == pd.Series(["column1", "column2", "column1", "column2", "column1", "column2"])
     ).all()
-    assert (
-        issues["tables_affected"]
-        == pd.Series(
-            [
-                "table_name",
-                "table_name",
-                "table_name",
-                "table_name",
-                "table_name",
-                "table_name",
-            ]
-        )
-    ).all()
+
+    assert issues["tables_affected"].unique() == ["table_name"]
 
 
 def test_type2():
@@ -117,6 +108,65 @@ def test_type2():
     assert issues.row_df.equals(df_issues_3)
 
 
+def test_type_two():
+    """expands type2_issues object into a dataframe."""
+    rule_context = RuleContext(Mock())
+    df_issues_1 = pd.DataFrame(
+        [
+            {"ERROR_ID": (3, 7, 2), "ROW_ID": [18, 24]},
+        ]
+    )
+    df_issues_2 = pd.DataFrame(
+        [
+            {"ERROR_ID": (3, 7, 2), "ROW_ID": [9]},
+        ]
+    )
+
+    assert rule_context.type_two_issues == []
+
+    rule_context.push_type_2("CINTable.table_one", ["column1", "column2"], df_issues_1)
+    rule_context.push_type_2("CINTable.table_two", ["column3"], df_issues_2)
+
+    issues = rule_context.type_two_issues
+    assert (
+        issues["tables_affected"]
+        == pd.Series(
+            [
+                "table_one",
+                "table_one",
+                "table_one",
+                "table_one",
+                "table_two",
+            ]
+        )
+    ).all()
+    assert (
+        issues["ERROR_ID"]
+        == pd.Series(
+            [
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 7, 2),
+            ]
+        )
+    ).all()
+    assert (issues["ROW_ID"] == pd.Series([18, 18, 24, 24, 9])).all()
+    assert (
+        issues["columns_affected"]
+        == pd.Series(
+            [
+                "column1",
+                "column2",
+                "column1",
+                "column2",
+                "column3",
+            ]
+        )
+    ).all()
+
+
 def test_type3():
     """Rules that check relationships within a group."""
     rule_context = RuleContext(Mock())
@@ -137,3 +187,62 @@ def test_type3():
         "column1",
     ]
     assert issues.row_df.equals(df_issues)
+
+
+def test_type_three():
+    """expands type3_issues object into a dataframe."""
+    rule_context = RuleContext(Mock())
+    df_issues_1 = pd.DataFrame(
+        [
+            {"ERROR_ID": (3, 7, 2), "ROW_ID": [18, 24]},
+        ]
+    )
+    df_issues_2 = pd.DataFrame(
+        [
+            {"ERROR_ID": (3, 9, 4), "ROW_ID": [10]},
+        ]
+    )
+
+    assert rule_context.type_two_issues == []
+
+    rule_context.push_type_3("CINTable.table_one", ["column1", "column2"], df_issues_1)
+    rule_context.push_type_3("CINTable.table_two", ["column3"], df_issues_2)
+
+    issues = rule_context.type_three_issues
+    assert (
+        issues["tables_affected"]
+        == pd.Series(
+            [
+                "table_one",
+                "table_one",
+                "table_one",
+                "table_one",
+                "table_two",
+            ]
+        )
+    ).all()
+    assert (
+        issues["ERROR_ID"]
+        == pd.Series(
+            [
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 7, 2),
+                (3, 9, 4),
+            ]
+        )
+    ).all()
+    assert (issues["ROW_ID"] == pd.Series([18, 18, 24, 24, 10])).all()
+    assert (
+        issues["columns_affected"]
+        == pd.Series(
+            [
+                "column1",
+                "column2",
+                "column1",
+                "column2",
+                "column3",
+            ]
+        )
+    ).all()
