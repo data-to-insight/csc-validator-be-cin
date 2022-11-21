@@ -73,6 +73,7 @@ def validate(
         row_df=df_issues,
     )
 
+
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     child_identifiers = pd.DataFrame(
