@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
+import pandas as pd
 import pytest
 
 from cin_validator.ingress import XMLtoCSV
@@ -44,19 +45,56 @@ def run_all(filename: str, ruleset):
     data_files = DataContainerWrapper(XMLtoCSV(root))
 
     importlib.import_module(f"cin_validator.{ruleset}")
+
+    issue_instances = pd.DataFrame()
+    all_rules_issue_locs = pd.DataFrame()
+    rules_passed = []
     for rule in registry:
 
         try:
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
-            if len(list(ctx.issues)) == 0:
-                print(rule.code, len(list(ctx.issues)))
+            # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
+            lst_types = pd.Series(
+                [
+                    ctx.type_zero_issues,
+                    ctx.type_one_issues,
+                    ctx.type_two_issues,
+                    ctx.type_three_issues,
+                ]
+            )
+            # lst_ctx is a list of lengths of all elements in lst_types respectively.
+            lst_ctx = pd.Series([len(x) for x in lst_types])
+            if lst_ctx.max() == 0:
+                # if the rule didn't push to any of the issue accumulators
+                rules_passed.append(rule.code)
             else:
-                pass
-                for i in range(len(list(ctx.issues))):
-                    print(rule.code, list(ctx.issues)[i], rule.message)
+                # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
+                ind = lst_ctx.idxmax()
+
+                issue_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
+                issue_dict_df = pd.DataFrame([issue_dict])
+                issue_instances = pd.concat(
+                    [issue_instances, issue_dict_df], ignore_index=True
+                )
+
+                lst_types[ind]["rule_code"] = rule.code
+
+                # temporary: add rule type to track if all types are in df.
+                lst_types[ind]["rule_type"] = ind
+
+                all_rules_issue_locs = pd.concat(
+                    [all_rules_issue_locs, lst_types[ind]],
+                    ignore_index=True,
+                )
+
         except:
             print("Error with rule " + str(rule.code))
+
+    json_issue_report = all_rules_issue_locs.to_dict(orient="records")
+    print(issue_instances)
+    print(all_rules_issue_locs)
+    print(json_issue_report)
 
 
 @cli.command(name="test")
