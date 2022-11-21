@@ -1,4 +1,3 @@
-
 from typing import Mapping
 
 import pandas as pd
