@@ -79,13 +79,13 @@ def validate(
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpp")
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
     df_reviews_issues = (
         df_child.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_child")
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
