@@ -312,11 +312,11 @@ def test_validate():
         ]
     )
 
-    sample_CIN[CINclosureDate] = pd.to_datetime(
-        sample_CIN[CINclosureDate], format="%d/%m/%Y", errors="coerce"
+    sample_CIN["CINclosureDate"] = pd.to_datetime(
+        sample_CIN["CINclosureDate"], format="%d/%m/%Y", errors="coerce"
     )
-    sample_CIN[DateOfInitialCPC] = pd.to_datetime(
-        sample_CIN[DateOfInitialCPC], format="%d/%m/%Y", errors="coerce"
+    sample_CIN["DateOfInitialCPC"] = pd.to_datetime(
+        sample_CIN["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
 
     sample_assessments = pd.DataFrame(
@@ -380,13 +380,13 @@ def test_validate():
         ]
     )
 
-    sample_assessments[AssessmentActualStartDate] = pd.to_datetime(
-        sample_assessments[AssessmentActualStartDate],
+    sample_assessments["AssessmentActualStartDate"] = pd.to_datetime(
+        sample_assessments["AssessmentActualStartDate"],
         format="%d/%m/%Y",
         errors="coerce",
     )
-    sample_assessments[AssessmentAuthorisationDate] = pd.to_datetime(
-        sample_assessments[AssessmentAuthorisationDate],
+    sample_assessments["AssessmentAuthorisationDate"] = pd.to_datetime(
+        sample_assessments["AssessmentAuthorisationDate"],
         format="%d/%m/%Y",
         errors="coerce",
     )
@@ -425,13 +425,13 @@ def test_validate():
             },
             {
                 "LAchildID": "child6",
-                "CINdetailsID": "cinID1",
+                "CINdetailsID": "cinID6",
                 "S47ActualStartDate": "01/01/2021",
                 # Fails on CPP start date
             },
             {
                 "LAchildID": "child7",
-                "CINdetailsID": "cinID1",
+                "CINdetailsID": "cinID7",
                 "S47ActualStartDate": "01/01/2021",
                 # Fails on CIN plan start date
             },
@@ -444,8 +444,8 @@ def test_validate():
         ]
     )
 
-    sample_S47[S47ActualStartDate] = pd.to_datetime(
-        sample_S47[S47ActualStartDate], format="%d/%m/%Y", errors="coerce"
+    sample_S47["S47ActualStartDate"] = pd.to_datetime(
+        sample_S47["S47ActualStartDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     sample_CPP = pd.DataFrame(
@@ -501,8 +501,8 @@ def test_validate():
         ]
     )
 
-    sample_CPP[CPPendDate] = pd.to_datetime(
-        sample_CPP[CPPendDate], format="%d/%m/%Y", errors="coerce"
+    sample_CPP["CPPendDate"] = pd.to_datetime(
+        sample_CPP["CPPendDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     sample_CINplan = pd.DataFrame(
@@ -566,11 +566,11 @@ def test_validate():
         ]
     )
 
-    sample_CINplan[CINPlanStartDate] = pd.to_datetime(
-        sample_CINplan[CINPlanStartDate], format="%d/%m/%Y", errors="coerce"
+    sample_CINplan["CINPlanStartDate"] = pd.to_datetime(
+        sample_CINplan["CINPlanStartDate"], format="%d/%m/%Y", errors="coerce"
     )
-    sample_CINplan[CINPlanEndDate] = pd.to_datetime(
-        sample_CINplan[CINPlanEndDate], format="%d/%m/%Y", errors="coerce"
+    sample_CINplan["CINPlanEndDate"] = pd.to_datetime(
+        sample_CINplan["CINPlanEndDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run rule function passing in our sample data
