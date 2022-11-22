@@ -55,18 +55,7 @@ def validate(
     df_assessments = df_assessments[df_assessments[AssessmentAuthorisationDate].isna()]
 
     # Find the reference date - 45
-    def date_by_subtracting_business_days(from_date, sub_days):
-        business_days_to_subtract = sub_days
-        current_date = from_date
-        while business_days_to_subtract > 0:
-            current_date -= dt.timedelta(days=1)
-            weekday = current_date.weekday()
-            if weekday >= 5:  # sunday = 6
-                continue
-            business_days_to_subtract -= 1
-        return current_date
-
-    latest_date = date_by_subtracting_business_days(collection_end, 45)
+    latest_date = collection_end - pd.tseries.offsets.BDay(45)
 
     df_issues = df_assessments[
         df_assessments[AssessmentActualStartDate] > latest_date
