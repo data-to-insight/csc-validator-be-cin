@@ -1,7 +1,8 @@
 """
 Rule number: 8670Q
 Module: Assessments
-Rule details: Where present, within an <Assessments> group, if <AssessmentAuthorisationDate> (N00160) is not present then <AssessmentActualStartDate> (N00159) should not be before the <ReferenceDate> (N00603) minus 45 working days.
+Rule details: Where present, within an <Assessments> group, if <AssessmentAuthorisationDate> (N00160) is not present then <AssessmentActualStartDate>
+(N00159) should not be before the <ReferenceDate> (N00603) minus 45 working days.
 
 Rule message: Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date. 
 
