@@ -23,8 +23,7 @@ CINdetailsAssID = Assessment.CINdetailsID
     # write the rule code here
     code=8867,
     module=CINTable.CINdetails,
-    message="CIN episode is shown as closed, however Assessment is not shown as completed.",
-    # The column names tend to be the words within the < > signs in the github issue description.
+    message="CIN episode is shown as closed, however Assessment is not shown as completed",
     affected_fields=[
         CINclosureDate,
         AssessmentAuthorisationDate,
@@ -53,7 +52,7 @@ def validate(
     # Put the description as a comment above the implementation as shown.
 
     #If <CINclosureDate> (N00102) is present then all instances of the <Assessments> group must include the <AssesssmentAuthorisationDate> (N00160)
-    # Issues dfs should return rows where CPPreviewDate is less than or equal to the CPPstartDate
+    # Issues dfs should return rows where AssessmentAuthorisationDate is greater than or equal to the CINclosureDate
 
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
     df_cind = df_cind[df_cind[CINclosureDate].notna()]
@@ -68,18 +67,18 @@ def validate(
         suffixes=("_cind", "_ass"),
     )
 
-    #  Get rows where CPPreviewDate is less than or equal to CPPstartDate
-    condition = df_merged[AssessmentAuthorisationDate].isna() | df_merged[CINclosureDate]> df_merged[AssessmentAuthorisationDate]
+    #  Get rows where AssessmentAuthorisationDate is greater than or equal to CINclosureDate
+    condition = df_merged[CINclosureDate] > df_merged[AssessmentAuthorisationDate]
     df_merged = df_merged[condition].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
+    # In this case, the rule is checked for each CINclosureDate and AssessmentAuthorisationDate in each child (differentiated by LAchildID)
+    # So, a combination of LAchildID, CINclosureDate and AssessmentAuthorisationDate identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged[CINclosureDate], df_merged[AssessmentAuthorisationDate])
     )
 
-    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of df_cind and df_ass so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cind_issues = (
         df_cind.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cind")
@@ -115,7 +114,7 @@ def test_validate():
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "CDID2",
-                "CINclosureDate": "29/08/2002",  #  Fails
+                "CINclosureDate": "29/08/2002",  # Fails
             },
             {
                 "LAchildID": "child3",
@@ -152,12 +151,12 @@ def test_validate():
                 "AssessmentAuthorisationDate": "26/05/2000",
             },
             {
-                "LAchildID": "child4",
+                "LAchildID": "child4", # Ignored
                 "CINdetailsID": "CDID4",
                 "AssessmentAuthorisationDate": "30/05/2000",
             },
             {
-                "LAchildID": "child5",
+                "LAchildID": "child5", 
                 "CINdetailsID": "CDID5",
                 "AssessmentAuthorisationDate": pd.NA, #Ignored
             },
@@ -214,9 +213,9 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child2",  # ChildID
-                    # Start Date
+                    # CIN Closure Date
                     pd.to_datetime("29/08/2002", format="%d/%m/%Y", errors="coerce"),
-                    # Review date
+                    # Assessment Authorisation Date
                     pd.to_datetime("26/10/2002", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
