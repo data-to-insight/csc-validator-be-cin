@@ -8,19 +8,18 @@ from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
-CINDetails = CINTable.CINdetails
-CINclosureDate = CINDetails.CINclosureDate
-LAchildID = CINDetails.LAchildID
-CINDetailsID = CINDetails.CINdetailsID
+CINdetails = CINTable.CINdetails
+CINclosureDate = CINdetails.CINclosureDate
+LAchildID = CINdetails.LAchildID
+CINdetailsID = CINdetails.CINdetailsID
 
-Assessment = CINTable.Assessments
-AssessmentAuthorisationDate = Assessment.AssessmentAuthorisationDate
-LAchildID = Assessment.LAchildID
-CINdetailsAssID = Assessment.CINdetailsID
+Assessments = CINTable.Assessments
+AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
+LAchildID = Assessments.LAchildID
+CINdetailsAssID = Assessments.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here
     code=8867,
     module=CINTable.CINdetails,
     message="CIN episode is shown as closed, however Assessment is not shown as completed",
@@ -35,8 +34,8 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildProtectionPlans with the name of the table you need.
-    df_cind = data_container[CINDetails].copy()
-    df_ass = data_container[Assessment].copy()
+    df_cind = data_container[CINdetails].copy()
+    df_ass = data_container[Assessments].copy()
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_cind.index.name = "ROW_ID"
@@ -52,30 +51,29 @@ def validate(
     # Put the description as a comment above the implementation as shown.
 
     #If <CINclosureDate> (N00102) is present then all instances of the <Assessments> group must include the <AssesssmentAuthorisationDate> (N00160)
-    # Issues dfs should return rows where AssessmentAuthorisationDate is greater than or equal to the CINclosureDate
+    # Issues dfs should return rows where an AssessmentAuthorisationDate exists if a CINclosureDate has been recorded for that child.
 
-    #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
+    #  Create dataframes which only have rows with a CINclosureDate and an AssessmentAuthorisation Date and which should have one plan per row.
     df_cind = df_cind[df_cind[CINclosureDate].notna()]
-    df_ass = df_ass[df_ass[AssessmentAuthorisationDate].notna()]
-
+    
     #  Merge tables to get corresponding CP plan group and reviews
     df_merged = df_cind.merge(
         df_ass,
         left_on=["LAchildID", "CINdetailsID"],
         right_on=["LAchildID", "CINdetailsID"],
-        how="inner",
+        how="left",
         suffixes=("_cind", "_ass"),
     )
 
-    #  Get rows where AssessmentAuthorisationDate is greater than or equal to CINclosureDate
-    condition = df_merged[CINclosureDate] > df_merged[AssessmentAuthorisationDate]
+    #  Get rows where there is no AssessmentAuthorisationDate when a CINclosureDate is recorded. 
+    condition = df_merged[AssessmentAuthorisationDate].isna()
     df_merged = df_merged[condition].reset_index()
 
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CINclosureDate and AssessmentAuthorisationDate in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CINclosureDate and AssessmentAuthorisationDate identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged[CINclosureDate], df_merged[AssessmentAuthorisationDate])
+        zip(df_merged[LAchildID], df_merged[CINdetailsID], df_merged[CINclosureDate], df_merged[AssessmentAuthorisationDate])
     )
 
     # The merges were done on copies of df_cind and df_ass so that the column names in dataframes themselves aren't affected by the suffixes.
@@ -86,19 +84,20 @@ def validate(
         .apply(list)
         .reset_index()
     )
+
     df_ass_issues = (
         df_ass.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_ass")
         .groupby("ERROR_ID")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
-
+    
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
-        table=CINDetails, columns=[CINclosureDate], row_df=df_cind_issues
+        table=CINdetails, columns=[CINclosureDate], row_df=df_cind_issues
     )
     rule_context.push_type_2(
-        table=Assessment, columns=[AssessmentAuthorisationDate], row_df=df_ass_issues
+        table=Assessments, columns=[AssessmentAuthorisationDate], row_df=df_ass_issues
     )
 
 
@@ -114,91 +113,92 @@ def test_validate():
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "CDID2",
-                "CINclosureDate": "29/08/2002",  # Fails
+                "CINclosureDate": "29/08/2002",  # Fails (no Assessment Authorisation Date entered)
             },
             {
                 "LAchildID": "child3",
                 "CINdetailsID": "CDID3",
-                "CINclosureDate": "25/10/2002",  # Passes
+                "CINclosureDate": "25/10/2002",  # Pass
             },
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "CDID4",
-                "CINclosureDate": pd.NA,  # Ignored 
+                "CINclosureDate": "10/06/2000",  # Pass 
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "CDID5",
-                "CINclosureDate": "15/11/2001",  
-            },
-        ]
-    )
-    sample_ass = pd.DataFrame(
-        [
-            {
-                "LAchildID": "child1",  # Pass
-                "CINdetailsID": "CDID1",
-                "AssessmentAuthorisationDate": "26/05/2000",
-            },
-            {
-                "LAchildID": "child2",  # Fails
-                "CINdetailsID": "CDID2",
-                "AssessmentAuthorisationDate": "26/10/2002",
-            },
-            {
-                "LAchildID": "child3",  # Passes
-                "CINdetailsID": "CDID3",
-                "AssessmentAuthorisationDate": "26/05/2000",
-            },
-            {
-                "LAchildID": "child4", # Ignored
-                "CINdetailsID": "CDID4",
-                "AssessmentAuthorisationDate": "30/05/2000",
-            },
-            {
-                "LAchildID": "child5", 
-                "CINdetailsID": "CDID5",
-                "AssessmentAuthorisationDate": pd.NA, #Ignored
+                "CINclosureDate": "15/11/2001",  # Fails (no Assessment Authorisation Date entered)
             },
         ]
     )
 
+    sample_ass = pd.DataFrame(
+        [
+            {
+                "LAchildID": "child1",  
+                "CINdetailsID": "CDID1",
+                "AssessmentAuthorisationDate": "26/05/2000", # Pass
+            },
+            {
+                "LAchildID": "child2",  
+                "CINdetailsID": "CDID2",
+                "AssessmentAuthorisationDate": pd.NA, # Fails (no date entered)
+            },
+            {
+                "LAchildID": "child3",  
+                "CINdetailsID": "CDID3",
+                "AssessmentAuthorisationDate": "26/05/2000", # Pass
+            },
+            {
+                "LAchildID": "child4", 
+                "CINdetailsID": "CDID4",
+                "AssessmentAuthorisationDate": "30/05/2000", # Pass
+            },
+            {
+                "LAchildID": "child5", 
+                "CINdetailsID": "CDID5",
+                "AssessmentAuthorisationDate": pd.NA, # Fails (no date entered)
+            },
+        ]
+    )
     # If rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     sample_cind[CINclosureDate] = pd.to_datetime(
         sample_cind[CINclosureDate], format="%d/%m/%Y", errors="coerce"
     )
     sample_ass[AssessmentAuthorisationDate] = pd.to_datetime(
-        sample_ass[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
+       sample_ass[AssessmentAuthorisationDate], format="%d/%m/%Y", errors="coerce"
     )
-
+   
     # Run the rule function, passing in our sample data.
     result = run_rule(
         validate,
         {
-            CINDetails: sample_cind,
-            Assessment: sample_ass,
+            CINdetails: sample_cind,
+            Assessments: sample_ass,
         },
     )
-
+    
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
     issues = issues_list[1]
-
+   
     # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
-    assert issue_table == Assessment
-
+    assert issue_table == Assessments
+    
     # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentAuthorisationDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
+ 
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -216,17 +216,26 @@ def test_validate():
                     # CIN Closure Date
                     pd.to_datetime("29/08/2002", format="%d/%m/%Y", errors="coerce"),
                     # Assessment Authorisation Date
-                    pd.to_datetime("26/10/2002", format="%d/%m/%Y", errors="coerce"),
-                ),
+                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
+                    ),
                 "ROW_ID": [1],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",  # ChildID
+                    # CIN Closure Date
+                    pd.to_datetime("15/11/2001", format="%d/%m/%Y", errors="coerce"),
+                    # Assessment Authorisation Date
+                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
+                    ),
+                "ROW_ID": [4],
             },
         ]
     )
     assert issue_rows.equals(expected_df)
 
-    # Check that the rule definition is what you wrote in the context above.
+   # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8867
     assert (
         result.definition.message
