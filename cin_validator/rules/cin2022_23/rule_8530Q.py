@@ -53,7 +53,7 @@ def validate(
     earliest_date = collection_start - pd.DateOffset(days=30)
     # Find reference date + 9 months
     latest_date = collection_end + pd.DateOffset(months=9)
-    
+
     condition1 = df[ExpectedPersonBirthDate] >= latest_date
     condition2 = df[ExpectedPersonBirthDate] <= earliest_date
 
