@@ -31,10 +31,12 @@ def validate(
 ):
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[CINdetails]
-    #df = df[df[CINclosureDate].notna()]
+    df_ref = data_container[Header]
+
+    df = df[df[CINclosureDate].notna()]
 
     # ReferenceDate exists in the header table so we get header table too.
-    df_ref = data_container[Header]
+    
     ref_date_series = df_ref[ReferenceDate]
 
     # the make_census_period function generates the start and end date so that you don't have to do it each time.
@@ -43,11 +45,14 @@ def validate(
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # If <CINclosureDate> (N00102) is present, it must be within [Period_of_Census]
-    failing_indices = df[
-        (df[CINclosureDate] < collection_start)
-        | (df[CINclosureDate] > collection_end)
-    ].index
-    
+    df = df[
+        ~(
+            (df[CINclosureDate] > collection_start)
+            & (df[CINclosureDate] < collection_end)
+        )
+    ]
+    failing_indices = df.index
+
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
@@ -59,7 +64,7 @@ def validate(
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     fake_header = pd.DataFrame(
-        [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
+        {ReferenceDate: ["31/03/2022"]}  # the census start date here will be 01/04/2021
     )
     fake_cinclosure = pd.DataFrame(
         [
@@ -99,7 +104,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == "8620"
+    assert result.definition.code == 8620
     assert (
         result.definition.message
          == "CIN Closure Date present and does not fall within the Census year"
