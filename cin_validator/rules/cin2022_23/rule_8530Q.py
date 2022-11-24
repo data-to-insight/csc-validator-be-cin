@@ -53,20 +53,14 @@ def validate(
     # Find the reference date - 30
     earliest_date = collection_start - dt.timedelta(30)
     # Find reference date + 9 months
-    latest_date = collection_end + dt.timedelta(9*30)
+    latest_date = collection_end + dt.timedelta(9 * 30)
 
     condition1 = df[ExpectedPersonBirthDate] > latest_date
     condition2 = df[ExpectedPersonBirthDate] < earliest_date
 
-    df_issues = df[
-         condition1 | condition2
-    ].reset_index()
+    df_issues = df[condition1 | condition2].reset_index()
 
-    link_id = tuple(
-        zip(
-          df_issues[ExpectedPersonBirthDate]
-        )
-    )
+    link_id = tuple(zip(df_issues[ExpectedPersonBirthDate]))
     df_issues["ERROR_ID"] = link_id
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -114,11 +108,11 @@ def test_validate():
 
     # Run rule function passing in our sample data
     result = run_rule(
-        validate, 
+        validate,
         {
-            ChildIdentifiers: sample_ChildIdentifiers, 
+            ChildIdentifiers: sample_ChildIdentifiers,
             Header: sample_header,
-        }
+        },
     )
 
     issues_list = result.type2_issues
@@ -126,7 +120,6 @@ def test_validate():
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the ChildIdentifiers columns because that's the second thing pushed above.
     issues = issues_list[0]
-
 
     # get table name and check it. Replace ChildIdentifiers with the name of your table.
     issue_table = issues.table
