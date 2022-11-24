@@ -7,7 +7,6 @@ Rule message: Please check: Expected Date of Birth is outside the expected range
 from typing import Mapping
 
 import pandas as pd
-import datetime as dt
 
 from cin_validator.rule_engine import (
     CINTable,
@@ -51,12 +50,12 @@ def validate(
     df = df[~df[ExpectedPersonBirthDate].isna()]
 
     # Find the reference date - 30
-    earliest_date = collection_start - dt.timedelta(30)
+    earliest_date = collection_start - pd.DateOffset(days=30)
     # Find reference date + 9 months
     latest_date = collection_end + pd.DateOffset(months=9)
-
-    condition1 = df[ExpectedPersonBirthDate] > latest_date
-    condition2 = df[ExpectedPersonBirthDate] < earliest_date
+    
+    condition1 = df[ExpectedPersonBirthDate] >= latest_date
+    condition2 = df[ExpectedPersonBirthDate] <= earliest_date
 
     df_issues = df[condition1 | condition2].reset_index()
 
@@ -89,7 +88,7 @@ def test_validate():
             },
             {
                 "ExpectedPersonBirthDate": "15/03/2024",
-                # Fail, start date is withing 45wd of reference date
+                # Fail, start date is within 45wd of reference date
             },
         ]
     )
@@ -155,8 +154,6 @@ def test_validate():
         ]
     )
 
-    print(issue_rows)
-    print(expected_df)
     assert issue_rows.equals(expected_df)
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
