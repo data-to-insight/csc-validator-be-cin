@@ -40,11 +40,10 @@ def validate(
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    # If present <DateOfInitialCPC> (N00110) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
+    # If <CINPlanEndDate> (N00690) is present, then<CINPlanEndDate> (N00690) must fall within [Period_of_Census] inclusive
     # A value is out of range if it is before the start or after the end.
     failing_indices = df[
-        (df[CINPlanEndDate] < collection_start)
-        | (df[CINPlanEndDate] > reference_date)
+        (df[CINPlanEndDate] < collection_start) | (df[CINPlanEndDate] > reference_date)
     ].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
