@@ -48,13 +48,15 @@ def validate(
     # lOGIC
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
-    print ('\n initial df \n', df)
     # If a <Section47> group does not contain the <DateOfInitialCPC> (N00110) and <ICPCnotRequired> (N00111) is false
     # then the <S47ActualStartDate> (N00148) must be on or between [Start_Of_Census_Year] and <ReferenceDate> (N00603)
     condition = (
-        df[DateOfInitialCPC].isna() 
+        df[DateOfInitialCPC].isna()
         & (df[ICPCnotRequired].astype(str) == "0")
-        & ( (df[S47ActualStartDate] < collection_start) | (df[S47ActualStartDate] > reference_date) )
+        & (
+            (df[S47ActualStartDate] < collection_start)
+            | (df[S47ActualStartDate] > reference_date)
+        )
     )
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
@@ -71,7 +73,6 @@ def validate(
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(zip(df_issues[LAchildID], df_issues[S47ActualStartDate]))
     df_issues["ERROR_ID"] = link_id
-    print ('\n df_issues with link_id \n', df_issues)
     df_issues = df_issues.groupby("ERROR_ID")["ROW_ID"].apply(list).reset_index()
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
@@ -79,7 +80,7 @@ def validate(
         columns=[S47ActualStartDate, DateOfInitialCPC, ICPCnotRequired],
         row_df=df_issues,
     )
-    print ('\n df_issues after groupby \n', df_issues)
+
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
@@ -159,7 +160,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 1
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -176,20 +177,11 @@ def test_validate():
                     "child1",
                     pd.to_datetime("26/05/1999", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [4],
-            },
-            {
-                "ERROR_ID": (
-                    "child1",
-                    pd.to_datetime("26/05/1999", format="%d/%m/%Y", errors="coerce"),
-                ),
-                "ROW_ID": [5],
+                "ROW_ID": [4, 5],
             },
         ]
     )
     assert issue_rows.equals(expected_df)
-    print ('\n issue_rows \n', issue_rows)
-    print ('\n expected_df \n', expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
 
