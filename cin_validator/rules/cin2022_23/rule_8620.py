@@ -24,7 +24,7 @@ ReferenceDate = Header.ReferenceDate
     code=8620,
     module=CINTable.CINdetails,
     message="CIN Closure Date present and does not fall within the Census year",
-    affected_fields=[CINclosureDate,ReferenceDate],
+    affected_fields=[CINclosureDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -36,7 +36,7 @@ def validate(
     df = df[df[CINclosureDate].notna()]
 
     # ReferenceDate exists in the header table so we get header table too.
-    
+
     ref_date_series = df_ref[ReferenceDate]
 
     # the make_census_period function generates the start and end date so that you don't have to do it each time.
@@ -53,12 +53,9 @@ def validate(
     ]
     failing_indices = df.index
 
-
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
-    rule_context.push_issue(
-        table=CINdetails, field=CINclosureDate, row=failing_indices
-    )
+    rule_context.push_issue(table=CINdetails, field=CINclosureDate, row=failing_indices)
 
 
 def test_validate():
@@ -79,8 +76,8 @@ def test_validate():
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
         ]
     )
-    
-   # if date columns are involved, the validate function will be expecting them as dates so convert before passing them in.
+
+    # if date columns are involved, the validate function will be expecting them as dates so convert before passing them in.
     fake_cinclosure[CINclosureDate] = pd.to_datetime(
         fake_cinclosure[CINclosureDate], format="%d/%m/%Y", errors="coerce"
     )
@@ -107,5 +104,5 @@ def test_validate():
     assert result.definition.code == 8620
     assert (
         result.definition.message
-         == "CIN Closure Date present and does not fall within the Census year"
-         )
+        == "CIN Closure Date present and does not fall within the Census year"
+    )
