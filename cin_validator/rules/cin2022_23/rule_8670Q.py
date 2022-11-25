@@ -58,7 +58,7 @@ def validate(
     latest_date = collection_end - pd.tseries.offsets.BDay(45)
 
     df_issues = df_assessments[
-        df_assessments[AssessmentActualStartDate] > latest_date
+        df_assessments[AssessmentActualStartDate] < latest_date
     ].reset_index()
 
     link_id = tuple(
@@ -149,9 +149,9 @@ def test_validate():
             {
                 "ERROR_ID": (
                     pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime("15/03/2023", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("15/10/2022", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [2],
+                "ROW_ID": [1],
             },
         ]
     )
