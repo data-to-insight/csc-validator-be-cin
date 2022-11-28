@@ -69,8 +69,6 @@ def validate(
         .reset_index()
     )
 
-    df_cindet_issues.sort_values(["ROW_ID"], ignore_index=True, inplace=True)
-
     df_cinplan_issues = (
         df_cindetail.merge(
             df_merged, how="inner", left_on="ROW_ID", right_on="ROW_ID_det"
@@ -79,8 +77,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-
-    df_cinplan_issues.sort_values(["ROW_ID"], ignore_index=True, inplace=True)
 
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
@@ -188,6 +184,7 @@ def test_validate():
             },
         ]
     )
+    issue_rows.sort_values(["ROW_ID"], ignore_index=True, inplace=True)
     assert issue_rows.equals(expected_df)
 
     assert result.definition.code == 4015
