@@ -1,5 +1,7 @@
-import pandas as pd
 from copy import deepcopy
+
+import pandas as pd
+
 
 def get_values(xml_elements, table_dict, xml_block):
     for element in xml_elements:
@@ -80,7 +82,7 @@ class DataContainerWrapper:
 
     def __copy__(self):
         cls = self.__class__
-        result =cls.__new__(cls)
+        result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
 
