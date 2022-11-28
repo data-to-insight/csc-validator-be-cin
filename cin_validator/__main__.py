@@ -43,7 +43,7 @@ def run_all(filename: str, ruleset, errorselect):
     # TODO detect filetype xml/csv/zip. check if the directory is a folder.
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
-    data_files = DataContainerWrapper(XMLtoCSV(root))
+    data_files_obj = DataContainerWrapper(XMLtoCSV(root))
 
     importlib.import_module(f"cin_validator.{ruleset}")
 
@@ -51,7 +51,7 @@ def run_all(filename: str, ruleset, errorselect):
     all_rules_issue_locs = pd.DataFrame()
     rules_passed = []
     for rule in registry:
-
+        data_files = data_files_obj.__deepcopy__({})
         try:
             ctx = RuleContext(rule)
             rule.func(data_files, ctx)
@@ -92,10 +92,10 @@ def run_all(filename: str, ruleset, errorselect):
         except:
             print("Error with rule " + str(rule.code))
 
-    json_issue_report = all_rules_issue_locs.to_dict(orient="records")
+    #json_issue_report = all_rules_issue_locs.to_dict(orient="records")
+    
     print(issue_instances)
     print(all_rules_issue_locs)
-    print(json_issue_report)
 
     # Allows selection of error by ERROR_ID,
     # converts errorselect argument to tuple to do the slice.
