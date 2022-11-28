@@ -78,7 +78,6 @@ def validate(
             df_merged[LAchildID], df_merged[CINreferralDate], df_merged[PersonDeathDate]
         )
     )
-    print(df_merged)
     df_CINDetails_issues = (
         df_CINDetails.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_CINDetails")
         .groupby("ERROR_ID")["ROW_ID"]

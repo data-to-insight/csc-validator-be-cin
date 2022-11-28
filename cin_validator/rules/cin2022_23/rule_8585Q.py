@@ -73,7 +73,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_CI_issues)
 
     df_CIN_issues = (
         df_CIN.merge(df, left_on="ROW_ID", right_on="ROW_ID_CIN")
@@ -176,7 +175,6 @@ def test_validate():
             },
         ]
     )
-    print(expected_df)
     assert issue_rows.equals(expected_df)
 
     assert result.definition.code == "8585Q"

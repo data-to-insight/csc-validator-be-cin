@@ -64,7 +64,7 @@ def validate(
         df_cinplan.merge(
             df_merged, how="inner", left_on="ROW_ID", right_on="ROW_ID_plan"
         )
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
@@ -73,7 +73,7 @@ def validate(
         df_cindetail.merge(
             df_merged, how="inner", left_on="ROW_ID", right_on="ROW_ID_det"
         )
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
