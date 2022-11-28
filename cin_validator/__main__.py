@@ -89,11 +89,11 @@ def run_all(filename: str, ruleset, errorselect):
                     ignore_index=True,
                 )
 
-        except:
-            print("Error with rule " + str(rule.code))
+        except Exception as e:
+            print(f"Error with rule {rule.code}: {type(e).__name__}, {e}")
 
-    #json_issue_report = all_rules_issue_locs.to_dict(orient="records")
-    
+    # json_issue_report = all_rules_issue_locs.to_dict(orient="records")
+
     print(issue_instances)
     print(all_rules_issue_locs)
 
