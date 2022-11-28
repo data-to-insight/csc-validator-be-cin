@@ -38,11 +38,7 @@ def list_cmd(ruleset):
     default="rules.cin2022_23",
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
-@click.option(
-    "--errorselect",
-    "-e",
-    default=None
-)
+@click.option("--errorselect", "-e", default=None)
 def run_all(filename: str, ruleset, errorselect):
     # TODO detect filetype xml/csv/zip. check if the directory is a folder.
     fulltree = ET.parse(filename)
@@ -96,18 +92,19 @@ def run_all(filename: str, ruleset, errorselect):
         except:
             print("Error with rule " + str(rule.code))
 
-
     json_issue_report = all_rules_issue_locs.to_dict(orient="records")
     print(issue_instances)
     print(all_rules_issue_locs)
     print(json_issue_report)
+
+    # Allows selection of error by ERROR_ID,
+    # converts errorselect argument to tuple to do the slice.
     if errorselect is not None:
-        print(all_rules_issue_locs[all_rules_issue_locs['ERROR_ID'].notna()])
-        #print(errorselect)
-        #print(all_rules_issue_locs.loc[all_rules_issue_locs['ERROR_ID'] == (errorselect)])
+        errorselect = tuple(map(str, errorselect.split(", ")))
+        print(all_rules_issue_locs[all_rules_issue_locs["ERROR_ID"] == errorselect])
     else:
         pass
-  
+
 
 @cli.command(name="test")
 @click.argument("rule", type=int, required=False)
