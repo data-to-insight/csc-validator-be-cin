@@ -43,7 +43,7 @@ def validate(
 
     # DF_CHECK: APPLY GROUPBYs IN A SEPARATE DATAFRAME SO THAT OTHER COLUMNS ARE NOT LOST OR CORRUPTED. THEN, MAP THE RESULTS TO THE INITIAL DATAFRAME.
     df_check = df.copy()
-    
+
     # Get all the locations where an AssessmentActualStartDate is not null and also where the AssessmentAuthorisation is null
     df_check = df_check[df_check[AssessmentActualStartDate].notna()]
     df_check = df_check[df_check[AssessmentAuthorisationDate].isna()]
@@ -165,11 +165,11 @@ def test_validate():
 
     issues = issues_list[0]
 
-    # get table name and check it. 
+    # get table name and check it.
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. 
+    # check that the right columns were returned.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentActualStartDate, AssessmentAuthorisationDate]
 
