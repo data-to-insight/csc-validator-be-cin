@@ -20,7 +20,6 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 @rule_definition(
     # write the rule code here
     code=4009,
-
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildIdentifiers,
@@ -30,8 +29,7 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
     affected_fields=[
         PersonDeathDate,
         CINPlanEndDate,
-    ]
-    
+    ],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -78,10 +76,7 @@ def validate(
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, PersonDeathDate identifies and error instance.
-    df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], 
-        df_merged[PersonDeathDate])
-    )
+    df_merged["ERROR_ID"] = tuple(zip(df_merged[LAchildID], df_merged[PersonDeathDate]))
 
     # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
@@ -114,76 +109,76 @@ def test_validate():
             {
                 "LAchildID": "child1",
                 "PersonDeathDate": "27/06/2002",  # Passes as dates are the same
-                #"CIID": "cinID1",
+                # "CIID": "cinID1",
             },
             {
                 "LAchildID": "child2",
-                "PersonDeathDate": "27/06/2002", #  Fails, CINPlanEndDate greater than (27/6/2002) DeathDate
-                #"CIID": "cinID2",
+                "PersonDeathDate": "27/06/2002",  #  Fails, CINPlanEndDate greater than (27/6/2002) DeathDate
+                # "CIID": "cinID2",
             },
             {
                 "LAchildID": "child3",
-                "PersonDeathDate": "01/01/2001", # Fails as CINPlanEndDate greater than (01/01/2001) DeathDate
-                #"CIID": "cinID3",
+                "PersonDeathDate": "01/01/2001",  # Fails as CINPlanEndDate greater than (01/01/2001) DeathDate
+                # "CIID": "cinID3",
             },
             {
                 "LAchildID": "child4",
-                "PersonDeathDate": "01/01/2001", # Passes as CINPlanEndDate is less than (01/01/2001) DeathDate
-                #"CIID": "cinID4",
+                "PersonDeathDate": "01/01/2001",  # Passes as CINPlanEndDate is less than (01/01/2001) DeathDate
+                # "CIID": "cinID4",
             },
             {
                 "LAchildID": "child5",
-                "PersonDeathDate": pd.NA,        # Ignored as rows with no PersonDeathDate are not picked up
-                #"CIID": "cinID5",
+                "PersonDeathDate": pd.NA,  # Ignored as rows with no PersonDeathDate are not picked up
+                # "CIID": "cinID5",
             },
             {
                 "LAchildID": "child6",
                 "PersonDeathDate": "01/01/2008",  # Ignored as rows with no CINPlanEndDate are not picked up
-                #"CIID": "cinID6",
+                # "CIID": "cinID6",
             },
             {
                 "LAchildID": "child7",
                 "PersonDeathDate": "01/01/2008",  # Fails as CINPlanEndDate greater than (01/01/2008) DeathDate
-                #"CIID": "cinID7",
+                # "CIID": "cinID7",
             },
         ]
     )
     sample_cinplan = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  
-                "CINPlanEndDate": "27/06/2002", # Passes as dates are the same
-                #"CIPID": "cinID1",
+                "LAchildID": "child1",
+                "CINPlanEndDate": "27/06/2002",  # Passes as dates are the same
+                # "CIPID": "cinID1",
             },
             {
-                "LAchildID": "child2",  
-                "CINPlanEndDate": "29/06/2002", #  Fails, CINPlanEndDate greater than (27/6/2002) DeathDate
-                #"CIPID": "cinID2",
+                "LAchildID": "child2",
+                "CINPlanEndDate": "29/06/2002",  #  Fails, CINPlanEndDate greater than (27/6/2002) DeathDate
+                # "CIPID": "cinID2",
             },
             {
-                "LAchildID": "child3",  
-                "CINPlanEndDate": "07/02/2001", # Fails as CINPlanEndDate greater than (01/01/2001) DeathDate
-                #"CIPID": "cinID3",
+                "LAchildID": "child3",
+                "CINPlanEndDate": "07/02/2001",  # Fails as CINPlanEndDate greater than (01/01/2001) DeathDate
+                # "CIPID": "cinID3",
             },
             {
                 "LAchildID": "child4",
-                "CINPlanEndDate": "26/05/2000",# Passes as CINPlanEndDate is less than (01/01/2001) DeathDate
-                #"CIPID": "cinID4",
+                "CINPlanEndDate": "26/05/2000",  # Passes as CINPlanEndDate is less than (01/01/2001) DeathDate
+                # "CIPID": "cinID4",
             },
             {
                 "LAchildID": "child5",
                 "CINPlanEndDate": "26/05/2000",  # Ignored as rows with no PersonDeathDate are not picked up
-                #"CIPID": "cinID5",
+                # "CIPID": "cinID5",
             },
             {
                 "LAchildID": "child6",
-                "CINPlanEndDate": pd.NA,        # Ignored as rows with no CINPlanEndDate are not picked up
-                #"CIPID": "cinID6",
+                "CINPlanEndDate": pd.NA,  # Ignored as rows with no CINPlanEndDate are not picked up
+                # "CIPID": "cinID6",
             },
             {
                 "LAchildID": "child7",
-                "CINPlanEndDate": "14/03/2008", # Fails as CINPlanEndDate greater than (01/01/2008) DeathDate
-                #"CIPID": "cinID7",
+                "CINPlanEndDate": "14/03/2008",  # Fails as CINPlanEndDate greater than (01/01/2008) DeathDate
+                # "CIPID": "cinID7",
             },
         ]
     )
