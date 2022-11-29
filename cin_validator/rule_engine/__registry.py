@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Callable, Iterable
 
-from cin_validator.rule_engine.__api import RuleDefinition, RuleType, CINTable
+from cin_validator.rule_engine.__api import CINTable, RuleDefinition, RuleType
 
 
 class __Registry:
