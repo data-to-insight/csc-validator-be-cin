@@ -21,6 +21,7 @@ class CinValidationSession:
         self.create_error_report_df()
         self.create_json_report()
         self.select_by_id()
+        self.create_rules_df()
 
     def create_error_report_df(self):
         self.issue_instances = pd.DataFrame()
@@ -90,3 +91,18 @@ class CinValidationSession:
             ]
         else:
             pass
+
+    def create_rules_df(self):
+        #rules_broken = self.all_rules_issue_locs
+        rules_broken = self.all_rules_issue_locs['rule_code'].astype('str').unique().tolist()
+        print(rules_broken)
+        rule_messages = []
+        for rule in registry:
+            if str(rule.code) in rules_broken:
+                rule_messages.append(rule.message)
+        print(rule_messages)
+        self.rules_df = pd.DataFrame({'Rules broken':rules_broken,
+                                    'Rule message':rule_messages
+                                    })
+        print(self.rules_df)
+       
