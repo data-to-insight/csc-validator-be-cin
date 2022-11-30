@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pandas as pd
 
 
@@ -77,3 +79,18 @@ class DataContainerWrapper:
 
     def __getitem__(self, name):
         return getattr(self.value, name.name)
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        # the memo param is a dictionary that defines the parts of the class the should be shared between copies.
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
