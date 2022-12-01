@@ -87,7 +87,7 @@ class CinValidationSession:
             {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
         )
 
-        print({self.rule_descriptors})
+        print(self.rule_descriptors)
 
     def create_json_report(self):
         self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
