@@ -6,6 +6,7 @@ import click
 import pandas as pd
 import pytest
 
+from cin_validator.cin_validator_class import CinValidationSession
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
@@ -38,72 +39,24 @@ def list_cmd(ruleset):
     default="rules.cin2022_23",
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
-@click.option("--errorselect", "-e", default=None)
-def run_all(filename: str, ruleset, errorselect):
-    # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-    fulltree = ET.parse(filename)
-    root = fulltree.getroot()
-    data_files_obj = DataContainerWrapper(XMLtoCSV(root))
+@click.option("--issue_id", "-e", default=None)
+def run_all(filename: str, ruleset, issue_id):
 
-    importlib.import_module(f"cin_validator.{ruleset}")
+    validator = CinValidationSession(filename, ruleset, issue_id)
 
-    issue_instances = pd.DataFrame()
-    all_rules_issue_locs = pd.DataFrame()
-    rules_passed = []
-    for rule in registry:
-        data_files = data_files_obj.__deepcopy__({})
-        try:
-            ctx = RuleContext(rule)
-            rule.func(data_files, ctx)
-            # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
-            lst_types = pd.Series(
-                [
-                    ctx.type_zero_issues,
-                    ctx.type_one_issues,
-                    ctx.type_two_issues,
-                    ctx.type_three_issues,
-                ]
-            )
-            # lst_ctx is a list of lengths of all elements in lst_types respectively.
-            lst_ctx = pd.Series([len(x) for x in lst_types])
-            if lst_ctx.max() == 0:
-                # if the rule didn't push to any of the issue accumulators
-                rules_passed.append(rule.code)
-            else:
-                # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
-                ind = lst_ctx.idxmax()
-
-                issue_dict = {"code": rule.code, "number": lst_ctx[ind], "type": ind}
-                issue_dict_df = pd.DataFrame([issue_dict])
-                issue_instances = pd.concat(
-                    [issue_instances, issue_dict_df], ignore_index=True
-                )
-
-                lst_types[ind]["rule_code"] = rule.code
-
-                # temporary: add rule type to track if all types are in df.
-                lst_types[ind]["rule_type"] = ind
-
-                all_rules_issue_locs = pd.concat(
-                    [all_rules_issue_locs, lst_types[ind]],
-                    ignore_index=True,
-                )
-
-        except Exception as e:
-            print(f"Error with rule {rule.code}: {type(e).__name__}, {e}")
-
-    # json_issue_report = all_rules_issue_locs.to_dict(orient="records")
+    issue_instances = validator.issue_instances
+    all_rules_issue_locs = validator.all_rules_issue_locs
 
     print(issue_instances)
     print(all_rules_issue_locs)
 
     # Allows selection of error by ERROR_ID,
     # converts errorselect argument to tuple to do the slice.
-    if errorselect is not None:
-        errorselect = tuple(map(str, errorselect.split(", ")))
-        print(all_rules_issue_locs[all_rules_issue_locs["ERROR_ID"] == errorselect])
-    else:
-        pass
+    # if issue_id is not None:
+    #     issue_id = tuple(map(str, issue_id.split(", ")))
+    #     print(all_rules_issue_locs[all_rules_issue_locs["ERROR_ID"] == issue_id])
+    # else:
+    #     pass
 
 
 @cli.command(name="test")
