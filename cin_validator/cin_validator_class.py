@@ -21,12 +21,13 @@ class CinValidationSession:
         self.create_error_report_df()
         self.create_json_report()
         self.select_by_id()
-        self.create_rules_df()
 
     def create_error_report_df(self):
         self.issue_instances = pd.DataFrame()
         self.all_rules_issue_locs = pd.DataFrame()
         self.rules_passed = []
+        self.rules_broken = []
+        self.rule_messages = []
 
         importlib.import_module(f"cin_validator.{self.ruleset}")
 
@@ -76,8 +77,17 @@ class CinValidationSession:
                         ignore_index=True,
                     )
 
+                    self.rules_broken.append(rule.code)
+                    self.rule_messages.append(rule.message)
+
             except Exception as e:
                 print(f"Error with rule {rule.code}: {type(e).__name__}, {e}")
+
+        self.rule_descriptors = pd.DataFrame(
+            {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
+        )
+
+        print({self.rule_descriptors})
 
     def create_json_report(self):
         self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
@@ -91,19 +101,3 @@ class CinValidationSession:
             ]
         else:
             pass
-
-    def create_rules_df(self):
-        # rules_broken = self.all_rules_issue_locs
-        rules_broken = (
-            self.all_rules_issue_locs["rule_code"].astype("str").unique().tolist()
-        )
-        print(rules_broken)
-        rule_messages = []
-        for rule in registry:
-            if str(rule.code) in rules_broken:
-                rule_messages.append(rule.message)
-        print(rule_messages)
-        self.rules_df = pd.DataFrame(
-            {"Rules broken": rules_broken, "Rule message": rule_messages}
-        )
-        print(self.rules_df)
