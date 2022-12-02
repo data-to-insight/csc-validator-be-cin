@@ -72,7 +72,7 @@ def validate(
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
     df_cpp = df_cpp[df_cpp[CPPstartDate].notna()]
     df_cpp2 = df_cpp2[df_cpp2[CPPstartDate].notna()]
-    print("\n df_cpp\n", df_cpp)
+
     #  Merge tables to test for overlaps
     df_merged = df_cpp.merge(
         df_cpp2,
@@ -83,7 +83,7 @@ def validate(
 
     # Exclude rows where the CPPID is the same on both sides
     df_merged = df_merged[(df_merged["CPPID_cpp"] != df_merged["CPPID_cpp2"])]
-    print("\n df_merged exclude\n", df_merged)
+
     # Determine whether CPP overlaps another CPP
     cpp_started_after_start = (
         df_merged["CPPstartDate_cpp"] >= df_merged["CPPstartDate_cpp2"]
@@ -98,13 +98,13 @@ def validate(
     df_merged = df_merged[
         cpp_started_after_start & (cpp_started_before_end | cpp_started_before_refdate)
     ].reset_index()
-    print("\n df_merged filtered\n", df_merged)
+
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged["CPPID_cpp"], df_merged["CPPID_cpp2"])
     )
-    print("\n df_merged zipped\n", df_merged)
+
     # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
@@ -119,8 +119,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print("\n df_cpp_issues\n", df_cpp_issues)
-    print("\n df_cpp2_issues\n", df_cpp2_issues)
 
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_3(
@@ -231,7 +229,7 @@ def test_validate():
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
-    print("\n issue_rows\n", issue_rows)
+
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
