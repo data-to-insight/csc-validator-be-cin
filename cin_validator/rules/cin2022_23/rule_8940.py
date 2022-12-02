@@ -263,7 +263,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child4",
                     "cinID42",
-                    "cinID44",
+                    "cinID4",
                 ),
                 "ROW_ID": [7],
             },
