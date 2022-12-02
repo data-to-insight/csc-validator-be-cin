@@ -79,19 +79,20 @@ def validate(
         suffixes=("_cin", "_cpp"),
     )
 
-    # Get rows where CINPlanStartDate is after CPPstartDate 
+    # Get rows where CINPlanStartDate is after CPPstartDate
     # and CINPlanStartDate before CPPendDate (or if null, before/on ReferenceDate)
-    cin_start_after_cpp_start = (df_merged[CINPlanStartDate] >= df_merged[CPPstartDate])
+    cin_start_after_cpp_start = df_merged[CINPlanStartDate] >= df_merged[CPPstartDate]
     cin_start_before_cpp_end = (
-        (df_merged[CINPlanStartDate] < df_merged[CPPendDate])
-        & df_merged[CPPendDate].notna()
-        )
+        df_merged[CINPlanStartDate] < df_merged[CPPendDate]
+    ) & df_merged[CPPendDate].notna()
     cin_start_before_reference_date = (
-        (df_merged[CINPlanStartDate] <= reference_date) 
-        & df_merged[CPPendDate].isna()
-        )
-    
-    df_merged = df_merged[cin_start_after_cpp_start & (cin_start_before_cpp_end | cin_start_before_reference_date)].reset_index()
+        df_merged[CINPlanStartDate] <= reference_date
+    ) & df_merged[CPPendDate].isna()
+
+    df_merged = df_merged[
+        cin_start_after_cpp_start
+        & (cin_start_before_cpp_end | cin_start_before_reference_date)
+    ].reset_index()
 
     # create an identifier for each error instance.
     df_merged["ERROR_ID"] = tuple(
