@@ -89,10 +89,10 @@ def validate(
         df_merged["CPPstartDate_cpp"] >= df_merged["CPPstartDate_cpp2"]
     )
     cpp_started_before_end = (
-        df_merged["CPPstartDate_cpp"] < df_merged["CPPendDate_cpp2"]
+        df_merged["CPPstartDate_cpp"] <= df_merged["CPPendDate_cpp2"]
     ) & df_merged["CPPendDate_cpp2"].notna()
     cpp_started_before_refdate = (
-        df_merged["CPPstartDate_cpp"] < reference_date
+        df_merged["CPPstartDate_cpp"] <= reference_date
     ) & df_merged["CPPendDate_cpp2"].isna()
 
     df_merged = df_merged[
@@ -101,12 +101,11 @@ def validate(
     print("\n df_merged filtered\n", df_merged)
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
         zip(df_merged[LAchildID], df_merged["CPPID_cpp"], df_merged["CPPID_cpp2"])
     )
     print("\n df_merged zipped\n", df_merged)
-    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpp")
@@ -157,7 +156,7 @@ def test_validate():
             {
                 "LAchildID": "child2",  # 2 Pass
                 "CPPstartDate": "26/05/2000",
-                "CPPendDate": "26/10/2000",
+                "CPPendDate": "25/10/2000",
                 "CPPID": "cinID2",
             },
             {
@@ -177,6 +176,18 @@ def test_validate():
                 "CPPstartDate": "26/08/2000",
                 "CPPendDate": "26/10/2000",
                 "CPPID": "cinID32",
+            },
+            {
+                "LAchildID": "child4",  # 6 Pass
+                "CPPstartDate": "26/10/2000",
+                "CPPendDate": "31/03/2001",
+                "CPPID": "cinID4",
+            },
+            {
+                "LAchildID": "child4",  # 7 Fail
+                "CPPstartDate": "31/03/2001",
+                "CPPendDate": pd.NA,
+                "CPPID": "cinID42",
             },
         ]
     )
@@ -219,7 +230,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
     print("\n issue_rows\n", issue_rows)
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -247,6 +258,14 @@ def test_validate():
                     "cinID3",
                 ),
                 "ROW_ID": [5],
+            },
+            {
+                "ERROR_ID": (
+                    "child4",
+                    "cinID42",
+                    "cinID44",
+                ),
+                "ROW_ID": [7],
             },
         ]
     )
