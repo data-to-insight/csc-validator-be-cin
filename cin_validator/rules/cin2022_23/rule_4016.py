@@ -79,13 +79,19 @@ def validate(
         suffixes=("_cin", "_cpp"),
     )
 
-    #  Get rows where CINPlanStartDate is between CPPstartDate and CPPendDate (or reference_date)
-    condition = (df_merged[CINPlanStartDate] >= df_merged[CPPstartDate]) & (
+    # Get rows where CINPlanStartDate is after CPPstartDate 
+    # and CINPlanStartDate before CPPendDate (or if null, before/on ReferenceDate)
+    cin_start_after_cpp_start = (df_merged[CINPlanStartDate] >= df_merged[CPPstartDate])
+    cin_start_before_cpp_end = (
         (df_merged[CINPlanStartDate] < df_merged[CPPendDate])
         & df_merged[CPPendDate].notna()
-        | (df_merged[CINPlanStartDate] < reference_date) & df_merged[CPPendDate].isna()
-    )
-    df_merged = df_merged[condition].reset_index()
+        )
+    cin_start_before_reference_date = (
+        (df_merged[CINPlanStartDate] <= reference_date) 
+        & df_merged[CPPendDate].isna()
+        )
+    
+    df_merged = df_merged[cin_start_after_cpp_start & (cin_start_before_cpp_end | cin_start_before_reference_date)].reset_index()
 
     # create an identifier for each error instance.
     df_merged["ERROR_ID"] = tuple(
@@ -156,6 +162,12 @@ def test_validate():
                 "CPPendDate": "30/10/2001",
                 "CPPID": "cinID1",
             },
+            {
+                "LAchildID": "child5",
+                "CPPstartDate": "26/05/2000",
+                "CPPendDate": pd.NA,
+                "CPPID": "cinID1",
+            },
         ]
     )
     sample_cin = pd.DataFrame(
@@ -199,6 +211,10 @@ def test_validate():
             {
                 "LAchildID": "child4",  # 9 Pass - No CPP
                 "CINPlanStartDate": "04/06/2000",
+            },
+            {
+                "LAchildID": "child5",  # 10 Fail - Start on ReferenceDate
+                "CINPlanStartDate": "31/03/2001",
             },
         ]
     )
@@ -245,7 +261,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 5
+    assert len(issue_rows) == 6
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -291,6 +307,13 @@ def test_validate():
                     pd.to_datetime("26/03/2001", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [7],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [10],
             },
         ]
     )
