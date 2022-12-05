@@ -70,15 +70,12 @@ def validate(
     #
     # filter out the instances where DateOfInitialCPC is missing more than once in a CINdetails group.
     df_check = df_check[df_check["CountICPC"] > 1]
-    print("\n df_check \n", df_check)
     issue_ids = tuple(
         zip(df_check[LAchildID], df_check[CINdetailsID], df_check[DateOfInitialCPC])
     )
-    print("\n issue_ids \n", issue_ids)
     # DF_ISSUES: GET ALL THE DATA ABOUT THE LOCATIONS THAT WERE IDENTIFIED IN DF_CHECK
     df["ERROR_ID"] = tuple(zip(df[LAchildID], df[CINdetailsID], df[DateOfInitialCPC]))
     df_issues = df[df.ERROR_ID.isin(issue_ids)]
-    print("\n df_issues \n", df_issues)
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
@@ -205,8 +202,6 @@ def test_validate():
             },
         ]
     )
-    print("\n issue_rows \n", issue_rows)
-    print("\n expected_df \n", expected_df)
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
