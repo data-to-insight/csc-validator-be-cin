@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pandas as pd
 
 
@@ -43,6 +45,34 @@ def make_census_period(reference_date):
     return collection_start, collection_end
 
 
+def create_issue_locs(issues):
+    """
+    input: NamedTuple-like object with fields
+            - table
+            - columns
+            - row_df
+    output: DataFrame with fields
+            - ERROR_ID
+            - ROW_ID
+            - columns_affected
+            - tables_affected
+    """
+    df_issue_locs = issues.row_df
+    df_issue_locs = df_issue_locs.explode("ROW_ID")
+
+    df_issue_locs["columns_affected"] = df_issue_locs["ERROR_ID"].apply(
+        lambda x: issues.columns
+    )
+    df_issue_locs = df_issue_locs.explode("columns_affected")
+
+    df_issue_locs["tables_affected"] = str(issues.table)[9:]
+
+    df_issue_locs.reset_index(inplace=True)
+    df_issue_locs.drop("index", axis=1, inplace=True)
+
+    return df_issue_locs
+
+
 class DataContainerWrapper:
     def __init__(self, value) -> None:
         self.value = value
@@ -50,13 +80,17 @@ class DataContainerWrapper:
     def __getitem__(self, name):
         return getattr(self.value, name.name)
 
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
 
-class ErrorReport:
-    """Class containing rules, number of errors per rule, and locations
-    per rule."""
-
-    def __init__(self, codes: int, number: int, locations, message: str):
-        self.codes = codes
-        self.number = number
-        self.locations = locations
-        self.message = message
+    def __deepcopy__(self, memo):
+        # the memo param is a dictionary that defines the parts of the class the should be shared between copies.
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
