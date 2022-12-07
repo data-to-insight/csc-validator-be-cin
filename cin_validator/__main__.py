@@ -3,8 +3,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
+import pandas as pd
 import pytest
 
+from cin_validator.cin_validator_class import CinValidationSession
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
@@ -37,26 +39,24 @@ def list_cmd(ruleset):
     default="rules.cin2022_23",
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
-def run_all(filename: str, ruleset):
-    # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-    fulltree = ET.parse(filename)
-    root = fulltree.getroot()
-    data_files = DataContainerWrapper(XMLtoCSV(root))
+@click.option("--issue_id", "-e", default=None)
+def run_all(filename: str, ruleset, issue_id):
 
-    importlib.import_module(f"cin_validator.{ruleset}")
-    for rule in registry:
+    validator = CinValidationSession(filename, ruleset, issue_id)
 
-        try:
-            ctx = RuleContext(rule)
-            rule.func(data_files, ctx)
-            if len(list(ctx.issues)) == 0:
-                print(rule.code, len(list(ctx.issues)))
-            else:
-                pass
-                for i in range(len(list(ctx.issues))):
-                    print(rule.code, list(ctx.issues)[i], rule.message)
-        except:
-            print("Error with rule " + str(rule.code))
+    issue_instances = validator.issue_instances
+    all_rules_issue_locs = validator.all_rules_issue_locs
+
+    print(issue_instances)
+    print(all_rules_issue_locs)
+
+    # Allows selection of error by ERROR_ID,
+    # converts errorselect argument to tuple to do the slice.
+    # if issue_id is not None:
+    #     issue_id = tuple(map(str, issue_id.split(", ")))
+    #     print(all_rules_issue_locs[all_rules_issue_locs["ERROR_ID"] == issue_id])
+    # else:
+    #     pass
 
 
 @cli.command(name="test")

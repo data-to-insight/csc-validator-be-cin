@@ -78,6 +78,10 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Replit
+.replit
+replit.nix
+
 # IPython
 profile_default/
 ipython_config.py
