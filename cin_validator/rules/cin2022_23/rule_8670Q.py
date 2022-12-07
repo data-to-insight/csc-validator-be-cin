@@ -27,6 +27,7 @@ from cin_validator.utils import make_census_period
 Assessments = CINTable.Assessments
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 AssessmentActualStartDate = Assessments.AssessmentActualStartDate
+LAchildID = Assessments.LAchildID
 
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
@@ -61,11 +62,7 @@ def validate(
         df_assessments[AssessmentActualStartDate] < latest_date
     ].reset_index()
 
-    link_id = tuple(
-        zip(
-            df_issues[AssessmentAuthorisationDate], df_issues[AssessmentActualStartDate]
-        )
-    )
+    link_id = tuple(zip(df_issues[LAchildID], df_issues[AssessmentActualStartDate]))
     df_issues["ERROR_ID"] = link_id
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -85,19 +82,22 @@ def test_validate():
     sample_assessments = pd.DataFrame(
         [
             {
+                "LAchildID": "ID1",
                 "AssessmentAuthorisationDate": "26/05/2022",
                 "AssessmentActualStartDate": "15/10/2022",
                 # Pass, authorisation date present
             },
             {
+                "LAchildID": "ID2",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentActualStartDate": "15/10/2022",
-                # Pass, start date is before ref date - 45wd
+                # Fail, start date is before ref date - 45wd
             },
             {
+                "LAchildID": "ID3",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentActualStartDate": "15/03/2023",
-                # Fail, start date is withing 45wd of reference date
+                # Pass, start date is withing 45wd of reference date
             },
         ]
     )
@@ -148,7 +148,7 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
+                    "ID2",
                     pd.to_datetime("15/10/2022", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
