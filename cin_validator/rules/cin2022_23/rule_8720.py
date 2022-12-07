@@ -18,6 +18,7 @@ ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPstartDate = ChildProtectionPlans.CPPstartDate
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
+CPPID = ChildProtectionPlans.CPPID
 
 # define characteristics of rule
 @rule_definition(
@@ -40,8 +41,8 @@ def validate(
     df_ref = data_container[Header]
 
     # Where a CPP module is present, <CPPstartDate> (N00105) must be present and on or before the <ReferenceDate> (N00603)
-    condition = (df[CPPstartDate].isna()) | (
-        df[CPPstartDate] > df_ref[ReferenceDate].iloc[0]
+    condition = (df[CPPID].notna()) & (
+        (df[CPPstartDate].isna()) | (df[CPPstartDate] > df_ref[ReferenceDate].iloc[0])
     )
 
     failing_indices = df[condition].index
@@ -62,16 +63,17 @@ def test_validate():
     fake_cpp = pd.DataFrame(
         [
             {
-                CPPstartDate: "01/03/2019"
-            },  # 0 fail: March 1st is before April 1st, 2021. It is out of range
+                CPPID: "ID1",
+                CPPstartDate: "01/03/2019",
+            },  # Pass: March 1st is before April 1st, 2021. It is out of range
+            {CPPID: pd.NA, CPPstartDate: pd.NA},  # 1 pass: No CPPID
             {
-                CPPstartDate: "01/04/2021"
-            },  # 1 pass: April 1st is within April 1st, 2021 to March 31st, 2022.
-            {
-                CPPstartDate: "01/10/2022"
+                CPPID: "ID1",
+                CPPstartDate: "01/10/2022",
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
             {
-                CPPstartDate: pd.NA
+                CPPID: "ID1",
+                CPPstartDate: pd.NA,
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
         ]
     )
