@@ -38,17 +38,13 @@ def validate(
 
     # ReferenceDate exists in the heder table so we get header table too.
     df_ref = data_container[Header]
-    ref_date_series = df_ref[ReferenceDate]
-
-    # the make_census_period function generates the start and end date so that you don't have to do it each time.
-    collection_start, reference_date = make_census_period(ref_date_series)
-
-    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # Where a CPP module is present, <CPPstartDate> (N00105) must be present and on or before the <ReferenceDate> (N00603)
-    failing_indices = df[
-        (df[CPPstartDate] < collection_start) | (df[CPPstartDate] > reference_date)
-    ].index
+    condition = (df[CPPstartDate].isna()) | (
+        df[CPPstartDate] > df_ref[ReferenceDate].iloc[0]
+    )
+
+    failing_indices = df[condition].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
@@ -84,6 +80,9 @@ def test_validate():
     fake_cpp[CPPstartDate] = pd.to_datetime(
         fake_cpp[CPPstartDate], format="%d/%m/%Y", errors="coerce"
     )
+    fake_header[ReferenceDate] = pd.to_datetime(
+        fake_header[ReferenceDate], format="%d/%m/%Y", errors="coerce"
+    )
 
     # Run rule function passing in our sample data
     # Since the ReferenceDate comes from the Header column, we provide that also.
@@ -96,8 +95,8 @@ def test_validate():
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
-        IssueLocator(CINTable.ChildProtectionPlans, CPPstartDate, 0),
         IssueLocator(CINTable.ChildProtectionPlans, CPPstartDate, 2),
+        IssueLocator(CINTable.ChildProtectionPlans, CPPstartDate, 3),
     ]
 
     # Check that the rule definition is what you wrote in the context above.
