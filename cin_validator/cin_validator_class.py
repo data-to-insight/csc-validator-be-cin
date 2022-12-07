@@ -90,7 +90,7 @@ class CinValidationSession:
         )
 
     def create_json_report(self):
-        '''Creates JSONs of error report and rule descriptors dfs.'''
+        """Creates JSONs of error report and rule descriptors dfs."""
         self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
         self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
 
