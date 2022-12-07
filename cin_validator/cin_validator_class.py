@@ -77,24 +77,25 @@ class CinValidationSession:
                         ignore_index=True,
                     )
 
+                    # Elements of the rule_descriptors df to explain error codes
                     self.rules_broken.append(rule.code)
                     self.rule_messages.append(rule.message)
 
             except Exception as e:
                 print(f"Error with rule {rule.code}: {type(e).__name__}, {e}")
 
+        # df of all broken rule codes and related error messages.
         self.rule_descriptors = pd.DataFrame(
             {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
         )
 
-        print(self.rule_descriptors)
-
     def create_json_report(self):
+        '''Creates JSONs of error report and rule descriptors dfs.'''
         self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
+        self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
 
     def select_by_id(self):
         if self.issue_id is not None:
-            print("reached hereeeeeeeeeeeeeeeee")
             self.issue_id = tuple(self.issue_id.split(", "))
             self.all_rules_issue_locs = self.all_rules_issue_locs[
                 self.all_rules_issue_locs["ERROR_ID"] == self.issue_id
