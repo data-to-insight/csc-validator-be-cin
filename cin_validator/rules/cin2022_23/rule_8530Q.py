@@ -22,6 +22,7 @@ from cin_validator.utils import make_census_period
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
+LAchildID = ChildIdentifiers.LAchildID
 
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
@@ -41,8 +42,8 @@ def validate(
     df.index.name = "ROW_ID"
 
     df_ref = data_container[Header]
-    ref_date_series = df_ref[ReferenceDate]
-    collection_start, collection_end = make_census_period(ref_date_series)
+    ref_date = df_ref[ReferenceDate].iloc[0]
+    # collection_start, collection_end = make_census_period(ref_date_series)
 
     #  <ExpectedPersonBirthDate> (N00098) should be between [<ReferenceDate> (N00603) minus 30 days] and [<ReferenceDate> (N00603) plus 9 months]
 
@@ -50,16 +51,16 @@ def validate(
     df = df[~df[ExpectedPersonBirthDate].isna()]
 
     # Find the reference date - 30
-    earliest_date = collection_start - pd.DateOffset(days=30)
+    earliest_date = ref_date - pd.DateOffset(days=30)
     # Find reference date + 9 months
-    latest_date = collection_end + pd.DateOffset(months=9)
+    latest_date = ref_date + pd.DateOffset(months=9)
 
     condition1 = df[ExpectedPersonBirthDate] >= latest_date
     condition2 = df[ExpectedPersonBirthDate] <= earliest_date
 
     df_issues = df[condition1 | condition2].reset_index()
 
-    link_id = tuple(zip(df_issues[ExpectedPersonBirthDate]))
+    link_id = tuple(zip(df_issues[LAchildID], df_issues[ExpectedPersonBirthDate]))
     df_issues["ERROR_ID"] = link_id
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -79,16 +80,24 @@ def test_validate():
     sample_ChildIdentifiers = pd.DataFrame(
         [
             {
+                "LAchildID": "ID1",
                 "ExpectedPersonBirthDate": pd.NA,
-                # Pass, authorisation date present
+                # Pass, no birth date
             },
             {
+                "LAchildID": "ID2",
+                "ExpectedPersonBirthDate": "30/03/2023",
+                # Pass, birth date within range
+            },
+            {
+                "LAchildID": "ID3",
                 "ExpectedPersonBirthDate": "15/10/2021",
-                # Pass, start date is before ref date - 45wd
+                # Fail, start date is before ref date - 45wd
             },
             {
+                "LAchildID": "ID4",
                 "ExpectedPersonBirthDate": "15/03/2024",
-                # Fail, start date is within 45wd of reference date
+                # Fail, later than 9 months after ref date
             },
         ]
     )
@@ -141,15 +150,17 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
+                    "ID3",
                     pd.to_datetime("15/10/2021", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [1],
+                "ROW_ID": [2],
             },
             {
                 "ERROR_ID": (
+                    "ID4",
                     pd.to_datetime("15/03/2024", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [2],
+                "ROW_ID": [3],
             },
         ]
     )
