@@ -1,6 +1,8 @@
 import importlib
 import xml.etree.ElementTree as ET
 
+import pathlib
+
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
@@ -11,9 +13,15 @@ from cin_validator.utils import DataContainerWrapper
 class CinValidationSession:
     def __init__(self, filename, ruleset, issue_id=None) -> None:
         # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-        fulltree = ET.parse(filename)
-        root = fulltree.getroot()
-        self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
+        extension = pathlib.Path(f"{filename}").suffix
+        if extension[:4] == ".xml":
+            fulltree = ET.parse(filename)
+            root = fulltree.getroot()
+            self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
+        elif extension[:4] == ".csv":
+            print(".csv support coming soon!")
+        else:
+            print(f"Filetype: {extension} not currently supported")
 
         self.ruleset = ruleset
         self.issue_id = issue_id
