@@ -47,16 +47,8 @@ def run_all(filename: str, ruleset, issue_id):
     issue_instances = validator.issue_instances
     all_rules_issue_locs = validator.all_rules_issue_locs
 
-    print(issue_instances)
-    print(all_rules_issue_locs)
-
-    # Allows selection of error by ERROR_ID,
-    # converts errorselect argument to tuple to do the slice.
-    # if issue_id is not None:
-    #     issue_id = tuple(map(str, issue_id.split(", ")))
-    #     print(all_rules_issue_locs[all_rules_issue_locs["ERROR_ID"] == issue_id])
-    # else:
-    #     pass
+    # print(issue_instances)
+    # print(all_rules_issue_locs)
 
 
 @cli.command(name="test")

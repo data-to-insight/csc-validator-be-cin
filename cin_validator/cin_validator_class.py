@@ -78,7 +78,6 @@ class CinValidationSession:
                         ignore_index=True,
                     )
 
-
                     # Elements of the rule_descriptors df to explain error codes
                     self.rules_broken.append(rule.code)
                     self.rule_messages.append(rule.message)
