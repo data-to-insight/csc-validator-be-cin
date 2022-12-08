@@ -26,6 +26,7 @@ class CinValidationSession:
         self.issue_instances = pd.DataFrame()
         self.all_rules_issue_locs = pd.DataFrame()
         self.rules_passed = []
+
         self.rules_broken = []
         self.rule_messages = []
 
@@ -76,6 +77,7 @@ class CinValidationSession:
                         [self.all_rules_issue_locs, issue_dfs_per_rule[ind]],
                         ignore_index=True,
                     )
+
 
                     # Elements of the rule_descriptors df to explain error codes
                     self.rules_broken.append(rule.code)
