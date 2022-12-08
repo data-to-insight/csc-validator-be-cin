@@ -28,7 +28,7 @@ ReferenceDate = Header.ReferenceDate
     code=4017,
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
-    module=CINTable.ChildProtectionPlans,
+    module=CINTable.CINplanDates,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="A CIN Plan has been reported as open at the same time as a Child Protection Plan.",
     # The column names tend to be the words within the < > signs in the github issue description.
