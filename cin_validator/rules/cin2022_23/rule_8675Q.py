@@ -33,6 +33,7 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     from datetime import timedelta
+
     # PREPARING DATA
 
     # Replace ChildIdentifiers with the name of the table you need.
@@ -48,10 +49,12 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false 
+    # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
-    condition = ((df[DateOfInitialCPC].isna()) & (df[ICPCnotReqiured]=="false")) & (df[S47ActualStartDate] < (collection_end - timedelta(days=15)))
-   
+    condition = ((df[DateOfInitialCPC].isna()) & (df[ICPCnotReqiured] == "false")) & (
+        df[S47ActualStartDate] < (collection_end - timedelta(days=15))
+    )
+
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
@@ -66,59 +69,69 @@ def validate(
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
-        zip(df_issues[LAchildID], df_issues[S47ActualStartDate], df_issues[ICPCnotReqiured])
+        zip(
+            df_issues[LAchildID],
+            df_issues[S47ActualStartDate],
+            df_issues[ICPCnotReqiured],
+        )
     )
     df_issues["ERROR_ID"] = link_id
-    df_issues = df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"].apply(list).reset_index()
+    df_issues = (
+        df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
-        table=Section47, columns=[DateOfInitialCPC, S47ActualStartDate], row_df=df_issues
+        table=Section47,
+        columns=[DateOfInitialCPC, S47ActualStartDate],
+        row_df=df_issues,
     )
 
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     fake_header = pd.DataFrame(
-            [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
-        )
-    
+        [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
+    )
+
     section47 = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
                 "DateOfInitialCPC": pd.NA,
                 "S47ActualStartDate": "31/03/2021",
-                "ICPCnotRequired":"false",
+                "ICPCnotRequired": "false",
             },
             {
                 "LAchildID": "child2",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": "26/05/2001",
-                "ICPCnotRequired":"false",
+                "ICPCnotRequired": "false",
             },
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": "26/05/1999",
-                "ICPCnotRequired":"false",
+                "ICPCnotRequired": "false",
             },  # 2 error: end is before start
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": pd.NA,
-                "ICPCnotRequired":"false",
+                "ICPCnotRequired": "false",
             },
             {
                 "LAchildID": "child4",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": "25/05/2000",
-                "ICPCnotRequired":"false",
+                "ICPCnotRequired": "false",
             },  # 4 error: end is before start
             {
                 "LAchildID": "child5",
                 "DateOfInitialCPC": pd.NA,
                 "S47ActualStartDate": pd.NA,
-                "ICPCnotRequired":"true",
+                "ICPCnotRequired": "true",
             },
         ]
     )
@@ -131,8 +144,7 @@ def test_validate():
     )
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Section47: section47,
-    Header: fake_header})
+    result = run_rule(validate, {Section47: section47, Header: fake_header})
 
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
