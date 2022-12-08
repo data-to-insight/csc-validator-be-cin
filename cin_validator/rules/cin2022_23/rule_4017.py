@@ -67,10 +67,10 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # The <CINPlanStartDate> (N00689) for any CIN Plan group cannot fall within either:
-    # <CPPstartDate> (N00105) or <CPPendDate> (N00115);
-    # or <CPPstartDate> and <ReferenceDate> (N00603) if <CPPendDate> is not present - for any CPP group;
-    # unless <CINPlanStartDate> is equal to <CPPendDate> for this group
+    # The <CPPstartDate> (N00105) for any CPP group cannot fall within either:
+    # <CINPlanStartDate> (N00689) or <CINPlanEndDate> (N00690);
+    # or <CINPlanStartDate> and <ReferenceDate> (N00603) if <CINPlanEndDate> is not present - for any CIN Plan Group;
+    # unless <CCPstartDate> is equal to <CINPlanEndDate> for this group.
 
     #  Merge tables
     df_merged = df_cpp.merge(
