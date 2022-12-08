@@ -33,6 +33,8 @@ class CinValidationSession:
                 print("got here!")
             elif extension[:4] == ".csv":
                 print(".csv support coming soon!")
+            elif extension[:4] == ".zip":
+                print(".zip support coming soon!")
             else:
                 print(f"Filetype: {extension} not currently supported")
         elif os.path.isdir(fn):
