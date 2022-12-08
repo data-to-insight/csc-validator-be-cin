@@ -44,6 +44,8 @@ def run_all(filename: str, ruleset, issue_id):
 
     validator = CinValidationSession(filename, ruleset, issue_id)
 
+    validator.file_type_checker()
+
     issue_instances = validator.issue_instances
     all_rules_issue_locs = validator.all_rules_issue_locs
 

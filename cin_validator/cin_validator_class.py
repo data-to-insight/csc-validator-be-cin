@@ -2,6 +2,7 @@ import importlib
 import xml.etree.ElementTree as ET
 
 import pathlib
+import os
 
 import pandas as pd
 
@@ -13,22 +14,35 @@ from cin_validator.utils import DataContainerWrapper
 class CinValidationSession:
     def __init__(self, filename, ruleset, issue_id=None) -> None:
         # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-        extension = pathlib.Path(f"{filename}").suffix
-        if extension[:4] == ".xml":
-            fulltree = ET.parse(filename)
-            root = fulltree.getroot()
-            self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
-        elif extension[:4] == ".csv":
-            print(".csv support coming soon!")
-        else:
-            print(f"Filetype: {extension} not currently supported")
+        fulltree = ET.parse(filename)
+        root = fulltree.getroot()
+        self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
 
         self.ruleset = ruleset
         self.issue_id = issue_id
+        self.filename = filename
 
         self.create_error_report_df()
         self.create_json_report()
         self.select_by_id()
+
+    def file_type_checker(self):
+        fn = self.filename.name
+        if os.path.isfile(fn):
+            extension = pathlib.Path(fn).suffix
+            if extension[:4] == ".xml":
+                fulltree = ET.parse(fn)
+                root = fulltree.getroot()
+                self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
+                print("got here!")
+            elif extension[:4] == ".csv":
+                print(".csv support coming soon!")
+            else:
+                print(f"Filetype: {extension} not currently supported")
+        elif os.path.isdir(fn):
+            print("folder" + str(os.path.isdir(fn)))
+        else:
+            print("Source filetype or directory not supported")
 
     def create_error_report_df(self):
         self.issue_instances = pd.DataFrame()
