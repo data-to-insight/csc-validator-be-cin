@@ -13,15 +13,11 @@ from cin_validator.utils import DataContainerWrapper
 
 class CinValidationSession:
     def __init__(self, filename, ruleset, issue_id=None) -> None:
-        # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-        fulltree = ET.parse(filename)
-        root = fulltree.getroot()
-        self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
-
         self.ruleset = ruleset
         self.issue_id = issue_id
         self.filename = filename
 
+        self.file_type_checker()
         self.create_error_report_df()
         self.create_json_report()
         self.select_by_id()
