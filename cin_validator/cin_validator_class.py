@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 
 import pathlib
 import os
+import zipfile
 
 import pandas as pd
 
@@ -34,7 +35,14 @@ class CinValidationSession:
             elif extension[:4] == ".csv":
                 print(".csv support coming soon!")
             elif extension[:4] == ".zip":
-                print(".zip support coming soon!")
+                zf = zipfile.ZipFile(fn)
+                dfs = {
+                    text_file.filename[:-4]: pd.read_csv(zf.open(text_file.filename))
+                    for text_file in zf.infolist()
+                    if text_file.filename.endswith(".csv")
+                }
+                print(dfs)
+                self.data_files_obj = DataContainerWrapper(dfs)
             else:
                 print(f"Filetype: {extension} not currently supported")
         elif os.path.isdir(fn):
