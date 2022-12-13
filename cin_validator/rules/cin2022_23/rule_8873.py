@@ -60,7 +60,12 @@ def validate(
 
     # Eliminates rows with more than 1 assessment per CINdetails group by determining if there's more than 1 AssessmentActualStartDate per CINdetailsID per child
     df_ass_merged = df_ass.merge(df_ass, on=["LAchildID", "CINdetailsID"])
-    df_ass_merged = df_ass_merged[(df_ass_merged["AssessmentActualStartDate_x"] != df_ass_merged["AssessmentActualStartDate_y"])]
+    df_ass_merged = df_ass_merged[
+        (
+            df_ass_merged["AssessmentActualStartDate_x"]
+            != df_ass_merged["AssessmentActualStartDate_y"]
+        )
+    ]
     more_than_1_ass = df_ass_merged["ROW_ID_x"].tolist()
 
     df_ass = df_ass[~df_ass["ROW_ID"].isin(more_than_1_ass)]
