@@ -63,10 +63,10 @@ def validate(
 
     # # Get rows where CINreferralDate is earlier than birth/expected birth -280
     condition1 = df_merged[CINreferralDate] < (
-        df_merged[PersonBirthDate] - dt.timedelta(280)
+        df_merged[PersonBirthDate] - dt.timedelta(days=280)
     )
     condition2 = df_merged[CINreferralDate] < (
-        df_merged[ExpectedPersonBirthDate] - dt.timedelta(280)
+        df_merged[ExpectedPersonBirthDate] - dt.timedelta(days=280)
     )
     df_merged = df_merged[condition1 | condition2].reset_index()
 
@@ -75,8 +75,6 @@ def validate(
         zip(
             df_merged[LAchildID],
             df_merged[CINreferralDate],
-            df_merged[PersonBirthDate],
-            df_merged[ExpectedPersonBirthDate],
         )
     )
     df_CINDetails_issues = (
@@ -213,10 +211,6 @@ def test_validate():
                     "child2",  # ChildID
                     # Referral date
                     pd.to_datetime("27/06/1998", format="%d/%m/%Y", errors="coerce"),
-                    # Birth date
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    # Expected birth date
-                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
             },
@@ -225,10 +219,6 @@ def test_validate():
                     "child4",  # ChildID
                     # Referral date
                     pd.to_datetime("07/02/1998", format="%d/%m/%Y", errors="coerce"),
-                    # Birth date
-                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
-                    # Expected birth date
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [3],
             },
