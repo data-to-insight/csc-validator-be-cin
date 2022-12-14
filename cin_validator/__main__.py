@@ -3,13 +3,11 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
-import pandas as pd
 import pytest
 
 from cin_validator.cin_validator_class import CinValidationSession
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper
+from cin_validator.rule_engine import registry
 
 
 @click.group()
@@ -40,12 +38,27 @@ def list_cmd(ruleset):
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 @click.option("--issue_id", "-e", default=None)
-def run_all(filename: str, ruleset, issue_id):
+@click.option("--output/no-output", "-o/-no", default=False)
+def run_all(filename: str, ruleset, issue_id, output):
 
     validator = CinValidationSession(filename, ruleset, issue_id)
 
     issue_instances = validator.issue_instances
     all_rules_issue_locs = validator.all_rules_issue_locs
+
+    if output:
+        error_report = validator.json_issue_report
+        rule_defs = validator.json_rule_descriptors
+
+        # generating sample files for the frontend.
+        # TODO. when frontend dev is complete, change this to generate csv.
+        import json
+
+        with open("rule_defs.json", "w") as f:
+            json.dump(rule_defs, f)
+
+        with open("issue_report.json", "w") as f:
+            json.dump(error_report, f)
 
     # print(issue_instances)
     # print(all_rules_issue_locs)
