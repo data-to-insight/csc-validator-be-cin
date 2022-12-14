@@ -30,7 +30,7 @@ LAchildID = CINdetails.LAchildID
 @rule_definition(
     code=8606,
     module=CINTable.CINdetails,
-    message="Child cannot be referred after its recorded date of death",
+    message="Child referral date is more than 40 weeks before DOB or expected DOB",
     affected_fields=[
         CINreferralDate,
         PersonBirthDate,
@@ -243,5 +243,5 @@ def test_validate():
     assert result.definition.code == 8606
     assert (
         result.definition.message
-        == "Child cannot be referred after its recorded date of death"
+        == "Child referral date is more than 40 weeks before DOB or expected DOB"
     )
