@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -35,7 +35,6 @@ def validate(
     from datetime import timedelta
 
     # PREPARING DATA
-
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Section47]
     header = data_container[Header]
@@ -51,23 +50,17 @@ def validate(
 
     # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
-    condition = ((df[DateOfInitialCPC].isna()) & (df[ICPCnotReqiured] == "false")) & (
-        df[S47ActualStartDate] < (collection_end - timedelta(days=15))
-    )
+    no_cpc = df[DateOfInitialCPC].isna()
+    icpc_false = df[ICPCnotReqiured] == "false"
+    before_15b = df[S47ActualStartDate] > (collection_end - pd.DateOffset(days=15))
+    condition = (no_cpc & icpc_false) & (before_15b)
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
     # SUBMIT ERRORS
-    # Generate a unique ID for each instance of an error. In this case,
-    # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
-    # We don't want that because in reality, a child can have multiple instances of an error.
-    # - If we use the LAchildID-CPPstartDate combination, that artificially cancels out the instances where a start date repeats for the same child.
-    # Another rule checks for that condition. Not this one.
-    # - It is very unlikely that a combination of LAchildID-CPPstartDate-CPPendDate will repeat in the DataFrame.
-    # Hence, it can be used as a unique identifier of the row.
-
-    # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
+    # Generate a unique ID for each instance of an error.
+    # Replace S47ActualStartDate and ICPCnotReqiured below with the columns concerned in your rule.
     link_id = tuple(
         zip(
             df_issues[LAchildID],
@@ -97,37 +90,31 @@ def test_validate():
 
     section47 = pd.DataFrame(
         [
-            {
+            {  # 0 fail
                 "LAchildID": "child1",
                 "DateOfInitialCPC": pd.NA,
-                "S47ActualStartDate": "31/03/2021",
+                "S47ActualStartDate": "29/03/2022",
                 "ICPCnotRequired": "false",
             },
-            {
+            {  # 1 ignore DateOfInitialCPC notna
                 "LAchildID": "child2",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": "26/05/2001",
                 "ICPCnotRequired": "false",
             },
-            {
+            {  # 2 pass. more than 15 working days before ref date
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
-                "S47ActualStartDate": "26/05/1999",
-                "ICPCnotRequired": "false",
-            },  # 2 error: end is before start
-            {
+                "DateOfInitialCPC": pd.NA,
+                "S47ActualStartDate": "25/01/2022",
+                "ICPCnotRequired": "true",
+            },
+            {  # ignore S47ActualStartDate isna
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "S47ActualStartDate": pd.NA,
                 "ICPCnotRequired": "false",
             },
-            {
-                "LAchildID": "child4",
-                "DateOfInitialCPC": "26/05/2000",
-                "S47ActualStartDate": "25/05/2000",
-                "ICPCnotRequired": "false",
-            },  # 4 error: end is before start
-            {
+            {  # ignore
                 "LAchildID": "child5",
                 "DateOfInitialCPC": pd.NA,
                 "S47ActualStartDate": pd.NA,
@@ -175,7 +162,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    pd.to_datetime("31/03/2021", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("29/03/2022", format="%d/%m/%Y", errors="coerce"),
                     "false",
                 ),
                 "ROW_ID": [0],
@@ -186,7 +173,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8675Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8675Q"
     assert (
         result.definition.message
