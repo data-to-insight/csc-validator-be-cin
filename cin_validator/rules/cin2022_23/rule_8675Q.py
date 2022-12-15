@@ -32,8 +32,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    from datetime import timedelta
-
     # PREPARING DATA
     # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Section47]
