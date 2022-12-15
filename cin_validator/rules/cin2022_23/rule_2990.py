@@ -80,10 +80,28 @@ def validate(
     )
 
     df_cin_cpp_47 = df_cin_cpp.merge(
-        df_cin_47, on=["LAchildID", "CINdetailsID", "ROW_ID_cin", "DateOfInitialCPC", "ReasonForClosure"], how="left", suffixes=["", ""]
+        df_cin_47,
+        on=[
+            "LAchildID",
+            "CINdetailsID",
+            "ROW_ID_cin",
+            "DateOfInitialCPC",
+            "ReasonForClosure",
+        ],
+        how="left",
+        suffixes=["", ""],
     )
     merged_df = df_cin_cpp_47.merge(
-        df_cin_cin_pd, on=["LAchildID", "CINdetailsID", "ROW_ID_cin", "DateOfInitialCPC", "ReasonForClosure"], how="left", suffixes=["", ""]
+        df_cin_cin_pd,
+        on=[
+            "LAchildID",
+            "CINdetailsID",
+            "ROW_ID_cin",
+            "DateOfInitialCPC",
+            "ReasonForClosure",
+        ],
+        how="left",
+        suffixes=["", ""],
     )
 
     # Logical conditions - other than this, of the tables can merge, it means there's modules and they are in error
@@ -140,9 +158,7 @@ def validate(
     rule_context.push_type_2(
         table=CINplanDates, columns=[LAchildID], row_df=df_cin_pd_issues
     )
-    rule_context.push_type_2(
-        table=Section47, columns=[LAchildID], row_df=df_47_issues
-    )
+    rule_context.push_type_2(table=Section47, columns=[LAchildID], row_df=df_47_issues)
 
 
 def test_validate():
@@ -286,7 +302,6 @@ def test_validate():
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
 
-
     sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
         sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
@@ -331,7 +346,8 @@ def test_validate():
 
     # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
-        [   {
+        [
+            {
                 "ERROR_ID": (
                     "child1",  # ChildID
                     "cinID1",  # CINdetailsID
