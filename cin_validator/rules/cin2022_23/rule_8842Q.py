@@ -51,7 +51,13 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
-    reviews = pd.DataFrame([[1234], [pd.NA], [pd.NA]], columns=[CPPreviewDate])
+    reviews = pd.DataFrame(
+        [["26/05/2000"], [pd.NA], ["not a date"]], columns=[CPPreviewDate]
+    )
+
+    reviews[CPPreviewDate] = pd.to_datetime(
+        reviews[CPPreviewDate], format="%d/%m/%Y", errors="coerce"
+    )
 
     # Run rule function passing in our sample data
     result = run_rule(validate, {Reviews: reviews})
