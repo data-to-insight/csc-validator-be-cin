@@ -4,31 +4,27 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 CINplanDates = CINTable.CINplanDates
-LAchildID_cpd = CINplanDates.LAchildID
-CINdetailsID_cpd = CINplanDates.CINdetailsID
+LAchildID = CINplanDates.LAchildID
 
 CINdetails = CINTable.CINdetails
 ReferralNFA = CINdetails.ReferralNFA
-LAchildID_details = CINdetails.LAchildID
 CINdetailsID_details = CINdetails.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
     # write the rule code here
     code=4000,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINplanDates with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINplanDates,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="CIN Plan details provided for a referral with no further action",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
-        CINdetailsID_cpd,
         ReferralNFA,
     ],
 )
@@ -72,8 +68,6 @@ def validate(
     df_merged = df_merged.reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
     df_merged["ERROR_ID"] = tuple(
         zip(
             df_merged["LAchildID"],
@@ -81,7 +75,7 @@ def validate(
         )
     )
 
-    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of cpp_df and cin_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpd.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpd")
@@ -98,7 +92,7 @@ def validate(
 
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
-        table=CINplanDates, columns=[LAchildID_cpd], row_df=df_cpp_issues
+        table=CINplanDates, columns=[LAchildID], row_df=df_cpp_issues
     )
     rule_context.push_type_2(
         table=CINdetails, columns=[ReferralNFA], row_df=df_cin_issues
@@ -156,7 +150,7 @@ def test_validate():
     issues_list = result.type2_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 1 will contain the CINdetails' columns because that's the second thing pushed above.
     issues = issues_list[1]
 
     # get table name and check it. Replace Reviews with the name of your table.
@@ -195,7 +189,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 4000 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 4000
     assert (
         result.definition.message
