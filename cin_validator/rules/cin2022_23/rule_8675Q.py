@@ -52,7 +52,7 @@ def validate(
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
     no_cpc = df[DateOfInitialCPC].isna()
     icpc_false = df[ICPCnotReqiured] == "false"
-    before_15b = df[S47ActualStartDate] > (collection_end - pd.DateOffset(days=15))
+    before_15b = df[S47ActualStartDate] > (collection_end - pd.tseries.offsets.BDay(15))
     condition = (no_cpc & icpc_false) & (before_15b)
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
