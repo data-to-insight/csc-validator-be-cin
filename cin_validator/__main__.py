@@ -38,7 +38,7 @@ def list_cmd(ruleset):
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 @click.option("--issue_id", "-e", default=None)
-@click.option("--output/no-output", "-o/-no", default=False)
+@click.option("--output/--no_output", "-o/-no", default=False)
 def run_all(filename: str, ruleset, issue_id, output):
 
     validator = CinValidationSession(filename, ruleset, issue_id)
