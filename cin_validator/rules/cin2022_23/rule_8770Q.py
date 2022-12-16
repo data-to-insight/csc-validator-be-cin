@@ -26,7 +26,7 @@ ReferenceDate = Header.ReferenceDate
     # write the rule code here, in place of 2885
     code="8770Q",
     rule_type=RuleType.QUERY,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -164,7 +164,7 @@ def test_validate():
                 "UPNunknown": "UN1",
             },
             {
-                "LAchildID": "child7",  # 6 Ignore - over 5 and no UPN or valid UPNunknown (UN8 is not valid) BUT only has ReferralNFA
+                "LAchildID": "child7",  # 6 Ignore - over 5 and no UPN or valid UPNunknown (UN8 is not valid) so should fail, BUT ReferralNFA doesn't meet requirement
                 "PersonBirthDate": "26/05/1990",
                 "UPN": pd.NA,
                 "UPNunknown": "UN8",
