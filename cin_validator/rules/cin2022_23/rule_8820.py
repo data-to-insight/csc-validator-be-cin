@@ -11,7 +11,7 @@ from cin_validator.utils import make_census_period
 CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
 CINdetailsID = CINdetails.CINdetailsID
-CINreferralDate= CINdetails.CINreferralDate
+CINreferralDate = CINdetails.CINreferralDate
 CINclosureDate = CINdetails.CINclosureDate
 ReferralNFA = CINdetails.ReferralNFA
 
@@ -81,7 +81,9 @@ def validate(
     )
 
     # Exclude rows where the CPPID is the same on both sides
-    df_merged = df_merged[(df_merged["CINdetailsID_cin"] != df_merged["CINdetailsID_cin2"])]
+    df_merged = df_merged[
+        (df_merged["CINdetailsID_cin"] != df_merged["CINdetailsID_cin2"])
+    ]
 
     # Determine whether CPP overlaps another CPP
     cin_started_after_start = (
@@ -93,8 +95,10 @@ def validate(
 
     falsezero = ["False", "0"]
     cin_started_before_refdate = (
-        df_merged["CINreferralDate_cin"] <= reference_date
-    ) & df_merged["CINclosureDate_cin2"].isna() & df_merged["ReferralNFA_cin2"].isin(falsezero)
+        (df_merged["CINreferralDate_cin"] <= reference_date)
+        & df_merged["CINclosureDate_cin2"].isna()
+        & df_merged["ReferralNFA_cin2"].isin(falsezero)
+    )
 
     df_merged = df_merged[
         cin_started_after_start & (cin_started_before_end | cin_started_before_refdate)
@@ -103,7 +107,11 @@ def validate(
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged["CINdetailsID_cin"], df_merged["CINdetailsID_cin2"])
+        zip(
+            df_merged[LAchildID],
+            df_merged["CINdetailsID_cin"],
+            df_merged["CINdetailsID_cin2"],
+        )
     )
 
     # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
