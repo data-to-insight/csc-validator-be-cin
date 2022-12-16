@@ -9,7 +9,6 @@ from cin_validator.utils import make_census_period
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 
-
 Section47 = CINTable.Section47
 LAchildID = Section47.LAchildID
 CINdetailsID = Section47.CINdetailsID
@@ -63,9 +62,9 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # Within one <CINdetails> group, each <S47ActualStartDate> (N00148) must not fall on or between 
-    # a) the <S47ActualStartDate> (N00148) and <DateOfInitialCPC> (N00110) of any other <Section47> group that has a <DateOfInitialCPC> (N00110) or 
-    # b) the <S47ActualStartDate> (N00148) and the <ReferenceDate> (N00603) of any other <Section47> group 
+    # Within one <CINdetails> group, each <S47ActualStartDate> (N00148) must not fall on or between
+    # a) the <S47ActualStartDate> (N00148) and <DateOfInitialCPC> (N00110) of any other <Section47> group that has a <DateOfInitialCPC> (N00110) or
+    # b) the <S47ActualStartDate> (N00148) and the <ReferenceDate> (N00603) of any other <Section47> group
     #   that has a missing <DateOfInitialCPC> (N00110) and the <ICPCnotRequired> (N00111) flag is not true
 
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
@@ -75,13 +74,17 @@ def validate(
     #  Merge tables to test for overlaps
     df_merged = df_47.merge(
         df_47_2,
-        on=["LAchildID",],
+        on=[
+            "LAchildID",
+        ],
         how="left",
         suffixes=("_47", "_472"),
     )
 
     # Exclude rows where the CPPID is the same on both sides
-    df_merged = df_merged[(df_merged["CINdetailsID_47"] != df_merged["CINdetailsID_472"])]
+    df_merged = df_merged[
+        (df_merged["CINdetailsID_47"] != df_merged["CINdetailsID_472"])
+    ]
 
     # Determine whether CPP overlaps another CPP
     s47_started_after_start = (
@@ -91,8 +94,10 @@ def validate(
         df_merged["S47ActualStartDate_47"] <= df_merged["DateOfInitialCPC_472"]
     ) & df_merged["DateOfInitialCPC_472"].notna()
     s47_started_before_refdate = (
-        df_merged["S47ActualStartDate_47"] <= reference_date
-    ) & df_merged["DateOfInitialCPC_472"].isna() & (df_merged["ICPCnotRequired_472"] != "true")
+        (df_merged["S47ActualStartDate_47"] <= reference_date)
+        & df_merged["DateOfInitialCPC_472"].isna()
+        & (df_merged["ICPCnotRequired_472"] != "true")
+    )
 
     df_merged = df_merged[
         s47_started_after_start & (s47_started_before_end | s47_started_before_refdate)
@@ -101,7 +106,11 @@ def validate(
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged["CINdetailsID_47"], df_merged["CINdetailsID_472"])
+        zip(
+            df_merged[LAchildID],
+            df_merged["CINdetailsID_47"],
+            df_merged["CINdetailsID_472"],
+        )
     )
 
     # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
@@ -144,56 +153,56 @@ def test_validate():
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "26/10/2000",
                 "CINdetailsID": "cinID1",
-                "ICPCnotRequired" : "true",
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child1",  # 1 Fail
                 "S47ActualStartDate": "26/08/2000",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID12",
-                "ICPCnotRequired" : "nottrue",
+                "ICPCnotRequired": "nottrue",
             },
             {
                 "LAchildID": "child2",  # 2 Pass
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "25/10/2000",
                 "CINdetailsID": "cinID2",
-                "ICPCnotRequired" : "true",
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child2",  # 3 Pass
                 "S47ActualStartDate": "26/10/2000",
                 "DateOfInitialCPC": "26/12/2000",
                 "CINdetailsID": "cinID22",
-                "ICPCnotRequired" : "true"
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child3",  # 4 Pass
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "26/10/2001",
                 "CINdetailsID": "cinID3",
-                "ICPCnotRequired" : "true"
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child3",  # 5 Fail
                 "S47ActualStartDate": "26/08/2000",
                 "DateOfInitialCPC": "26/10/2000",
                 "CINdetailsID": "cinID32",
-                "ICPCnotRequired" : "true"
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child4",  # 6 Pass
                 "S47ActualStartDate": "26/10/2000",
                 "DateOfInitialCPC": "31/03/2001",
                 "CINdetailsID": "cinID4",
-                "ICPCnotRequired" : "true"
+                "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child4",  # 7 Fail
                 "S47ActualStartDate": "31/03/2001",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID42",
-                "ICPCnotRequired" : "nottrue"
+                "ICPCnotRequired": "nottrue",
             },
         ]
     )
