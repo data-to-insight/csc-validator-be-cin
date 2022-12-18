@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -19,29 +18,23 @@ LAchildID = CINdetails.LAchildID
 CINdetailsID_cin = CINdetails.CINdetailsID
 ReasonForClosure = CINdetails.ReasonForClosure
 
-# Reference date in header is needed to define the period of census.
-
-
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
+    # write the rule code here, in place of 8873
     code=8873,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace Assesments with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
-    module=CINTable.ChildProtectionPlans,
+    module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ must be used.",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[
-        ReasonForClosure,
-    ],
+    affected_fields=[ReasonForClosure, AssessmentFactors],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_ass = data_container[Assessments].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -51,7 +44,6 @@ def validate(
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with a for loop? e.g for df in [df_cpp, df_47, df_cin]
     df_ass.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
 
@@ -93,14 +85,11 @@ def validate(
     merged_df = merged_df[condition].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
-    # You could also consider that CPPstartDate, unlike DateOfInitialCPC, is the leading column against which columns from the other tables are compared. So it is included in the zip.
     merged_df["ERROR_ID"] = tuple(
         zip(merged_df[LAchildID], merged_df[CINdetailsID], merged_df[ReasonForClosure])
     )
 
-    # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of df_ass, and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_ass_issues = (
         df_ass.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_ass")
@@ -130,23 +119,23 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "AssessmentFactors": "BOO",  # 0 pass
+                "AssessmentFactors": "BOO",  # 0 ignore: factor!=21
                 "CINdetailsID": "cinID1",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child1",
-                "AssessmentFactors": "BOO",  # 1 ignored
+                "AssessmentFactors": "BOO",  # 1 ignore: factor!=21
                 "CINdetailsID": "cinID2",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child2",
-                "AssessmentFactors": "BOO",  # 2 pass
+                "AssessmentFactors": "BOO",  # 2 ignore: factor!=21
                 "CINdetailsID": "cinID1",
                 "AssessmentActualStartDate": "5/12/1993",
             },
-            {  # different from both dates
+            {
                 "LAchildID": "child3",
                 "AssessmentFactors": "21",  # 3 fail
                 "CINdetailsID": "cinID1",
@@ -154,7 +143,7 @@ def test_validate():
             },
             {  # absent
                 "LAchildID": "child3",
-                "CPPstartDate": pd.NA,  # 4 ignore
+                "AssessmentFactors": pd.NA,  # 4 ignore
                 "CINdetailsID": "cinID2",
                 "AssessmentActualStartDate": "5/12/1993",
             },
@@ -172,7 +161,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child3",
-                "AssessmentFactors": "20",  # 6 pass
+                "AssessmentFactors": "20",  # 6 ignore: factor!=21
                 "CINdetailsID": "cinID4",
                 "AssessmentActualStartDate": "5/12/1994",
             },
