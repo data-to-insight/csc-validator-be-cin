@@ -57,7 +57,7 @@ def validate(
     ref_date_series = header[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_date_series)
 
-    # If disability is not NONE and <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then <AssessmentFactors> (must include one or both of 5A or 6A
+    # If disability is not NONE and <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then <AssessmentFactors> (must include one or both of 5A or 6A)
     #  Returns rows without NONE or NANs (to catch exceptions in formatting).
     df_dis = df_dis[(df_dis[Disability] != "NONE")]
 
@@ -69,15 +69,18 @@ def validate(
         on=["LAchildID"],
         suffixes=["_dis", "_ass"],
     )
-    # Check that AssessmentFactors contains necessaryValues of 5A and 6A
-
-    accepted_factors = [
-        "5A",
-        "6A",
-    ]
-    condition = ~merged_df[AssessmentFactors].isin(accepted_factors)
-
-    merged_df = merged_df[condition].reset_index()
+    # filter out asssessment groups that have an AssessmentFactor of 5A or 6A across the records of the group.
+    # all assessments that have the same AssessmentAuthorisationDate are considered as belonging to one group.
+    good = merged_df[merged_df[AssessmentFactors].isin(["5A", "6A"])]
+    good_ids = tuple(
+        zip(good[LAchildID], good[AssessmentAuthorisationDate])
+    )  # ids of groups that should pass
+    merged_df["group_ids"] = tuple(
+        zip(merged_df[LAchildID], merged_df[AssessmentAuthorisationDate])
+    )
+    merged_df = merged_df[
+        ~merged_df.group_ids.isin(good_ids)
+    ]  # filter out such that only failing rows are left
 
     # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(
@@ -123,7 +126,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child2",
-                "AssessmentAuthorisationDate": "231/03/2001",  # 2 pass
+                "AssessmentAuthorisationDate": "23/03/2001",  # 2 pass
                 "AssessmentFactors": "Nil",
             },
             {
@@ -133,7 +136,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child3",
-                "AssessmentAuthorisationDate": pd.NA,  # 4 ignore
+                "AssessmentAuthorisationDate": "31/03/2001",  # 4 ignore as other factor in group is 5A
                 "AssessmentFactors": "Nil",
             },
             {  # fail
