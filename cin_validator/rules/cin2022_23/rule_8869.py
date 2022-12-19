@@ -4,12 +4,11 @@ import pandas as pd
 
 from cin_validator.rule_engine import (
     CINTable,
+    IssueLocator,
     RuleContext,
     rule_definition,
-    IssueLocator,
 )
 from cin_validator.test_engine import run_rule
-
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -23,7 +22,7 @@ CINdetailsID = Assessments.CINdetailsID
 @rule_definition(
     # write the rule code here
     code=8869,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
