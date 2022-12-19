@@ -8,7 +8,6 @@ from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
-
 Section47 = CINTable.Section47
 LAchildID = Section47.LAchildID
 CINdetailsID = Section47.CINdetailsID
@@ -23,9 +22,9 @@ ReferenceDate = Header.ReferenceDate
 @rule_definition(
     # write the rule code here
     code=8890,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
-    module=CINTable.ChildProtectionPlans,
+    module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="A Section 47 enquiry is shown as starting when there is another Section 47 Enquiry ongoing",
     # The column names tend to be the words within the < > signs in the github issue description.
@@ -74,9 +73,7 @@ def validate(
     #  Merge tables to test for overlaps
     df_merged = df_47.merge(
         df_47_2,
-        on=[
-            "LAchildID",
-        ],
+        on=["LAchildID"],
         how="left",
         suffixes=("_47", "_472"),
     )
@@ -96,7 +93,7 @@ def validate(
     s47_started_before_refdate = (
         (df_merged["S47ActualStartDate_47"] <= reference_date)
         & df_merged["DateOfInitialCPC_472"].isna()
-        & (df_merged["ICPCnotRequired_472"] != "true")
+        & (df_merged["ICPCnotRequired_472"] != "1")
     )
 
     df_merged = df_merged[
@@ -153,7 +150,7 @@ def test_validate():
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "26/10/2000",
                 "CINdetailsID": "cinID1",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child1",  # 1 Fail
@@ -167,35 +164,35 @@ def test_validate():
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "25/10/2000",
                 "CINdetailsID": "cinID2",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child2",  # 3 Pass
                 "S47ActualStartDate": "26/10/2000",
                 "DateOfInitialCPC": "26/12/2000",
                 "CINdetailsID": "cinID22",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child3",  # 4 Pass
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "26/10/2001",
                 "CINdetailsID": "cinID3",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child3",  # 5 Fail
                 "S47ActualStartDate": "26/08/2000",
                 "DateOfInitialCPC": "26/10/2000",
                 "CINdetailsID": "cinID32",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child4",  # 6 Pass
                 "S47ActualStartDate": "26/10/2000",
                 "DateOfInitialCPC": "31/03/2001",
                 "CINdetailsID": "cinID4",
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "1",
             },
             {
                 "LAchildID": "child4",  # 7 Fail
