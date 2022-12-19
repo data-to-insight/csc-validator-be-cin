@@ -22,7 +22,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 @rule_definition(
     # write the rule code here, in place of 2885
     code=2990,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -30,7 +30,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         ReasonForClosure,
-    ],  # TODO How can we indicate that the DateOfInitialCPC comes from both tables. Is it necessary?
+    ],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -238,25 +238,25 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "DateOfInitialCPC": pd.NA,
+                "DateOfInitialCPC": pd.NA,  # 0 fail: found in CINplanDates table
                 "CINdetailsID": "cinID1",
                 "ReasonForClosure": "RC8",
             },
             {
                 "LAchildID": "child2",
                 "DateOfInitialCPC": pd.NA,
-                "CINdetailsID": "cinID2",
+                "CINdetailsID": "cinID2",  # 1 fail: found in Section47 table
                 "ReasonForClosure": "RC8",
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": pd.NA,
+                "DateOfInitialCPC": pd.NA,  # 2 fail : found in Section47 and CPP tables
                 "CINdetailsID": "cinID3",
                 "ReasonForClosure": "RC8",
             },
             {
                 "LAchildID": "child4",
-                "DateOfInitialCPC": "28/05/2000",  # fails for having initial cpc
+                "DateOfInitialCPC": "28/05/2000",  # 3 fails for having initialcpc
                 "CINdetailsID": "cinID4",
                 "ReasonForClosure": "RC8",
             },
@@ -264,19 +264,25 @@ def test_validate():
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
-                "ReasonForClosure": "RC9",
+                "ReasonForClosure": "RC9",  # 4 ignore: reason != RC8
             },
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2003",
                 "CINdetailsID": "cinID8",
-                "ReasonForClosure": "RC9",
+                "ReasonForClosure": "RC9",  # 5 ignore: reason != RC8
             },
-            {  # 6 pass
+            {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
-                "ReasonForClosure": "RC9",
+                "ReasonForClosure": "RC9",  # 6 ignore: reason != RC8
+            },
+            {
+                "LAchildID": "child7",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID4",
+                "ReasonForClosure": "RC9",  # 7 pass
             },
         ]
     )
