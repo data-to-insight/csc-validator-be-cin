@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -135,11 +134,11 @@ def test_validate():
             {
                 "LAchildID": "child2",
                 "CPPendDate": pd.NA,
-                "CPPID": "cinID2",
+                "CPPID": "cinID1",
             },
             {
                 "LAchildID": "child2",
-                "CPPendDate": "29/05/2001",
+                "CPPendDate": "29/05/2001",  # ignore: CPPReviewDate == CPPendDate
                 "CPPID": "cinID2",
             },
             {
@@ -163,22 +162,22 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "CINPlanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",  # fail: 29/05/2001
                 "CINPlanEndDate": "01/06/2002",
             },
             {
                 "LAchildID": "child2",
-                "CINPlanStartDate": "28/05/2000",
+                "CINPlanStartDate": "28/05/2000",  # ignore: CPPReviewDate == CPPendDate 29/05/2001
                 "CINPlanEndDate": "01/06/2002",
             },
             {
                 "LAchildID": "child3",
-                "CINPlanStartDate": "30/05/2000",
+                "CINPlanStartDate": "30/05/2000",  # pass: "29/05/2004"
                 "CINPlanEndDate": "01/06/2002",
             },
             {
                 "LAchildID": "child4",
-                "CINPlanStartDate": "04/06/2000",
+                "CINPlanStartDate": "04/06/2000",  # pass: "29/05/2004"
                 "CINPlanEndDate": "01/06/2002",
             },
             {
@@ -220,12 +219,36 @@ def test_validate():
     )
     sample_reviews = pd.DataFrame(
         [
-            {"LAchildID": "child1", "CPPID": "cinID1", "CPPreviewDate": "29/05/2001"},
-            {"LAchildID": "child2", "CPPID": "cinID2", "CPPreviewDate": "29/05/2001"},
-            {"LAchildID": "child3", "CPPID": "cinID3", "CPPreviewDate": "29/05/2004"},
-            {"LAchildID": "child4", "CPPID": "cinID4", "CPPreviewDate": "29/05/2004"},
-            {"LAchildID": "child5", "CPPID": "cinID5", "CPPreviewDate": "29/05/2004"},
-            {"LAchildID": "child6", "CPPID": "cinID6", "CPPreviewDate": "29/05/2004"},
+            {
+                "LAchildID": "child1",
+                "CPPID": "cinID1",
+                "CPPreviewDate": "29/05/2001",
+            },  # fail
+            {
+                "LAchildID": "child2",
+                "CPPID": "cinID2",
+                "CPPreviewDate": "29/05/2001",
+            },  # ignore
+            {
+                "LAchildID": "child3",
+                "CPPID": "cinID3",
+                "CPPreviewDate": "29/05/2004",
+            },  # pass
+            {
+                "LAchildID": "child4",
+                "CPPID": "cinID4",
+                "CPPreviewDate": "29/05/2004",
+            },  # pass
+            {
+                "LAchildID": "child5",
+                "CPPID": "cinID5",
+                "CPPreviewDate": "29/05/2004",
+            },  # pass
+            {
+                "LAchildID": "child6",
+                "CPPID": "cinID6",
+                "CPPreviewDate": "29/05/2004",
+            },  # ignore: not present in cin table
         ]
     )
 
