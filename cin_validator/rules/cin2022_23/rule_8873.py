@@ -119,7 +119,7 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "AssessmentFactors": "BOO",  # 0 ignore: factor!=21
+                "AssessmentFactors": "21",  # 0 pass
                 "CINdetailsID": "cinID1",
                 "AssessmentActualStartDate": "5/12/1993",
             },
@@ -137,25 +137,25 @@ def test_validate():
             },
             {
                 "LAchildID": "child3",
-                "AssessmentFactors": "21",  # 3 fail
+                "AssessmentFactors": "21",  # 3 fail. reason!=RC8
                 "CINdetailsID": "cinID1",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {  # absent
                 "LAchildID": "child3",
-                "AssessmentFactors": pd.NA,  # 4 ignore
+                "AssessmentFactors": pd.NA,  # 4 ignore: factor!=21
                 "CINdetailsID": "cinID2",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {  # fail
                 "LAchildID": "child3",
-                "AssessmentFactors": "21",  # 5 fail.
+                "AssessmentFactors": "21",  # 5 fail. reason!=RC8
                 "CINdetailsID": "cinID3",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child3",
-                "AssessmentFactors": "21",  # 6 pass
+                "AssessmentFactors": "21",  # ignore: more than one assessment in CIN episode
                 "CINdetailsID": "cinID4",
                 "AssessmentActualStartDate": "5/12/1993",
             },
@@ -176,7 +176,7 @@ def test_validate():
             },
             {  # 1 ignored
                 "LAchildID": "child1",
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC3",
                 "CINdetailsID": "cinID2",
             },
             {  # 2 pass
