@@ -144,62 +144,64 @@ def test_validate():
     )
 
     sample_s47 = pd.DataFrame(
-        [
+        [  # child1
             {
-                "LAchildID": "child1",  # 0 Pass
-                "S47ActualStartDate": "26/05/2000",
-                "DateOfInitialCPC": "26/10/2000",
+                "LAchildID": "child1",
                 "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "26/05/2000",  # 0 Pass: not between "26/08/2000" and "31/03/2001"
+                "DateOfInitialCPC": "26/10/2000",
                 "ICPCnotRequired": "1",
             },
             {
-                "LAchildID": "child1",  # 1 Fail
-                "S47ActualStartDate": "26/08/2000",
+                "LAchildID": "child1",
+                "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "26/08/2000",  # 1 Fail: between "26/05/2000" and "26/10/2000"
                 "DateOfInitialCPC": pd.NA,
-                "CINdetailsID": "cinID12",
                 "ICPCnotRequired": "nottrue",
             },
             {
-                "LAchildID": "child2",  # 2 Pass
+                "LAchildID": "child2",  # 2 alone in cin group: not compared
+                "CINdetailsID": "cinID2",
                 "S47ActualStartDate": "26/05/2000",
                 "DateOfInitialCPC": "25/10/2000",
-                "CINdetailsID": "cinID2",
                 "ICPCnotRequired": "1",
             },
             {
-                "LAchildID": "child2",  # 3 Pass
+                "LAchildID": "child2",  # 3 alone in cin group: not compared
+                "CINdetailsID": "cinID22",
                 "S47ActualStartDate": "26/10/2000",
                 "DateOfInitialCPC": "26/12/2000",
-                "CINdetailsID": "cinID22",
                 "ICPCnotRequired": "1",
             },
+            # child3
             {
-                "LAchildID": "child3",  # 4 Pass
-                "S47ActualStartDate": "26/05/2000",
-                "DateOfInitialCPC": "26/10/2001",
+                "LAchildID": "child3",
                 "CINdetailsID": "cinID3",
+                "S47ActualStartDate": "26/05/2000",  # 4 Pass: not between "26/08/2000" and "26/10/2000"
+                "DateOfInitialCPC": "26/10/2001",
                 "ICPCnotRequired": "1",
             },
             {
-                "LAchildID": "child3",  # 5 Fail
-                "S47ActualStartDate": "26/08/2000",
+                "LAchildID": "child3",
+                "CINdetailsID": "cinID3",
+                "S47ActualStartDate": "26/08/2000",  # 5 Fail: between "26/05/2000" and "26/10/2001"
                 "DateOfInitialCPC": "26/10/2000",
-                "CINdetailsID": "cinID32",
                 "ICPCnotRequired": "1",
             },
+            # child4
             {
-                "LAchildID": "child4",  # 6 Pass
-                "S47ActualStartDate": "26/10/2000",
+                "LAchildID": "child4",
+                "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "26/10/2000",  # 6 Ignore: between "26/09/2000" and ReferenceDate but ICPCnotRequired is true
                 "DateOfInitialCPC": "31/03/2001",
-                "CINdetailsID": "cinID4",
                 "ICPCnotRequired": "1",
             },
             {
-                "LAchildID": "child4",  # 7 Fail
-                "S47ActualStartDate": "31/03/2001",
+                "LAchildID": "child4",
+                "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "26/09/2000",  # 7 Pass: not between "26/10/2000" and "31/03/2001"
                 "DateOfInitialCPC": pd.NA,
-                "CINdetailsID": "cinID42",
-                "ICPCnotRequired": "nottrue",
+                "ICPCnotRequired": "1",
             },
         ]
     )
@@ -258,26 +260,18 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    "cinID12",
                     "cinID1",
+                    pd.to_datetime("26/08/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
             },
             {
                 "ERROR_ID": (
                     "child3",
-                    "cinID32",
                     "cinID3",
+                    pd.to_datetime("26/08/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
-            },
-            {
-                "ERROR_ID": (
-                    "child4",
-                    "cinID42",
-                    "cinID4",
-                ),
-                "ROW_ID": [7],
             },
         ]
     )
