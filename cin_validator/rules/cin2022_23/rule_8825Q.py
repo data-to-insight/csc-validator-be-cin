@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -110,7 +110,7 @@ def test_validate():
     sample_ass = pd.DataFrame(
         [
             {
-                "LAchildID": "child2",
+                "LAchildID": "child7",
                 "CINdetailsID": "cinID1",
             },
             {
@@ -135,37 +135,37 @@ def test_validate():
         [
             {  # 0 pass
                 "LAchildID": "child1",
-                "ReasonForClosure": pd.NA,
+                "ReasonForClosure": pd.NA,  # 0 ignore
                 "CINdetailsID": "cinID1",
             },
             {  # 1 ignore
                 "LAchildID": "child1",
-                "ReasonForClosure": "EX7",
+                "ReasonForClosure": "EX7",  # 1 ignore
                 "CINdetailsID": "cinID2",
             },
-            {  # 2 pass
+            {  # 2
                 "LAchildID": "child2",
-                "ReasonForClosure": "EX7",
+                "ReasonForClosure": "EX7",  # 2 ignore
                 "CINdetailsID": "cinID1",
             },
             {  # 3
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC8",  # 3 pass. present in assessment table
                 "CINdetailsID": "cinID1",
             },
             {  # 4 ignore
                 "LAchildID": "child3",
-                "ReasonForClosure": "EX7",
+                "ReasonForClosure": "EX7",  # 4 ignore
                 "CINdetailsID": "cinID2",
             },
             {  # 5 pass
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC8",  # 5 pass. present in assessment table
                 "CINdetailsID": "cinID3",
             },
             {  # 6 fail
                 "LAchildID": "child4",
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC8",  # 6 fail: no assessment recorded.
                 "CINdetailsID": "cinID4",
             },
         ]
