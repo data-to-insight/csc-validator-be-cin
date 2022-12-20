@@ -147,62 +147,64 @@ def test_validate():
     )
 
     sample_cin = pd.DataFrame(
-        [
+        [  # child1
             {
-                "LAchildID": "child1",  # 0 Pass
-                "CINreferralDate": "26/05/2000",
+                "LAchildID": "child1",
+                "CINreferralDate": "26/05/2000",  # 0 Pass: not between "26/08/2000" and "31/03/2001"
                 "CINclosureDate": "26/10/2000",
                 "CINdetailsID": "cinID1",
                 "ReferralNFA": "true",
             },
             {
-                "LAchildID": "child1",  # 1 Fail
-                "CINreferralDate": "26/08/2000",
+                "LAchildID": "child1",
+                "CINreferralDate": "26/08/2000",  # 1 Fail: between "26/05/2000" and "26/10/2000"
                 "CINclosureDate": pd.NA,
                 "CINdetailsID": "cinID12",
                 "ReferralNFA": "0",
             },
+            # child2
             {
-                "LAchildID": "child2",  # 2 Pass
-                "CINreferralDate": "26/05/2000",
+                "LAchildID": "child2",
+                "CINreferralDate": "26/05/2000",  # 2 alone in cin group: not compared
                 "CINclosureDate": "25/10/2000",
                 "CINdetailsID": "cinID2",
                 "ReferralNFA": "true",
             },
             {
-                "LAchildID": "child2",  # 3 Pass
-                "CINreferralDate": "26/10/2000",
+                "LAchildID": "child2",
+                "CINreferralDate": "26/10/2000",  # 3 alone in cin group: not compared
                 "CINclosureDate": "26/12/2000",
                 "CINdetailsID": "cinID22",
                 "ReferralNFA": "true",
             },
+            # child3
             {
-                "LAchildID": "child3",  # 4 Pass
-                "CINreferralDate": "26/05/2000",
+                "LAchildID": "child3",
+                "CINreferralDate": "26/05/2000",  # 4 Pass: not between "26/08/2000" and "26/10/2000"
                 "CINclosureDate": "26/10/2001",
                 "CINdetailsID": "cinID3",
                 "ReferralNFA": "true",
             },
             {
-                "LAchildID": "child3",  # 5 Fail
+                "LAchildID": "child3",  # 5 Fail: between "26/05/2000" and "26/10/2001"
                 "CINreferralDate": "26/08/2000",
                 "CINclosureDate": "26/10/2000",
                 "CINdetailsID": "cinID32",
                 "ReferralNFA": "true",
             },
+            # child4
             {
-                "LAchildID": "child4",  # 6 Pass
-                "CINreferralDate": "26/10/2000",
+                "LAchildID": "child4",
+                "CINreferralDate": "26/10/2000",  # 6 Ignore: between "26/09/2000" and ReferenceDate but ReferralNFA is true
                 "CINclosureDate": "31/03/2001",
                 "CINdetailsID": "cinID4",
                 "ReferralNFA": "true",
             },
             {
-                "LAchildID": "child4",  # 7 Fail
-                "CINreferralDate": "31/03/2001",
+                "LAchildID": "child4",
+                "CINreferralDate": "26/09/2000",  # 7 Pass: not between "26/10/2000" and "31/03/2001"
                 "CINclosureDate": pd.NA,
-                "CINdetailsID": "cinID42",
-                "ReferralNFA": "false",
+                "ReferralNFA": "true",
             },
         ]
     )
@@ -245,7 +247,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 2
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -273,14 +275,6 @@ def test_validate():
                     "cinID3",
                 ),
                 "ROW_ID": [5],
-            },
-            {
-                "ERROR_ID": (
-                    "child4",
-                    "cinID42",
-                    "cinID4",
-                ),
-                "ROW_ID": [7],
             },
         ]
     )
