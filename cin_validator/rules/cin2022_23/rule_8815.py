@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -21,7 +20,7 @@ ReferenceDate = Header.ReferenceDate
 @rule_definition(
     # write the rule code here
     code=8815,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -169,18 +168,18 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
+    # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
     issues_list = result.type3_issues
     assert len(issues_list) == 1
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 0 will contain the CINdetails columns because that's the second thing pushed above.
     issues = issues_list[0]
 
-    # get table name and check it. Replace Reviews with the name of your table.
+    # get table name and check it. Replace CINdetails with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
+    # check that the right columns were returned. Replace CINclosureDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINclosureDate]
 
@@ -234,7 +233,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8815 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8815
     assert (
         result.definition.message
