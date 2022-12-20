@@ -2,7 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, IssueLocator, RuleContext, rule_definition
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -28,7 +33,7 @@ def validate(
     # Replace ChildIdentifiers with the name of the table you need as well as a DataFrane for the Header as we are using referencing the Census Period EndDate
     df = data_container[Cindetails]
     df_ref = data_container[Header]
-    
+
     # Select out only the ReferenceDate column from the DataFrame
     ref_data_series = df_ref[ReferenceDate]
 
@@ -43,7 +48,7 @@ def validate(
 
     # Where a CINreferralDate exists check to see if it is after the end of the Census Period (collection_end)
     df = df[(df[CINreferralDate] > collection_end)]
-    
+
     failing_indices = df.index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
@@ -51,28 +56,31 @@ def validate(
     rule_context.push_issue(
         table=Cindetails, field=CINreferralDate, row=failing_indices
     )
-    
+
+
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
 
     sample_refdates = pd.to_datetime(
         [
-                "2021-06-30", #Pass - the date is before the collection_end of 31st March 2022
-                "2022-01-25", #Pass - the date is before the collection_end of 31st March 2022
-                "2022-12-25", #Fail - the date is after the collection_end of 31st March 2022
-                pd.NA, #Fail - the date field is blank and is therefore missing
-                "2022-12-03", #Fail - the date is after the collection_end of 31st March 2022
-                "2021-08-20", #Pass - the date is before the collection_end of 31st March 2022 
-                "2021-04-17", #Pass - the date is before the collection_end of 31st March 2022
-                "2001-01-25", #Pass - the date is before the collection_end of 31st March 2022
-                pd.NA, #Fail - the date field is blank and is therefore missing 
+            "2021-06-30",  # Pass - the date is before the collection_end of 31st March 2022
+            "2022-01-25",  # Pass - the date is before the collection_end of 31st March 2022
+            "2022-12-25",  # Fail - the date is after the collection_end of 31st March 2022
+            pd.NA,  # Fail - the date field is blank and is therefore missing
+            "2022-12-03",  # Fail - the date is after the collection_end of 31st March 2022
+            "2021-08-20",  # Pass - the date is before the collection_end of 31st March 2022
+            "2021-04-17",  # Pass - the date is before the collection_end of 31st March 2022
+            "2001-01-25",  # Pass - the date is before the collection_end of 31st March 2022
+            pd.NA,  # Fail - the date field is blank and is therefore missing
         ],
         format="%Y/%m/%d",
         errors="coerce",
     )
-   
+
     fake_refdates = pd.DataFrame({CINreferralDate: sample_refdates})
-    fake_header = pd.DataFrame([{ReferenceDate: "31/03/2022"}]) # the census start date here will be 01/04/2021
+    fake_header = pd.DataFrame(
+        [{ReferenceDate: "31/03/2022"}]
+    )  # the census start date here will be 01/04/2021
 
     # Run the rule function, passing in our sample data.
     result = run_rule(validate, {Cindetails: fake_refdates, Header: fake_header})
@@ -82,7 +90,7 @@ def test_validate():
 
     # replace 2 with the number of failing points you expect from the sample data.
     assert len(issues) == 2
-    
+
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
