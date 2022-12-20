@@ -22,7 +22,7 @@ ReferenceDate = Header.ReferenceDate
 @rule_definition(
     # write the rule code here
     code=8820,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -38,7 +38,7 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
+    # Replace CINdetails with the name of the table you need.
     df_cin = data_container[CINdetails].copy()
     df_cin2 = data_container[CINdetails].copy()
 
@@ -231,14 +231,14 @@ def test_validate():
     issues_list = result.type3_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 1 will contain the CINdetails columns because that's the second thing pushed above.
     issues = issues_list[0]
 
-    # get table name and check it. Replace Reviews with the name of your table.
+    # get table name and check it. Replace CINdetails with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
+    # check that the right columns were returned. Replace CINreferralDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINreferralDate]
 
@@ -288,7 +288,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8820 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8820
     assert (
         result.definition.message
