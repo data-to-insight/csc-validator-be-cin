@@ -91,7 +91,7 @@ def validate(
             merged_df[PersonBirthDate],
         )
     )
-    
+
     df_dis_issues = (
         df_dis.merge(merged_df, on="ROW_ID")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
