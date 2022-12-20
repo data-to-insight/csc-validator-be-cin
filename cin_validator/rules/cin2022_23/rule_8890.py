@@ -73,15 +73,23 @@ def validate(
     #  Merge tables to test for overlaps
     df_merged = df_47.merge(
         df_47_2,
-        on=["LAchildID"],
+        on=[LAchildID, CINdetailsID],
         how="left",
         suffixes=("_47", "_472"),
     )
 
     # Exclude rows where the CPPID is the same on both sides
-    df_merged = df_merged[
-        (df_merged["CINdetailsID_47"] != df_merged["CINdetailsID_472"])
-    ]
+    same_start = (
+        df_merged["S47ActualStartDate_47"] == df_merged["S47ActualStartDate_472"]
+    )
+    same_cpc = (
+        df_merged["DateOfInitialCPC_47"] == df_merged["DateOfInitialCPC_472"]
+    ) | (
+        df_merged["DateOfInitialCPC_47"].isna()
+        & df_merged["DateOfInitialCPC_472"].isna()
+    )
+    duplicate = same_start & same_cpc
+    df_merged = df_merged[~duplicate]
 
     # Determine whether CPP overlaps another CPP
     s47_started_after_start = (
@@ -105,8 +113,8 @@ def validate(
     df_merged["ERROR_ID"] = tuple(
         zip(
             df_merged[LAchildID],
-            df_merged["CINdetailsID_47"],
-            df_merged["CINdetailsID_472"],
+            df_merged[CINdetailsID],
+            df_merged["S47ActualStartDate_47"],
         )
     )
 
@@ -244,7 +252,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 2
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
