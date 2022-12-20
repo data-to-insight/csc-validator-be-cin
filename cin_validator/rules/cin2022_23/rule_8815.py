@@ -143,7 +143,7 @@ def test_validate():
                 "CINreferralDate": "31/03/2001",
                 "CINclosureDate": pd.NA,
                 "CINdetailsID": "cinID42",
-                "ReferralNFA": "false",
+                "ReferralNFA": "0",
             },
         ]
     )
