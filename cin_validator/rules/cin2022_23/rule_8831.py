@@ -169,26 +169,26 @@ def test_validate():
     sample_cin_details = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  # fail: has AssessmentAuthorisationDate
+                "LAchildID": "child1",  # 0 fail: has AssessmentAuthorisationDate
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID1",
                 "ReferralNFA": "1",
             },
             {
-                "LAchildID": "child2",  # fail: has S47ActualStartDate
+                "LAchildID": "child2",  # 1 fail: has S47ActualStartDate
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",
                 "ReferralNFA": "true",
             },
             {
-                "LAchildID": "child3",  # fail: has AssessmentActualStartDate
+                "LAchildID": "child3",  # 2 fail: has AssessmentActualStartDate
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID3",
                 "ReferralNFA": "1",
             },
             {
                 "LAchildID": "child4",
-                "DateOfInitialCPC": "28/05/2000",  # fails for having initial cpc
+                "DateOfInitialCPC": "28/05/2000",  # 3 fails for having initial cpc
                 "CINdetailsID": "cinID4",
                 "ReferralNFA": "true",
             },
@@ -196,19 +196,19 @@ def test_validate():
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
-                "ReferralNFA": "false",  # ignore
+                "ReferralNFA": "false",  # 4 ignore
             },
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2003",
                 "CINdetailsID": "cinID8",
-                "ReferralNFA": "false",  # ignore
+                "ReferralNFA": "false",  # 5 ignore
             },
             {  # 6 pass
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
-                "ReferralNFA": "false",  # ignore
+                "ReferralNFA": "false",  # 6 ignore
             },
         ]
     )
