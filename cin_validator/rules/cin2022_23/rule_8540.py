@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -21,15 +20,12 @@ Disability = Disabilities.Disability
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
     code=8540,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
-    # Note that even if multiple tables are involved, one table will be named in the module column.
-    module=CINTable.Disabilities,
+    module=CINTable.ChildCharacteristics,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child’s disability is missing or invalid (see Disability table)",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[Disability],
+    affected_fields=[Disability, PersonBirthDate, ReferralNFA],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -82,9 +78,6 @@ def validate(
     merged_df = merged_df[merged_df[ReferralNFA].isin(falseorzero)]
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
-    # You could also consider that CPPstartDate, unlike DateOfInitialCPC, is the leading column against which columns from the other tables are compared. So it is included in the zip.
     merged_df["ERROR_ID"] = tuple(
         zip(
             merged_df[LAchildID],
@@ -205,11 +198,11 @@ def test_validate():
     # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
     issues = issues_list[1]
 
-    # get table name and check it. Replace Section47 with the name of your table.
+    # get table name and check it. Replace Disabilities with the name of your table.
     issue_table = issues.table
     assert issue_table == Disabilities
 
-    # check that the right columns were returned. Replace DateOfInitialCPC  with a list of your columns.
+    # check that the right columns were returned. Replace Disabilities with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [Disability]
 
@@ -248,7 +241,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8540 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8540
     assert (
         result.definition.message
