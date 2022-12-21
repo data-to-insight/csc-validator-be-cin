@@ -1,0 +1,249 @@
+from typing import Mapping
+
+import pandas as pd
+
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.test_engine import run_rule
+from cin_validator.utils import make_census_period
+
+# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
+
+ChildIdentifiers = CINTable.ChildIdentifiers
+LAchildID = ChildIdentifiers.LAchildID
+UPNunknown = ChildIdentifiers.UPNunknown
+
+CINdetails = CINTable.CINdetails
+LAchildID = CINdetails.LAchildID
+ReferralNFA = CINdetails.ReferralNFA
+
+@rule_definition(
+    code=8772,
+    module=CINTable.ChildIdentifiers,
+    message="UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action",
+    affected_fields=[
+        UPNunknown,
+        ReferralNFA,
+    ],
+)
+def validate(
+    data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
+):
+    # Replace ChildProtectionPlans with the name of the table you need.
+    df_upn = data_container[ChildIdentifiers].copy()
+    df_refs = data_container[CINdetails].copy()
+
+    # Before you begin, rename the index so that the initial row positions can be kept intact.
+    df_upn.index.name = "ROW_ID"
+    df_refs.index.name = "ROW_ID"
+
+    # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
+    # so that they can come along when the merge is done.
+    df_upn.reset_index(inplace=True)
+    df_refs.reset_index(inplace=True)
+
+    # lOGIC
+    # Implement rule logic as described by the Github issue.
+    # Put the description as a comment above the implementation as shown.
+
+    # If <UPNunknown> (N00135) is UN7 then all of the CIN details must have <ReferralNFA> (N00112) = 1 or true
+    
+    #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
+    df_upn = df_upn[df_upn[UPNunknown].notna()]
+    df_refs = df_refs[df_refs[ReferralNFA].notna()]
+
+    print(df_upn)
+    print(df_refs)
+
+    #  Merge tables to get corresponding CP plan group and reviews
+    df_merged = df_upn.merge(
+        df_refs,
+        left_on=["LAchildID"],
+        right_on=["LAchildID"],
+        how="inner",
+        suffixes=("_upn", "_refs"),
+    )
+
+    #print (df_merged)
+    #  Get rows where CPPreviewDate is less than or equal to CPPstartDate
+
+    condition_1 = df_merged[UPNunknown] == ('UN7' or "1")
+    condition_2 = df_merged[ReferralNFA] == True
+
+    #df_merged = df_merged[condition_1 & ~condition_2].reset_index()
+    df_merged = df_merged[condition_1 & ~condition_2].reset_index()
+   
+    print(df_merged)
+
+    #df_merged = df_merged[condition_1].reset_index()
+    #print(df_merged)
+
+    # create an identifier for each error instance.
+    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
+    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
+    df_merged["ERROR_ID"] = tuple(
+        zip(df_merged[LAchildID], df_merged[UPNunknown], df_merged[ReferralNFA])
+    )
+
+    #print(df_merged)
+
+    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
+    df_upn_issues = (
+        df_upn.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_upn")
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
+    df_refs_issues = (
+        df_refs.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_refs")
+        .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
+        .apply(list)
+        .reset_index()
+    )
+
+    # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
+    rule_context.push_type_2(
+        table=ChildIdentifiers, columns=[UPNunknown], row_df=df_upn_issues
+    )
+    rule_context.push_type_2(
+        table=CINdetails, columns=[ReferralNFA], row_df=df_refs_issues
+    )
+
+def test_validate():
+    # Create some sample data such that some values pass the validation and some fail.
+    sample_upn = pd.DataFrame(
+        [
+            {
+                "LAchildID": "child1",
+                "UPNunknown": "UN6", # Fail as code is not UN7
+            },
+            {
+                "LAchildID": "child2",
+                "UPNunknown": "UN7", # Pass as code is UN7
+            },
+            {
+                "LAchildID": "child3",
+                "UPNunknown": "UN7", # Pass as code is UN7
+            },
+            {
+                "LAchildID": "child4",
+                "UPNunknown": "UN7", # Pass as code is UN7
+            },
+            {
+                "LAchildID": "child5",
+                "UPNunknown": "UN4", # Fail as code is not UN7
+            },
+        ]
+    )
+    #print(sample_upn)
+    sample_refs = pd.DataFrame(
+        [
+            {
+                "LAchildID": "child1",  
+                "ReferralNFA": "True", # Pass as Referral Code is True
+            },
+            {
+                "LAchildID": "child2", 
+                "ReferralNFA": "1", # Pass as Referral Code is True
+            },
+            {
+                "LAchildID": "child3", 
+                "ReferralNFA": pd.NA,  # Fail as Referral Code is NULL
+            },
+            {
+                "LAchildID": "child4",
+                "ReferralNFA": "True", # Pass as Referral Code is True
+            },
+            {
+                "LAchildID": "child5",
+                "ReferralNFA": "True", # Pass as Referral Code is True
+            },
+        ]
+    )
+    
+    # Run the rule function, passing in our sample data.
+    result = run_rule(
+        validate,
+        {
+            ChildIdentifiers: sample_upn,
+            CINdetails: sample_refs,
+        },
+    )
+
+    #print(result)
+
+    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
+    issues_list = result.type2_issues
+    assert len(issues_list) == 2
+
+    print(issues_list)
+    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
+    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    issues = issues_list[1]
+
+    print(issues)
+
+    # get table name and check it. Replace Reviews with the name of your table.
+    issue_table = issues.table
+    assert issue_table == CINdetails
+
+    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
+    issue_columns = issues.columns
+    assert issue_columns == ReferralNFA,UPNunknown
+
+    # check that the location linking dataframe was formed properly.
+    issue_rows = issues.row_df
+    print(issue_rows)
+    # replace 3 with the number of failing points you expect from the sample data.
+    assert len(issue_rows) == 3
+    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
+    assert isinstance(issue_rows, pd.DataFrame)
+
+    print(pd.DataFrame)
+    assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
+
+    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
+    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on, in your zip, earlier.
+    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
+
+    # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
+    expected_df = pd.DataFrame(
+        [
+            {
+                "ERROR_ID": (
+                    "child1",  # ChildID
+                    "UN6", # UPNunknown
+                    "True", # ReferralNFA
+                ),
+                "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child3",  # ChildID
+                    "UN7", # UPNunknown
+                    pd.NA, # ReferralNFA
+                ),
+                "ROW_ID": [2],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",  # ChildID
+                    "UN4", # UPNunknown
+                    "True", # ReferralNFA
+               ),
+               "ROW_ID": [4],
+            },
+        ]
+    )
+    assert issue_rows.equals(expected_df)
+
+    print(expected_df)
+
+    # Check that the rule definition is what you wrote in the context above.
+
+    # replace 2885 with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == 8841
+    assert (
+        result.definition.message
+        == "UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action "
+    )
