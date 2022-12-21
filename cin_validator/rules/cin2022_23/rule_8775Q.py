@@ -2,9 +2,8 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -22,26 +21,25 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
+    # write the rule code here, in place of 8775Q
     code="8775Q",
     rule_type=RuleType.QUERY,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
-    module=CINTable.ChildProtectionPlans,
+    module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Please check: Child is over 25 years old",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         PersonBirthDate,
         CINclosureDate,
-    ],  # TODO How can we indicate that the DateOfInitialCPC comes from both tables. Is it necessary?
+    ],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_ci = data_container[ChildIdentifiers].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -51,7 +49,6 @@ def validate(
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with a for loop? e.g for df in [df_cpp, df_47, df_cin]
     df_ci.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
 
@@ -65,7 +62,6 @@ def validate(
     over_25 = df_ci[PersonBirthDate] < (ref_date - pd.DateOffset(years=25))
     df_ci = df_ci[over_25]
 
-    # Create a dataframe that contains all the cin_details and cpp information for children whose cppstartdate exists and is within period.
     merged_df = df_ci.merge(
         df_cin,
         on=[
@@ -74,7 +70,6 @@ def validate(
         suffixes=["_ci", "_cin"],
     )
 
-    # check that the the dates being compared existed in the same CIN event period and belong to the same child.
     condition = (
         (
             merged_df["CINclosureDate"]
@@ -87,12 +82,8 @@ def validate(
     merged_df = merged_df[condition].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
-    # You could also consider that CPPstartDate, unlike DateOfInitialCPC, is the leading column against which columns from the other tables are compared. So it is included in the zip.
     merged_df["ERROR_ID"] = tuple(zip(merged_df[LAchildID], merged_df[PersonBirthDate]))
 
-    # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_ci_issues = (
         df_ci.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_ci")
@@ -227,6 +218,6 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8775Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8775Q"
     assert result.definition.message == "Please check: Child is over 25 years old"
