@@ -51,7 +51,9 @@ def validate(
         df_cin[CINreferralDate] < (collection_start - pd.tseries.offsets.BDay(1))
     ]
 
-    df_cin_issues = df_cin_issues[~df_cin_issues[ReferralNFA].isin(["false", "0"])].reset_index()
+    df_cin_issues = df_cin_issues[
+        ~df_cin_issues[ReferralNFA].isin(["false", "0"])
+    ].reset_index()
 
     df_cin_issues["ERROR_ID"] = tuple(
         zip(
