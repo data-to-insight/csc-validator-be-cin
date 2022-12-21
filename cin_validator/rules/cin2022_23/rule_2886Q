@@ -42,7 +42,7 @@ def validate(
     # calculate
     missing_ratio = num_issues/num_records
     if missing_ratio > 0.02:
-        rule_context.push_la_level(rule_context.code, rule_context.message)
+        rule_context.push_la_level(rule_context.definition.code, rule_context.definition.message)
     else:
         pass
 
