@@ -246,3 +246,18 @@ def test_type_three():
             ]
         )
     ).all()
+
+
+def test_la_level():
+    """Rules that check relationships across the whole local authority"""
+    rule_context = RuleContext(Mock())
+    rule_context.code = "2000"
+    rule_context.description = "return-level validation rule"
+    check = pd.DataFrame([1])
+    if len(check):
+        rule_context.push_la_level(rule_context.code, rule_context.description)
+    else:
+        pass
+
+    issues = rule_context.la_issues
+    assert issues == ("2000", "return-level validation rule")
