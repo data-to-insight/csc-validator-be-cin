@@ -102,44 +102,44 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "DateOfInitialCPC": pd.NA,
+                "DateOfInitialCPC": pd.NA,  # 0 fail: DateOfInitialCPC missing and ICPCnotRequired false
                 "ICPCnotRequired": "false",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child1",
-                "DateOfInitialCPC": pd.NA,
+                "DateOfInitialCPC": pd.NA,  # 1 pass ICPCnotRequired true
                 "ICPCnotRequired": "true",
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child2",
                 "DateOfInitialCPC": pd.NA,
-                "ICPCnotRequired": "1",
+                "ICPCnotRequired": "1",  # 2 pass ICPCnotRequired true
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "27/05/2000",
+                "DateOfInitialCPC": "27/05/2000",  # 3 pass DateOfInitialCPC present
                 "ICPCnotRequired": "true",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
-                "ICPCnotRequired": "true",
+                "DateOfInitialCPC": pd.NA,  # 4 fail
+                "ICPCnotRequired": "nottrue",
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2000",  # 5 pass DateOfInitialCPC present
                 "ICPCnotRequired": "1",
-                "CINdetailsID": "cinID3",
+                "CINdetailsID": "cinID2",
             },
-            {  # pass
+            {
                 "LAchildID": "child4",
                 "DateOfInitialCPC": pd.NA,
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "false",  # 6 ignore
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -147,38 +147,38 @@ def test_validate():
     sample_cin = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",
+                "LAchildID": "child1",  # 0 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/10/1999",
                 "CINdetailsID": "cinID1",
             },
             {
-                "LAchildID": "child1",
+                "LAchildID": "child1",  # 1 pass
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
             {
-                "LAchildID": "child2",
+                "LAchildID": "child2",  # 2
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID1",
             },
             {
-                "LAchildID": "child3",
+                "LAchildID": "child3",  # 3 pass
                 "CINclosureDate": "28/05/2000",
                 "CINdetailsID": "cinID1",
             },
             {
-                "LAchildID": "child3",
+                "LAchildID": "child3",  # 4 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
             {
-                "LAchildID": "child3",
+                "LAchildID": "child3",  # 5 fail. not present in section47 table so none of the values meets the requirements
                 "CINclosureDate": "26/05/2003",
                 "CINdetailsID": "cinID3",
             },
             {
                 "LAchildID": "child4",
-                "CINclosureDate": pd.NA,
+                "CINclosureDate": pd.NA,  # 6 ignore: date absent
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -218,7 +218,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 1 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -236,6 +236,20 @@ def test_validate():
                     "cinID1",  # CINdetailsID
                 ),
                 "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child3",  # ChildID
+                    "cinID2",  # CINdetailsID
+                ),
+                "ROW_ID": [4],
+            },
+            {
+                "ERROR_ID": (
+                    "child3",  # ChildID
+                    "cinID3",  # CINdetailsID
+                ),
+                "ROW_ID": [5],
             },
         ]
     )
