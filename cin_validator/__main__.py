@@ -62,6 +62,7 @@ def run_all(filename: str, ruleset, issue_id, output):
 
     # print(issue_instances)
     # print(all_rules_issue_locs)
+    # print(validator.rule_descriptors)
 
 
 @cli.command(name="test")

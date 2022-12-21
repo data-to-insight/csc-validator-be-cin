@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import List
 
 import pandas as pd
@@ -57,6 +56,10 @@ class RuleContext:
         table_tuple = Type1(table, columns, row_df)
         self.__type3_issues.append(table_tuple)
 
+    def push_la_level(self, rule_code, rule_description):
+        """Rules that check relationships across the whole local authority"""
+        self.__la_issues = (rule_code, rule_description)
+
     # PROPERTIES FOR TEST_VALIDATE FUNCTIONS
     @property
     def issues(self):
@@ -75,6 +78,10 @@ class RuleContext:
     @property
     def type3_issues(self):
         return self.__type3_issues
+
+    @property
+    def la_issues(self):
+        return self.__la_issues
 
     # PROPERTIES FOR CREATING THE ERROR REPORT
     @property
@@ -156,4 +163,16 @@ class RuleContext:
 
         except:
             # all non-type3 rules return this.
+            return []
+
+    @property
+    def la_level_issues(self):
+        """Creates DataFrame of return level validation errors"""
+        try:
+            code, desc = self.__la_issues
+            la_df = pd.DataFrame(
+                [{"rule_code": code, "rule_description": desc, "la_level": True}]
+            )
+            return la_df
+        except:
             return []
