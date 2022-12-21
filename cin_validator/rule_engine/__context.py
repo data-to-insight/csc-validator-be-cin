@@ -164,3 +164,15 @@ class RuleContext:
         except:
             # all non-type3 rules return this.
             return []
+
+    @property
+    def la_level_issues(self):
+        """Creates DataFrame of return level validation errors"""
+        try:
+            code, desc = self.__la_issues
+            la_df = pd.DataFrame(
+                [{"rule_code": code, "rule_description": desc, "la_level": True}]
+            )
+            return la_df
+        except:
+            return []
