@@ -113,31 +113,37 @@ def test_validate():
         [
             {"LAchildID": "child1", "PersonBirthDate": "01/01/1880"},
             {"LAchildID": "child2", "PersonBirthDate": "01/01/1880"},
-            {"LAchildID": "child3", "PersonBirthDate": "01/01/2000"},
-            {"LAchildID": "child4", "PersonBirthDate": "01/01/2000"},
+            {
+                "LAchildID": "child3",
+                "PersonBirthDate": "01/01/2000",
+            },  # ignore: not 25 years before refdate
+            {
+                "LAchildID": "child4",
+                "PersonBirthDate": "01/01/1800",
+            },  # ignore: CINclosureDate not up to 25years after birthdate
         ]
     )
     sample_cin_details = pd.DataFrame(
         [
-            {  # 0 pass
+            {  # 0 fail
                 "LAchildID": "child1",
                 "CINclosureDate": "01/01/2000",
             },
-            {  # 0 pass
+            {  # 1 fail
                 "LAchildID": "child2",
                 "CINclosureDate": "NULL",
             },
-            {  # 0 pass
+            {  # 2 pass
                 "LAchildID": "child2",
                 "CINclosureDate": "26/10/1890",
             },
-            {  # 0 pass
+            {  # 3 pass
                 "LAchildID": "child3",
                 "CINclosureDate": "26/10/1999",
             },
-            {  # 0 pass
+            {  # 4 pass
                 "LAchildID": "child4",
-                "CINclosureDate": "26/10/1999",
+                "CINclosureDate": "26/10/1804",
             },
         ]
     )
