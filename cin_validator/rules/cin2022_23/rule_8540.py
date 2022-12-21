@@ -137,7 +137,7 @@ def test_validate():
                 "PersonBirthDate": "01/01/1880",
             },
             {
-                "LAchildID": "child5",
+                "LAchildID": "child5",  # 4 ignore: has no ReferralNFA
                 "PersonBirthDate": "01/01/1880",
             },
         ]
@@ -146,19 +146,28 @@ def test_validate():
     sample_cin = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",
+                "LAchildID": "child1",  # considered
+                "CINdetailsID": "CINID1",
                 "ReferralNFA": "false",
             },
             {
-                "LAchildID": "child2",
+                "LAchildID": "child2",  # considered
+                "CINdetailsID": "CINID1",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child3",  # considered since one of its ReferralNFA values is false/0
+                "CINdetailsID": "CINID1",
                 "ReferralNFA": "0",
             },
             {
                 "LAchildID": "child3",
-                "ReferralNFA": "0",
+                "CINdetailsID": "CINID2",
+                "ReferralNFA": "1",
             },
             {
-                "LAchildID": "child4",
+                "LAchildID": "child4",  # 3 ignore ReferralNFA is not false/0
+                "CINdetailsID": "CINID1",
                 "ReferralNFA": "1",
             },
         ]
@@ -167,16 +176,16 @@ def test_validate():
     sample_dis = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",
+                "LAchildID": "child1",  # 0 fail: Disability should be present
                 "Disability": pd.NA,
             },
             {
-                "LAchildID": "child2",
-                "Disability": "notreal",
+                "LAchildID": "child2",  # 1 pass
+                "Disability": "MOB",
             },
             {
-                "LAchildID": "child3",
-                "Disability": "MOB",
+                "LAchildID": "child3",  # 2 fail: Disability should be valid
+                "Disability": "notreal",
             },
         ]
     )
@@ -230,10 +239,10 @@ def test_validate():
             },
             {
                 "ERROR_ID": (
-                    "child2",
+                    "child3",
                     "01/01/1880",
                 ),
-                "ROW_ID": [1],
+                "ROW_ID": [2],
             },
         ]
     )
