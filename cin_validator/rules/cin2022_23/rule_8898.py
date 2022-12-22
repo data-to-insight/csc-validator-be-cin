@@ -16,7 +16,7 @@ CINdetailsID = Assessments.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8896
+    # write the rule code here, in place of 8898
     code=8898,
     # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
@@ -35,7 +35,7 @@ def validate(
 
     # If there is more than one <AssessmentFactors> (N00181) for an assessment recorded, then none of the values should appear more than once for an assessment.
 
-    # boolean that returns True in all the locations where LAchildID-CINdetailsID-AssessmentActualStartDate-AssessmentFactors combination is a duplicate
+    # .duplicated() returns True in all the locations where LAchildID-CINdetailsID-AssessmentActualStartDate-AssessmentFactors combination is a duplicate
     condition = df.duplicated(
         [LAchildID, CINdetailsID, AssessmentActualStartDate, AssessmentFactors],
         keep=False,
@@ -109,7 +109,6 @@ def test_validate():
 
     issues = issues_list[0]
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == Assessments
 
@@ -146,7 +145,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8898 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8898
     assert (
         result.definition.message
