@@ -47,12 +47,9 @@ def validate(
 
     # If <UPNunknown> (N00135) is UN7 then all of the CIN details must have <ReferralNFA> (N00112) = 1 or true
     
-    #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
+    #  Create dataframes which only have rows with entries for UPNunknown and ReferralNFA, and which should have one plan per row.
     df_upn = df_upn[df_upn[UPNunknown].notna()]
     df_refs = df_refs[df_refs[ReferralNFA].notna()]
-
-    print(df_upn)
-    print(df_refs)
 
     #  Merge tables to get corresponding CP plan group and reviews
     df_merged = df_upn.merge(
@@ -63,20 +60,15 @@ def validate(
         suffixes=("_upn", "_refs"),
     )
 
-    #print (df_merged)
-    #  Get rows where CPPreviewDate is less than or equal to CPPstartDate
+    #  Get rows where UPNunknown is equal to 'UN7'
+    condition_1 = df_merged[UPNunknown] == "UN7"
 
-    condition_1 = df_merged[UPNunknown] == ('UN7' or "1")
-    condition_2 = df_merged[ReferralNFA] == True
+    #  Get rows where ReferralNFA is equal to either 'True' or '1'
+    condition_2 = df_merged[ReferralNFA] == (True or "1")
 
-    #df_merged = df_merged[condition_1 & ~condition_2].reset_index()
+    # Combine the results of the two rows
     df_merged = df_merged[condition_1 & ~condition_2].reset_index()
    
-    print(df_merged)
-
-    #df_merged = df_merged[condition_1].reset_index()
-    #print(df_merged)
-
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
@@ -170,18 +162,13 @@ def test_validate():
         },
     )
 
-    #print(result)
-
     # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
     assert len(issues_list) == 2
 
-    print(issues_list)
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
     # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
     issues = issues_list[1]
-
-    print(issues)
 
     # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
@@ -236,8 +223,6 @@ def test_validate():
         ]
     )
     assert issue_rows.equals(expected_df)
-
-    print(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
 
