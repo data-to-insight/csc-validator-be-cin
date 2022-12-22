@@ -45,7 +45,6 @@ def validate(
     # <ReferralNFA> (N00112) = false or 0
     # then the <CINreferralDate> (N00100) for this module must be the latest of all Referral Dates for that child.
 
-    # df_cin2 = df_cin.copy()
     # find out the latest referral date (and its index position) for each child and attach it to all the rows for that child.
     df_cin["latest_referral"] = df_cin.groupby(LAchildID)[CINreferralDate].transform(
         "max"
@@ -162,18 +161,16 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
+    # Use .type3_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type3_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values.
     issues = issues_list[0]
 
-    # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINreferralDate]
 
@@ -223,7 +220,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8816 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8816
     assert (
         result.definition.message
