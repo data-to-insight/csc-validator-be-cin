@@ -16,6 +16,7 @@ CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
 ReferralNFA = CINdetails.ReferralNFA
 
+
 @rule_definition(
     code=8772,
     module=CINTable.ChildIdentifiers,
@@ -46,7 +47,7 @@ def validate(
     # Put the description as a comment above the implementation as shown.
 
     # If <UPNunknown> (N00135) is UN7 then all of the CIN details must have <ReferralNFA> (N00112) = 1 or true
-    
+
     #  Create dataframes which only have rows with entries for UPNunknown and ReferralNFA, and which should have one plan per row.
     df_upn = df_upn[df_upn[UPNunknown].notna()]
     df_refs = df_refs[df_refs[ReferralNFA].notna()]
@@ -64,11 +65,12 @@ def validate(
     condition_1 = df_merged[UPNunknown] == "UN7"
 
     #  Get rows where ReferralNFA is equal to either 'True' or '1'
-    condition_2 = df_merged[ReferralNFA] == (True or "1")
+    trueor1 = ["true", "1"]
+    condition_2 = df_merged[ReferralNFA].str.lower().isin(trueor1)
 
     # Combine the results of the two rows
     df_merged = df_merged[condition_1 & ~condition_2].reset_index()
-   
+
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
@@ -76,7 +78,7 @@ def validate(
         zip(df_merged[LAchildID], df_merged[UPNunknown], df_merged[ReferralNFA])
     )
 
-    #print(df_merged)
+    # print(df_merged)
 
     # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
@@ -101,58 +103,59 @@ def validate(
         table=CINdetails, columns=[ReferralNFA], row_df=df_refs_issues
     )
 
+
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     sample_upn = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "UPNunknown": "UN6", # Fail as code is not UN7
+                "UPNunknown": "UN6",  # Fail as code is not UN7
             },
             {
                 "LAchildID": "child2",
-                "UPNunknown": "UN7", # Pass as code is UN7
+                "UPNunknown": "UN7",  # Pass as code is UN7
             },
             {
                 "LAchildID": "child3",
-                "UPNunknown": "UN7", # Pass as code is UN7
+                "UPNunknown": "UN7",  # Pass as code is UN7
             },
             {
                 "LAchildID": "child4",
-                "UPNunknown": "UN7", # Pass as code is UN7
+                "UPNunknown": "UN7",  # Pass as code is UN7
             },
             {
                 "LAchildID": "child5",
-                "UPNunknown": "UN4", # Fail as code is not UN7
+                "UPNunknown": "UN4",  # Fail as code is not UN7
             },
         ]
     )
-    #print(sample_upn)
+    # print(sample_upn)
     sample_refs = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  
-                "ReferralNFA": "True", # Pass as Referral Code is True
+                "LAchildID": "child1",
+                "ReferralNFA": "True",  # Pass as Referral Code is True
             },
             {
-                "LAchildID": "child2", 
-                "ReferralNFA": "1", # Pass as Referral Code is True
+                "LAchildID": "child2",
+                "ReferralNFA": "1",  # Pass as Referral Code is True
             },
             {
-                "LAchildID": "child3", 
+                "LAchildID": "child3",
                 "ReferralNFA": pd.NA,  # Fail as Referral Code is NULL
             },
             {
                 "LAchildID": "child4",
-                "ReferralNFA": "True", # Pass as Referral Code is True
+                "ReferralNFA": "True",  # Pass as Referral Code is True
             },
             {
                 "LAchildID": "child5",
-                "ReferralNFA": "True", # Pass as Referral Code is True
+                "ReferralNFA": "True",  # Pass as Referral Code is True
             },
         ]
     )
-    
+
     # Run the rule function, passing in our sample data.
     result = run_rule(
         validate,
@@ -176,7 +179,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == ReferralNFA,UPNunknown
+    assert issue_columns == ReferralNFA
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -199,26 +202,26 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",  # ChildID
-                    "UN6", # UPNunknown
-                    "True", # ReferralNFA
+                    "UN6",  # UPNunknown
+                    "True",  # ReferralNFA
                 ),
                 "ROW_ID": [0],
             },
             {
                 "ERROR_ID": (
                     "child3",  # ChildID
-                    "UN7", # UPNunknown
-                    pd.NA, # ReferralNFA
+                    "UN7",  # UPNunknown
+                    pd.NA,  # ReferralNFA
                 ),
                 "ROW_ID": [2],
             },
             {
                 "ERROR_ID": (
                     "child5",  # ChildID
-                    "UN4", # UPNunknown
-                    "True", # ReferralNFA
-               ),
-               "ROW_ID": [4],
+                    "UN4",  # UPNunknown
+                    "True",  # ReferralNFA
+                ),
+                "ROW_ID": [4],
             },
         ]
     )
