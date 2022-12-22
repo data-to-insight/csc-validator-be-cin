@@ -2,9 +2,8 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -37,50 +36,22 @@ def validate(
     df_ass.reset_index(inplace=True)
     df_47.reset_index(inplace=True)
 
-    # If <Section47> module is present then <Assessment> module should be present
-
-    # df_ass["has_id"] =  df_ass.where(df_ass['CINdetailsID'].notna(), "yes", "no")
-    df_ass["has_id"] = tuple(
-        zip(
-            df_ass[LAchildID],
-            df_ass[CINdetailsID].fillna("no"),
-        )
-    )
-
-    ids = df_ass["has_id"].to_list()
-    # df_472 = df_47.copy()
-    df_47["modules"] = tuple(
-        zip(
-            df_47[LAchildID],
-            df_47[CINdetailsID],
-        )
-    )
-    # df_472 = df_472[~df_472["modules"].isin(ids)]
-    # print(df_472)
     merged_df = df_47.merge(
         df_ass,
-        on=[
-            "LAchildID",
-        ],
+        on=[LAchildID, CINdetailsID],
         suffixes=["_47", "_ass"],
-        how="left",
+        how="outer",
+        indicator=True,
     )
-    # print(merged_df[["LAchildID", "CINdetailsID_47", "CINdetailsID_ass", ]])
-
-    # TODO try using a tuple
-    # Returns rows where there is a section 47 module without an assessments module with a mathcing CINdetailsID
-    merged_df = merged_df[~merged_df["modules"].isin(ids)]
-    condition = merged_df["CINdetailsID_ass"].isna()
-
-    merged_df = merged_df[condition].reset_index()
+    # select the rows that are were only found in the section47 table and not in the assessments table
+    merged_df = merged_df[merged_df["_merge"] == "left_only"]
 
     merged_df["ERROR_ID"] = tuple(
         zip(
             merged_df[LAchildID],
-            merged_df["CINdetailsID_47"],
+            merged_df[CINdetailsID],
         )
     )
-    print(merged_df[["LAchildID", "CINdetailsID_47", "CINdetailsID_ass", "ERROR_ID"]])
     # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_ass_issues = (
@@ -112,7 +83,7 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",  # fail
+                "CPPstartDate": "26/05/2000",
                 "CINdetailsID": pd.NA,
             },
             {
@@ -150,7 +121,7 @@ def test_validate():
     sample_section47 = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",
+                "LAchildID": "child1",  # 0 fail. No assessment
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID1",
             },
@@ -160,7 +131,7 @@ def test_validate():
                 "CINdetailsID": "cinID2",
             },
             {
-                "LAchildID": "child2",
+                "LAchildID": "child2",  # 2 fail. No assessment
                 "DateOfInitialCPC": "30/05/2000",
                 "CINdetailsID": "cinID1",
             },
@@ -180,7 +151,7 @@ def test_validate():
                 "CINdetailsID": "cinID3",
             },
             {
-                "LAchildID": "child3",
+                "LAchildID": "child3",  # 6 fail. No assessment
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": pd.NA,
             },
@@ -214,7 +185,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -239,6 +210,13 @@ def test_validate():
                     "cinID1",
                 ),
                 "ROW_ID": [2],
+            },
+            {
+                "ERROR_ID": (
+                    "child3",
+                    pd.NA,
+                ),
+                "ROW_ID": [6],
             },
         ]
     )
