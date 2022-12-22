@@ -2,16 +2,10 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import (
-    CINTable,
-    IssueLocator,
-    RuleContext,
-    rule_definition,
-)
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildProtectionPlans with the table name, and LAChildID with the column name you want.
 
 CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
@@ -21,9 +15,9 @@ CINdetailsID = CINdetails.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8840
+    # write the rule code here, in place of 8610
     code=8610,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Primary Need code is missing for a referral which led to further",
@@ -33,15 +27,15 @@ CINdetailsID = CINdetails.CINdetailsID
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildProtectionPlans with the name of the table you need.
+    # Replace CINdetails with the name of the table you need.
     df = data_container[CINdetails]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
+    df.reset_index(inplace=True)
 
-    #  Determine if the dates are the same by finding if the difference between dates is 0
+    # get all the data that fits the failing condition.
     falseorzero = ["false", "0"]
     condition = (df[ReferralNFA].isin(falseorzero)) & (df[PrimaryNeedCode].isna())
-    # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
     link_id = tuple(zip(df_issues[LAchildID], df_issues[CINdetailsID]))
@@ -68,15 +62,15 @@ def test_validate():
                 "false",
                 "0",
                 "1",
-                "true",
                 pd.NA,
+                "true",
             ],
             "PrimaryNeedCode": [
-                pd.NA,
-                pd.NA,
+                pd.NA,  # fail
+                pd.NA,  # fail
                 "12/09/2022",
                 "05/12/1997",
-                pd.NA,
+                pd.NA,  # ignore: ReferralNFA is true
             ],
             "CINdetailsID": [
                 "ID1",
@@ -132,7 +126,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8840 with the rule code and put the appropriate message in its place too.
+    # replace 8610 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8610
     assert (
         result.definition.message
