@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -19,9 +18,9 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
+    # write the rule code here, in place of 2884
     code=2884,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
+    # replace Section47 with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.Section47,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -29,7 +28,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         DateOfInitialCPC,
-    ],  # TODO How can we indicate that the DateOfInitialCPC comes from both tables. Is it necessary?
+    ],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -46,7 +45,6 @@ def validate(
 
     merged_df = df_cin.merge(
         df_47,
-        # since the cpp columns are common in both dfs, merge on them. TODO: is this okay?
         on=[LAchildID],
         suffixes=["_cin", "_47"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
@@ -63,7 +61,6 @@ def validate(
         )
     )
 
-    # The merges were done on copies of df_cpp, df_47 and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_47_issues = (
         df_47.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_47")
@@ -92,37 +89,37 @@ def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     sample_section47 = pd.DataFrame(
         [
-            {  # 0 pass
+            {  # 0 fail: datecpc == (child1, cinID2)'s datecpc in cindetails table
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID1",
             },
-            {  # 1 ignored
+            {  # 1 fail: datecpc == (child1, cinID2)'s datecpc in cindetails table
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
-            {  # 2 pass
+            {  # 2
                 "LAchildID": "child2",
                 "DateOfInitialCPC": "30/05/2000",
                 "CINdetailsID": "cinID1",
             },
-            {  # 3 fail
+            {  # 3
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "27/05/2000",
                 "CINdetailsID": "cinID1",
             },
-            {  # 4 absent, ignored
+            {  # 4 fail: datecpc == (child3, cinID2)'s datecpc in cindetails table
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
-            {  # 5 fail
+            {  # 5 fail: datecpc == (child3, cinID2)'s datecpc in cindetails table
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID3",
             },
-            {  # 6 pass
+            {  # 6
                 "LAchildID": "child3",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
@@ -131,37 +128,37 @@ def test_validate():
     )
     sample_cin_details = pd.DataFrame(
         [
-            {  # 0 pass
+            {  # 0
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/10/1999",
                 "CINdetailsID": "cinID1",
             },
-            {  # 1 ignore
+            {  # 1 fail
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
-            {  # 2 pass
+            {  # 2
                 "LAchildID": "child2",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID1",
             },
-            {  # 3 fail
+            {  # 3
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "28/05/2000",
                 "CINdetailsID": "cinID1",
             },
-            {  # 4 ignore
+            {  # 4 fail
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
-            {  # 5 fail
+            {  # 5
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2003",
                 "CINdetailsID": "cinID3",
             },
-            {  # 6 pass
+            {  # 6
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
@@ -202,7 +199,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 4 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 4
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -253,7 +250,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 2884 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 2884
     assert (
         result.definition.message
