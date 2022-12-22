@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -29,7 +28,6 @@ ReferralNFA = CINdetails.ReferralNFA
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_upn = data_container[ChildIdentifiers].copy()
     df_refs = data_container[CINdetails].copy()
 
@@ -48,16 +46,10 @@ def validate(
 
     # If <UPNunknown> (N00135) is UN7 then all of the CIN details must have <ReferralNFA> (N00112) = 1 or true
 
-    #  Create dataframes which only have rows with entries for UPNunknown and ReferralNFA, and which should have one plan per row.
-    df_upn = df_upn[df_upn[UPNunknown].notna()]
-    df_refs = df_refs[df_refs[ReferralNFA].notna()]
-
-    #  Merge tables to get corresponding CP plan group and reviews
     df_merged = df_upn.merge(
         df_refs,
-        left_on=["LAchildID"],
-        right_on=["LAchildID"],
-        how="inner",
+        on=["LAchildID"],
+        how="left",
         suffixes=("_upn", "_refs"),
     )
 
@@ -72,15 +64,8 @@ def validate(
     df_merged = df_merged[condition_1 & ~condition_2].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
-    # So, a combination of LAchildID, CPPstartDate and CPPreviewDate identifies and error instance.
-    df_merged["ERROR_ID"] = tuple(
-        zip(df_merged[LAchildID], df_merged[UPNunknown], df_merged[ReferralNFA])
-    )
+    df_merged["ERROR_ID"] = tuple(zip(df_merged[LAchildID], df_merged[ReferralNFA]))
 
-    
-
-    # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_upn_issues = (
         df_upn.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_upn")
@@ -110,48 +95,48 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
-                "UPNunknown": "UN6",  # Fail as code is not UN7
+                "UPNunknown": "UN6",  # Ignore: code is not UN7
             },
             {
                 "LAchildID": "child2",
-                "UPNunknown": "UN7",  # Pass as code is UN7
+                "UPNunknown": "UN7",
             },
             {
                 "LAchildID": "child3",
-                "UPNunknown": "UN7",  # Pass as code is UN7
+                "UPNunknown": "UN7",
             },
             {
                 "LAchildID": "child4",
-                "UPNunknown": "UN7",  # Pass as code is UN7
+                "UPNunknown": "UN7",
             },
             {
                 "LAchildID": "child5",
-                "UPNunknown": "UN4",  # Fail as code is not UN7
+                "UPNunknown": "UN4",  # Ignore: code is not UN7
             },
         ]
     )
-    # print(sample_upn)
+
     sample_refs = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "ReferralNFA": "True",  # Pass as Referral Code is True
+                "ReferralNFA": "True",  # 0 Ignore: upn is not UN7
             },
             {
                 "LAchildID": "child2",
-                "ReferralNFA": "1",  # Pass as Referral Code is True
+                "ReferralNFA": "1",  # 1 Pass as Referral Code is True
             },
             {
                 "LAchildID": "child3",
-                "ReferralNFA": pd.NA,  # Fail as Referral Code is NULL
+                "ReferralNFA": pd.NA,  # 2 Fail as Referral Code is NULL
             },
             {
                 "LAchildID": "child4",
-                "ReferralNFA": "True",  # Pass as Referral Code is True
+                "ReferralNFA": "nottrue",  # 3 Fail: Referral Code is neither "1" not "true"
             },
             {
                 "LAchildID": "child5",
-                "ReferralNFA": "True",  # Pass as Referral Code is True
+                "ReferralNFA": "True",  # 4 Ignore: upn is not UN7
             },
         ]
     )
@@ -183,9 +168,9 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    
+
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
 
@@ -201,27 +186,17 @@ def test_validate():
         [
             {
                 "ERROR_ID": (
-                    "child1",  # ChildID
-                    "UN6",  # UPNunknown
-                    "True",  # ReferralNFA
-                ),
-                "ROW_ID": [0],
-            },
-            {
-                "ERROR_ID": (
                     "child3",  # ChildID
-                    "UN7",  # UPNunknown
                     pd.NA,  # ReferralNFA
                 ),
                 "ROW_ID": [2],
             },
             {
                 "ERROR_ID": (
-                    "child5",  # ChildID
-                    "UN4",  # UPNunknown
-                    "True",  # ReferralNFA
+                    "child4",  # ChildID
+                    "nottrue",  # ReferralNFA
                 ),
-                "ROW_ID": [4],
+                "ROW_ID": [3],
             },
         ]
     )
@@ -230,8 +205,8 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 2885 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8841
+    assert result.definition.code == 8772
     assert (
         result.definition.message
-        == "UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action "
+        == "UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action"
     )
