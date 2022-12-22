@@ -67,4 +67,4 @@ def test_validate():
     # Run rule function passing in our sample data
     result = run_rule(validate, {ChildIdentifiers: sample_child_ids})
 
-    assert result.la_issues == ("288Q", "Please check: Percentage of children with no gender recorded is more than 2% (excluding unborns)")
+    assert result.la_issues == ("2886Q", "Please check: Percentage of children with no gender recorded is more than 2% (excluding unborns)")
