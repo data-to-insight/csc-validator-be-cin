@@ -78,7 +78,7 @@ def validate(
         zip(df_merged[LAchildID], df_merged[UPNunknown], df_merged[ReferralNFA])
     )
 
-    # print(df_merged)
+    
 
     # The merges were done on copies of cpp_df and reviews_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
@@ -179,11 +179,11 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == ReferralNFA
+    assert issue_columns == [ReferralNFA]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    print(issue_rows)
+    
     # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
