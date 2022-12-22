@@ -2,16 +2,10 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import (
-    CINTable,
-    IssueLocator,
-    RuleContext,
-    rule_definition,
-)
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildProtectionPlans with the table name, and LAChildID with the column name you want.
 
 CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
@@ -20,10 +14,10 @@ ReferralSource = CINdetails.ReferralSource
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8840
+    # write the rule code here, in place of 8866
     code=8866,
-    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
-    module=CINTable.ChildProtectionPlans,
+    # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
+    module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Source of Referral is missing or an invalid code",
     # The column names tend to be the words within the < > signs in the github issue description.
@@ -35,10 +29,11 @@ ReferralSource = CINdetails.ReferralSource
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildProtectionPlans with the name of the table you need.
+    # Replace CINdetails with the name of the table you need.
     df = data_container[CINdetails]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
+    df.reset_index(inplace=True)
 
     valid_referrals = [
         "1A",
@@ -65,7 +60,7 @@ def validate(
         "10",
     ]
 
-    #  Determine if the dates are the same by finding if the difference between dates is 0
+    # If <CinReferralDate> (N00100) is on or after 1 April 2013 then <ReferralSource> (N00152) must be present and must be a valid code
     condition = (
         df[CINreferralDate] >= pd.to_datetime("01/04/2013", format="%d/%m/%Y")
     ) & ((df[ReferralSource].isna()) | (~df[ReferralSource].isin(valid_referrals)))
@@ -73,13 +68,7 @@ def validate(
     df_issues = df[condition].reset_index()
 
     # SUBMIT ERRORS
-    # Generate a unique ID for each instance of an error. In this case,
-    # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
-    # We don't want that because in reality, a child can have multiple instances of an error.
-    # - If we use the LAchildID-CPPstartDate combination, that artificially cancels out the instances where a start date repeats for the same child.
-    # Another rule checks for that condition. Not this one.
-    # - It is very unlikely that a combination of LAchildID-CPPstartDate-CPPendDate will repeat in the DataFrame.
-    # Hence, it can be used as a unique identifier of the row.
+    # Generate a unique ID for each instance of an error.
 
     # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(zip(df_issues[LAchildID], df_issues[CINreferralDate]))
@@ -118,8 +107,8 @@ def test_validate():
             },
             {
                 "LAchildID": "ID4",
-                "CINreferralDate": "01/01/2020",
-                "ReferralSource": "1B",
+                "CINreferralDate": "01/01/2012",  # ignore
+                "ReferralSource": "pd.NA",
             },
             {
                 "LAchildID": "ID4",
