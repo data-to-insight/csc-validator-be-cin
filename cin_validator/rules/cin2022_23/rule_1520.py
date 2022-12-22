@@ -9,12 +9,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import (
-    CINTable,
-    IssueLocator,
-    RuleContext,
-    rule_definition,
-)
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -54,4 +49,4 @@ def test_validate():
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
 
     issues = result.la_issues
-    assert issues == (1520, result.definition.message)
+    assert issues == (1520, "More than one record with the same UPN")
