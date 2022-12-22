@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
