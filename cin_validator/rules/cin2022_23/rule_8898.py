@@ -35,21 +35,20 @@ def validate(
 
     # If there is more than one <AssessmentFactors> (N00181) for an assessment recorded, then none of the values should appear more than once for an assessment.
 
-    df_check = df.copy()
-
-    df_check = (
-        df_check.groupby([LAchildID, AssessmentActualStartDate])[AssessmentFactors]
-        .count()
-        .reset_index()
+    # boolean that returns True in all the locations where LAchildID-CINdetailsID-AssessmentActualStartDate-AssessmentFactors combination is a duplicate
+    condition = df.duplicated(
+        [LAchildID, CINdetailsID, AssessmentActualStartDate, AssessmentFactors],
+        keep=False,
     )
+    df_issues = df[condition].reset_index()
 
-    df_check = df_check[df_check[AssessmentFactors] > 1]
-
-    issue_ids = tuple(zip(df_check[LAchildID], df_check[AssessmentActualStartDate]))
-
-    # DF_ISSUES: GET ALL THE DATA ABOUT THE LOCATIONS THAT WERE IDENTIFIED IN DF_CHECK
-    df["ERROR_ID"] = tuple(zip(df[LAchildID], df[AssessmentActualStartDate]))
-    df_issues = df[df.ERROR_ID.isin(issue_ids)]
+    df_issues["ERROR_ID"] = tuple(
+        zip(
+            df_issues[LAchildID],
+            df_issues[CINdetailsID],
+            df_issues[AssessmentActualStartDate],
+        )
+    )
 
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -67,28 +66,28 @@ def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     sample_assessments = pd.DataFrame(
         [  # child1
-            {  # fail
+            {
                 LAchildID: "child1",
                 CINdetailsID: "cinID1",
-                AssessmentFactors: "111",
+                AssessmentFactors: "111",  # fail: duplicate in Assessment group
                 AssessmentActualStartDate: "01/01/2000",
             },
-            {  # fail
+            {
                 LAchildID: "child1",
                 CINdetailsID: "cinID1",
-                AssessmentFactors: "222",
+                AssessmentFactors: "111",  # fail: duplicate in Assessment group
                 AssessmentActualStartDate: "01/01/2000",
             },
-            {  # pass
+            {
                 LAchildID: "child1",
                 CINdetailsID: "cinID1",
-                AssessmentFactors: "222",
+                AssessmentFactors: "111",  # pass: different Assessment group
                 AssessmentActualStartDate: "02/01/2000",
             },
-            {  # pass
+            {
                 LAchildID: "child1",
                 CINdetailsID: "cinID2",
-                AssessmentFactors: "222",
+                AssessmentFactors: "222",  # pass: not duplicate
                 AssessmentActualStartDate: "02/01/2001",
             },
         ]
@@ -136,6 +135,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
+                    "cinID1",
                     pd.to_datetime("01/01/2000", format="%d/%m/%Y"),
                 ),
                 "ROW_ID": [0, 1],
