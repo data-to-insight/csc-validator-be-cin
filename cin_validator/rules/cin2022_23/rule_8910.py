@@ -20,13 +20,15 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[ChildProtectionPlans]
-    """
-    Where a Child Protection Plan module is present, <LatestCategoryOfAbuse> (N00114) must be present and be a valid code
-    """
+
+    # Where a Child Protection Plan module is present, <LatestCategoryOfAbuse> (N00114) must be present and be a valid code
     abuse_cats = ["NEG", "PHY", "SAB", "EMO", "MUL"]
 
-    #Initial Category Code is not in list.
-    df = df[(~df["LatestCategoryOfAbuse"].isin(abuse_cats)) | df["LatestCategoryOfAbuse"].isna()]
+    # Initial Category Code is not in list.
+    df = df[
+        (~df["LatestCategoryOfAbuse"].isin(abuse_cats))
+        | df["LatestCategoryOfAbuse"].isna()
+    ]
 
     failing_indices = df.index
 
