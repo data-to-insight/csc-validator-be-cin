@@ -8,13 +8,19 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-class CinValidationSession:
-    def __init__(self, filename, ruleset, issue_id=None) -> None:
-        # TODO detect filetype xml/csv/zip. check if the directory is a folder.
-        fulltree = ET.parse(filename)
-        root = fulltree.getroot()
-        self.data_files_obj = DataContainerWrapper(XMLtoCSV(root))
+def process_data(filename):
+    fulltree = ET.parse(filename)
+    root = fulltree.getroot()
+    data_files = DataContainerWrapper(XMLtoCSV(root))
+    return data_files
 
+
+class CinValidationSession:
+    def __init__(
+        self, data_files=None, ruleset="rules.cin2022_23", issue_id=None
+    ) -> None:
+
+        self.data_files = data_files
         self.ruleset = ruleset
         self.issue_id = issue_id
 
@@ -34,7 +40,7 @@ class CinValidationSession:
         importlib.import_module(f"cin_validator.{self.ruleset}")
 
         for rule in registry:
-            data_files = self.data_files_obj.__deepcopy__({})
+            data_files = self.data_files.__deepcopy__({})
             try:
                 ctx = RuleContext(rule)
                 rule.func(data_files, ctx)
