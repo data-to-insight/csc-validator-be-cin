@@ -11,7 +11,7 @@ data_files = None
 def generate_csv():
     global data_files
     data_files = cin_class.process_data(
-        filename="/workspaces/CIN-validator/fake_data/CIN_Census_2021.xml",
+        filename="fake_data\CIN_Census_2021.xml",
     )
     return data_files
 
@@ -22,12 +22,9 @@ def cin_validate():
     if data_files:
         data_files = data_files
     else:
-        data_files = cin_class.process_data(
-            filename="/workspaces/CIN-validator/fake_data/CIN_Census_2021.xml"
-        )
+        data_files = cin_class.process_data(filename="fake_data\CIN_Census_2021.xml")
 
     validator = cin_class.CinValidationSession(data_files, ruleset="rules.cin2022_23")
-
     error_report = validator.json_issue_report
     rule_defs = validator.json_rule_descriptors
     return error_report, rule_defs
