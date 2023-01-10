@@ -85,8 +85,6 @@ def test_validate():
     # Run rule function passing in our sample data
     result = run_rule(validate, {CINdetails: fake_cinclosure, Header: fake_header})
 
-    print(result)
-
     # The result contains a list of issues encountered
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.

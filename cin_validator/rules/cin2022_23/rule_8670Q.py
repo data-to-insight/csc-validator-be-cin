@@ -156,8 +156,6 @@ def test_validate():
         ]
     )
 
-    print(issue_rows)
-    print(expected_df)
     assert issue_rows.equals(expected_df)
 
     # replace 8500 with the rule code and put the appropriate message in its place too.
