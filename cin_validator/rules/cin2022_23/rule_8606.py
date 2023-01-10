@@ -224,7 +224,7 @@ def test_validate():
             },
         ]
     )
-    
+
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
