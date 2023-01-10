@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 import pytest
 
-from cin_validator.cin_validator_class import CinValidationSession
+from cin_validator import cin_validator_class as cin_class
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import registry
 
@@ -41,7 +41,8 @@ def list_cmd(ruleset):
 @click.option("--output/--no_output", "-o/-no", default=False)
 def run_all(filename: str, ruleset, issue_id, output):
 
-    validator = CinValidationSession(filename, ruleset, issue_id)
+    data_files = cin_class.process_data(filename)
+    validator = cin_class.CinValidationSession(data_files, ruleset, issue_id)
 
     issue_instances = validator.issue_instances
     all_rules_issue_locs = validator.all_rules_issue_locs
