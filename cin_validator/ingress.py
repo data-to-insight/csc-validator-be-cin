@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 
-# TODO make this work with from cin_validator.utils import get_values
 from .utils import get_values, make_census_period, process_date_columns
 
 
