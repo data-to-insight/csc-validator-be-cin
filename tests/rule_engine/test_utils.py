@@ -55,6 +55,6 @@ def test_date_process_function():
 
     process_date_columns(df)
 
-    assert df['Aniversaries'].dtype == object
-    assert is_datetime(df['dates'])
-    assert is_datetime(df['Dates'])
+    assert df["Aniversaries"].dtype == object
+    assert is_datetime(df["dates"])
+    assert is_datetime(df["Dates"])
