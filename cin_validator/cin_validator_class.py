@@ -8,11 +8,27 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-def process_data(filename):
+def process_data(filename, as_dict=False):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
-    data_files = DataContainerWrapper(XMLtoCSV(root))
-    return data_files
+    data_files = XMLtoCSV(root)
+    if as_dict:
+        cin_tables_dict = {
+            "Header": data_files.Header,
+            "ChildIdentifiers": data_files.ChildIdentifiers,
+            "ChildCharacteristics": data_files.ChildCharacteristics,
+            "ChildProtectionPlans": data_files.ChildProtectionPlans,
+            "CINdetails": data_files.CINdetails,
+            "CINplanDates": data_files.CINplanDates,
+            "Reviews": data_files.Reviews,
+            "Section47": data_files.Section47,
+            "Assessments": data_files.Assessments,
+            "Disabilities": data_files.Disabilities,
+        }
+        return cin_tables_dict
+    else:
+        data_files_obj = DataContainerWrapper(data_files)
+        return data_files_obj
 
 
 class CinValidationSession:
@@ -91,7 +107,7 @@ class CinValidationSession:
 
                     # Elements of the rule_descriptors df to explain error codes
                     self.rules_broken.append(rule.code)
-                    self.rule_messages.append(rule.message)
+                    self.rule_messages.append(f"{str(rule.code)} - {rule.message}")
 
             except Exception as e:
                 print(f"Error with rule {rule.code}: {type(e).__name__}, {e}")
