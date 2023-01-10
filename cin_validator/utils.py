@@ -94,3 +94,9 @@ class DataContainerWrapper:
         for k, v in self.__dict__.items():
             setattr(result, k, deepcopy(v, memo))
         return result
+
+def process_date_columns(df):
+    for column in df:
+        if ('date' in column) | ('Date' in column):
+            df[column] = df[column].apply(pd.to_datetime, format = '%d/%m/%Y')
+    return df
