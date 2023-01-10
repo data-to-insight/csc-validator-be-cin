@@ -13,7 +13,7 @@ def get_values(xml_elements, table_dict, xml_block):
 
 
 def make_date(date_input):
-    """Allows Ymd or dmY date inputs, used for make_cancus_period.
+    """Allows Ymd or dmY date inputs, used for make_cencus_period.
     Important for test_validate functions"""
     date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
     if pd.isna(date):
@@ -98,5 +98,8 @@ class DataContainerWrapper:
 def process_date_columns(df):
     for column in df:
         if ('date' in column) | ('Date' in column):
-            df[column] = df[column].apply(pd.to_datetime, format = '%d/%m/%Y')
+            try:
+                df[column] = df[column].apply(pd.to_datetime, format = '%d/%m/%Y')
+            except:
+                df[column] = df[column].apply(pd.to_datetime, format = '%Y/%m/%d')
     return df
