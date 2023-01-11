@@ -8,9 +8,14 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-def process_data(filename, as_dict=False):
-    fulltree = ET.parse(filename)
-    root = fulltree.getroot()
+def process_data(cin_data, as_dict=False):
+    try:
+        with open(cin_data, "r") as f:
+            filetext = f.read()
+        root = ET.fromstring(filetext)
+    except:
+        fulltree = ET.parse(cin_data)
+        root = fulltree.getroot()
     data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
