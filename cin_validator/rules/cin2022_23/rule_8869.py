@@ -62,7 +62,7 @@ def validate(
     df = df[df["AssessmentFactors_orig"] != "21"]
 
     failing_indices = df.set_index("ROW_ID_orig").index
-    print(failing_indices)
+
     rule_context.push_issue(
         table=Assessments, field=AssessmentFactors, row=failing_indices
     )

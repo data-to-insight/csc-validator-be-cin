@@ -106,7 +106,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_reviews_issues)
+
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=ChildProtectionPlans,
@@ -315,7 +315,7 @@ def test_validate():
             }
         ]
     )
-    print(expected_df)
+
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.

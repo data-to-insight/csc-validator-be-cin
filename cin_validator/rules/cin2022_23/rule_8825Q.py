@@ -83,7 +83,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_cin_issues)
+
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=Assessments, columns=[CINdetailsID], row_df=df_ass_issues

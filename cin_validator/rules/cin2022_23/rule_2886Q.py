@@ -30,8 +30,8 @@ def validate(
     num_records = len(df)
 
     # get the number of child records that fit the specified condition.
-    missing_gender = df[df[GenderCurrent].isna() | df[GenderCurrent] == 0]
-    missing_date = df[df[ExpectedPersonBirthDate].isna()]
+    missing_gender = df[GenderCurrent].isna() | df[GenderCurrent] == 0
+    missing_date = df[ExpectedPersonBirthDate].isna()
     condition = missing_gender & missing_date
     # since the filtered number has to be compared to the original, make a copy of the data.
     df_issues = df.copy()
