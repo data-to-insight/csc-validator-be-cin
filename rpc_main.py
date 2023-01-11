@@ -1,6 +1,7 @@
 from prpc_python import RpcApp
 
 from cin_validator import cin_validator_class as cin_class
+from cin_validator.utils import json_response, nan_to_none
 
 app = RpcApp("validate_cin")
 
@@ -16,9 +17,10 @@ def generate_tables(cin_data):
 
     # make data json-serialisable
     json_data_files = {
-        table_name: table_df.to_dict(orient="records")
+        table_name: nan_to_none(table_df).to_dict(orient="records")
         for table_name, table_df in data_files.items()
     }
+    json_data_files = json_response(json_data_files)
 
     return json_data_files
 
@@ -41,8 +43,12 @@ def cin_validate(cin_data, ruleset="rules.cin2022_23"):
     issue_report = validator.json_issue_report
     rule_defs = validator.json_rule_descriptors
     json_data_files = {
-        table_name: table_df.to_dict(orient="records")
+        table_name: nan_to_none(table_df).to_dict(orient="records")
         for table_name, table_df in raw_data.items()
     }
+
+    issue_report = json_response(issue_report)
+    rule_defs = json_response(rule_defs)
+    json_data_files = json_response(json_data_files)
 
     return issue_report, rule_defs, json_data_files
