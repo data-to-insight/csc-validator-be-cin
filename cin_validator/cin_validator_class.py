@@ -10,9 +10,9 @@ from cin_validator.utils import DataContainerWrapper
 
 def process_data(cin_data, as_dict=False):
     try:
-        with open(cin_data, "r") as f:
-            filetext = f.read()
-        root = ET.fromstring(filetext)
+        filetext = cin_data.read().decode("utf-8")
+        fulltree = ET.parse(filetext)
+        root = fulltree.getroot()
     except:
         fulltree = ET.parse(cin_data)
         root = fulltree.getroot()
