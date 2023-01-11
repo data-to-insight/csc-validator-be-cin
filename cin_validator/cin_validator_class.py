@@ -10,11 +10,12 @@ from cin_validator.utils import DataContainerWrapper
 
 def process_data(cin_data, as_dict=False):
     try:
-        filetext = cin_data.read()
-        root = ET.fromstring(filetext)
+        # files uploaded in the frontend
+        filetext = cin_data.read().decode("utf-8")
+        fulltree = ET.parse(filetext)
     except:
+        # files passed in from command line interface (__main__.py)
         fulltree = ET.parse(cin_data)
-        root = fulltree.getroot()
 
     root = fulltree.getroot()
     data_files = XMLtoCSV(root)
