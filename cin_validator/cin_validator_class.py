@@ -9,6 +9,17 @@ from cin_validator.utils import DataContainerWrapper
 
 
 def process_data(filename, as_dict=False):
+    """Takes input data and processes it for validation.
+
+    This function takes input XML data, and uses ElementTree, and the custom class
+    XMLtoCSV to process the data into tables for validation. Returning as a dict
+    or DataContainerWrapper object. Returns as dict for front end purposes and object
+    for CLI interface.
+
+    :param XML filename: XML files passed from either the front end or the CLI.
+    :returns: Data files as object or dict of dfs for validation.
+    :rtype: dictionary or DataContainerWrapper object
+    """
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
     data_files = XMLtoCSV(root)
@@ -32,10 +43,21 @@ def process_data(filename, as_dict=False):
 
 
 class CinValidationSession:
+    """A class to contain the process of CIN validation, including producing error reports,
+    and formatting error reports into JSONs for the FE.
+
+    :param data_files: Data files for validation, either a DtaContainerWrapper object, or a
+        dicitonary of DataFrames.
+    :param directory ruleset: The directory containing the validation rules to be run in a particular
+        validation session.
+    :param str issue_id: ID of individual errors to be selected for viewing using
+        select_by_id method (Error IDs, not rule codes).
+    """
+
     def __init__(
         self, data_files=None, ruleset="rules.cin2022_23", issue_id=None
     ) -> None:
-
+        """Constructor method"""
         self.data_files = data_files
         self.ruleset = ruleset
         self.issue_id = issue_id
@@ -45,6 +67,31 @@ class CinValidationSession:
         self.select_by_id()
 
     def create_error_report_df(self):
+        """Creates report of errors found when validating CIN data input to
+        the tool.
+
+        This function takes the errors reported by individual validation rule functions,
+        including table, field, and index locations of errors. It runs through every rule
+        in the registry and:
+
+        >Creates lists of rules passed, broken, and relevant messages.
+        >Returns a dataframe of issue instances for broken validation rules.
+        >Returns a dictionary of all rules codes and relevant messages.
+
+        :param DataFrame issue_instances: DataFrame of instances of issues found in  validation
+        :param DataFrame all_rules_issue_locs: DataFrame of locations of issues found in validation.
+        :param list rules_broken: An empty list of rules broken, which is populated with the list
+            of rules failing validation upon validation.
+        :param list la_rules_broken: An empty list of LA level rules broken, which is populated with the list
+            of rules failing validation upon validation.
+        :param list rules_passed: An empty list of rules passed, which is populated with the list
+            of rules failing validation upon validation.
+        :param list rules_passed: An empty list of rules passed, populated with rules with no validation errors
+            upon validation.
+        :returns: DataFrame of instances and locations of validation rule violations from data input via FE or CLI.
+        :rtype: DataFrame
+        :raises: Errors with rules that raise errors when validating data.
+        """
         self.issue_instances = pd.DataFrame()
         self.all_rules_issue_locs = pd.DataFrame()
         self.rules_passed = []
@@ -123,11 +170,27 @@ class CinValidationSession:
             self.rule_descriptors = child_level_rules
 
     def create_json_report(self):
-        """Creates JSONs of error report and rule descriptors dfs."""
+        """Creates JSONs of error report and rule descriptors dfs.
+
+        Flattens the issue reports and rule descriptors reports made in
+        create_error_report_df into JSONs to be sent to the FE.
+
+        :param CinValidationSession object self:
+        :returns: JSONs of CIN validation error reports.
+        :rtype: JSON
+        """
         self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
         self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
 
     def select_by_id(self):
+        """Allows users to select reports of individual errors by ERROR_ID. Note:
+        this is individual instances of errors, not rule codes.
+
+        :param str issue_id: The ID of an individual issue, to be matched with an ERROR_ID
+            from validation.
+        :returns: Validation information associated with specific ERROR_ID.
+        :rtype: str
+        """
         if self.issue_id is not None:
             self.issue_id = tuple(self.issue_id.split(", "))
             self.all_rules_issue_locs = self.all_rules_issue_locs[
