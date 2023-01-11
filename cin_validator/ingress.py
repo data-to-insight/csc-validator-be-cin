@@ -16,6 +16,32 @@ from .utils import get_values, make_census_period
 # whenever a child is created, it should add a row to each table where it exists.
 # tables should be attributes of a class that are accessible to the methods in create_child.
 class XMLtoCSV:
+    """A class to convert data input as XML into CSV/DatFrame format for validation. Uses
+    ElementTree to pase the XML for each child, adding their data to relevant fields and tables.
+
+    :param DataFrame Header: DataFrame of fields for the Header table for validation,
+        to be populated with children's data from XML input.
+    :param DataFrame ChildIdentifiers: DataFrame of fields for the ChildIdentifiers table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame ChildCharacteristics: DataFrame of fields for the ChildCharacterisitcs table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame Disabilities: DataFrame of fields for the Disabilities table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame CINdetails: DataFrame of fields for the CINdetails table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame Assessments: DataFrame of fields for the Assessments table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame CINplanDates: DataFrame of fields for the CINplanDates table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame Section47: DataFrame of fields for the Section47 table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame ChildProtectionPlans: DataFrame of fields for the ChildProtectionPlans table for validation.
+        to be populated with children's data from XML input.
+    :param DataFrame Reviews: DataFrame of fields for the Reviews table for validation.
+        to be populated with children's data from XML input.
+    :param list id_cols: List of columns containing IDs that cnas be used to merge tables.
+    """
+
     # define column names from CINTable object.
     Header = pd.DataFrame(
         columns=[
@@ -49,6 +75,7 @@ class XMLtoCSV:
         ]
     )
     Disabilities = pd.DataFrame(columns=["LAchildID", "Disability"])
+
     CINdetails = pd.DataFrame(
         columns=[
             "LAchildID",
@@ -104,6 +131,7 @@ class XMLtoCSV:
     id_cols = ["LAchildID", "CINdetailsID", "CPPID"]
 
     def __init__(self, root):
+        """Constructor method."""
         header = root.find("Header")
         self.Header = self.create_Header(header)
 
@@ -118,6 +146,9 @@ class XMLtoCSV:
     # if not found, they should assign themselves to NaN
 
     def create_child(self, child):
+        """For every child uses relevant class methods to extract data from
+        input XML and append it to relevant DataFrames.
+        """
         # at the start of every child, reset the value of LAchildID
         self.LAchildID = None
 
@@ -134,7 +165,13 @@ class XMLtoCSV:
 
     # TODO get column names from the CINTable object instead of writing them out as strings?
     def create_Header(self, header):
-        """One header exists in a CIN XML file"""
+        """Extracts header data from XML, run once as only one row is needed for the header.
+        Exists once per cencus return.
+
+        :param object header: The location of the "Header" field in the input XML
+        :returns: A DataFrame of the Header table extracted from input XML.
+        :rtype: DataFrame
+        """
 
         header_dict = {}
 
@@ -157,7 +194,13 @@ class XMLtoCSV:
         return header_df
 
     def create_ChildIdentifiers(self, child):
-        """One ChildIdentifiers block exists per child in CIN XML"""
+        """Uses input XML data to extract data, per child, to populate the ChildIdentifiers
+        table. One ChildIdentifiers block exists per child in CIN XML
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the ChildIdentifiers Table.
+        :rtype: DataFrame
+        """
         # pick out the values of relevant columns
         # add to the global attribute
         identifiers_dict = {}
@@ -174,7 +217,13 @@ class XMLtoCSV:
         )
 
     def create_ChildCharacteristics(self, child):
-        """One ChildCharacteristics block exists per child in CIN XML"""
+        """Uses input XML data to extract data, per child, to populate the ChildCharacteristics
+        table. One ChildCharacteristics block exists per child in CIN XML
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the CINdetails Table.
+        :rtype: DataFrame
+        """
         # assign LAChild ID
         characteristics_dict = {"LAchildID": self.LAchildID}
 
@@ -195,7 +244,13 @@ class XMLtoCSV:
 
     # CINdetailsID needed
     def create_CINdetails(self, child):
-        """Multiple CIN details blocks can exist in one child."""
+        """Uses input XML data to extract data, per child, to populate the CINdetails
+        table. Multiple CIN details blocks can exist in one child.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the CINdetails Table.
+        :rtype: DataFrame
+        """
 
         cin_details_list = []
         columns = self.CINdetails.columns
@@ -227,7 +282,13 @@ class XMLtoCSV:
         )
 
     def create_Assessments(self, cin_detail):
-        """Multiple Assessments blocks can exist in one CINdetails block."""
+        """Uses input XML data to extract data, per child, to populate the assessments
+        table. Multiple Assessments blocks can exist in one CINdetails block.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the Assessments Table.
+        :rtype: DataFrame
+        """
 
         assessments_list = []
         columns = self.Assessments.columns
@@ -253,7 +314,12 @@ class XMLtoCSV:
         )
 
     def create_CINplanDates(self, cin_detail):
-        """Multiple CINplanDates blocks can exist in one CINdetails block."""
+        """Uses input XML data to extract data, per child, to populate the CINplanDates
+        table. Multiple CINplanDates blocks can exist in one CINdetails block.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the CINplanDates Table.
+        :rtype: DataFrame"""
 
         dates_list = []
         columns = self.CINplanDates.columns
@@ -272,7 +338,12 @@ class XMLtoCSV:
         self.CINplanDates = pd.concat([self.CINplanDates, dates_df], ignore_index=True)
 
     def create_Section47(self, cin_detail):
-        """Multiple Section47 blocks can exist in one CINdetails block."""
+        """Uses input XML data to extract data, per child, to populate the Section47
+        table. Multiple Section47 blocks can exist in one CINdetails block.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the Section47 Table.
+        :rtype: DataFrame"""
 
         sections_list = []
         columns = self.Section47.columns
@@ -292,7 +363,12 @@ class XMLtoCSV:
 
     # CINdetails and CPPID needed
     def create_ChildProtectionPlans(self, cin_detail):
-        """Multiple ChildProtectionPlans blocks can exist in one CINdetails block."""
+        """Uses input XML data to extract data, per child, to populate the ChildProtectionPlans
+        table. Multiple ChildProtectionPlans blocks can exist in one CINdetails block.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the ChildProtectionPlans Table.
+        :rtype: DataFrame"""
 
         plans_list = []
         columns = self.ChildProtectionPlans.columns
@@ -321,7 +397,13 @@ class XMLtoCSV:
         )
 
     def create_Reviews(self, plan):
-        """Multiple Reviews blocks can exist in one ChildProtectionPlans block."""
+        """Uses input XML data to extract data, per child, to populate the ChildIdentifiers
+        table. Multiple Reviews blocks can exist in one Reviews block.
+
+        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :returns: DataFrame of data for an individual child for the Reviews Table.
+        :rtype: DataFrame
+        """
 
         reviews_list = []
         columns = self.Reviews.columns
