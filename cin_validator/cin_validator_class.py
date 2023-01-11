@@ -10,12 +10,13 @@ from cin_validator.utils import DataContainerWrapper
 
 def process_data(cin_data, as_dict=False):
     try:
-        filetext = cin_data.read().decode("utf-8")
-        fulltree = ET.parse(filetext)
-        root = fulltree.getroot()
+        filetext = cin_data.read()
+        root = ET.fromstring(filetext)
     except:
         fulltree = ET.parse(cin_data)
         root = fulltree.getroot()
+
+    root = fulltree.getroot()
     data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
