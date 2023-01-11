@@ -100,7 +100,13 @@ def process_date_columns(df):
     for column in df:
         if ("date" in column) | ("Date" in column):
             try:
-                df[column] = df[column].apply(pd.to_datetime, format="%d/%m/%Y")
+                # df[column] = df[column].apply(pd.to_datetime, format="%d/%m/%Y")
+                df[column] = pd.to_datetime(
+                    df[column], format="%d/%m/%Y", errors="coerce"
+                )
             except:
-                df[column] = df[column].apply(pd.to_datetime, format="%Y/%m/%d")
+                # df[column] = df[column].apply(pd.to_datetime, format="%Y/%m/%d")
+                df[column] = pd.to_datetime(
+                    df[column], format="%Y/%m/%d", errors="coerce"
+                )
     return df
