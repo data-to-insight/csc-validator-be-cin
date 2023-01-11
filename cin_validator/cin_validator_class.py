@@ -25,9 +25,12 @@ def process_data(filename, as_dict=False):
             "Assessments": data_files.Assessments,
             "Disabilities": data_files.Disabilities,
         }
+        for v in cin_tables_dict.values():
+            v = process_date_columns(v)
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
+
         return data_files_obj
 
 

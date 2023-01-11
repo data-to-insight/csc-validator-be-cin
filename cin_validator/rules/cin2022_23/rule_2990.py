@@ -141,7 +141,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_cin_issues)
+
     df_cin_pd_issues = (
         df_cin_pd.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_pd")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]

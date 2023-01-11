@@ -6,10 +6,10 @@ Rule message: Child referral date is more than 40 weeks before DOB or expected D
 
 """
 
+import datetime as dt
 from typing import Mapping
 
 import pandas as pd
-import datetime as dt
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
@@ -79,7 +79,7 @@ def validate(
     )
     df_CINDetails_issues = (
         df_CINDetails.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_CINDetails")
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys="False")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
@@ -87,7 +87,7 @@ def validate(
         df_ChildIdentifiers.merge(
             df_merged, left_on="ROW_ID", right_on="ROW_ID_ChildIdentifiers"
         )
-        .groupby("ERROR_ID")["ROW_ID"]
+        .groupby("ERROR_ID", group_keys="False")["ROW_ID"]
         .apply(list)
         .reset_index()
     )
@@ -224,7 +224,7 @@ def test_validate():
             },
         ]
     )
-    print(expected_df)
+
     assert issue_rows.equals(expected_df)
 
     # Check that the rule definition is what you wrote in the context above.
