@@ -133,4 +133,3 @@ def process_date_columns(df):
                     df[column], format="%Y/%m/%d", errors="coerce"
                 )
     return df
-
