@@ -25,8 +25,8 @@ def process_data(cin_data, as_dict=False):
             data_files.Assessments,
             data_files.Disabilities,
         ]
-        for i in tables:
-            process_date_columns(i)
+        for df in tables:
+            process_date_columns(df)
     except:
         filetext = cin_data.read().decode("utf-8")
         fulltree = ET.parse(filetext)
