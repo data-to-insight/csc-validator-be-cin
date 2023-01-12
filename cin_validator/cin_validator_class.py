@@ -10,12 +10,12 @@ from cin_validator.utils import DataContainerWrapper, nan_to_none
 
 def process_data(cin_data, as_dict=False):
     try:
+        # files passed in from command line interface (__main__.py)
+        fulltree = ET.parse(cin_data)
+    except:
         # files uploaded in the frontend
         filetext = cin_data.read().decode("utf-8")
         fulltree = ET.parse(filetext)
-    except:
-        # files passed in from command line interface (__main__.py)
-        fulltree = ET.parse(cin_data)
 
     root = fulltree.getroot()
     data_files = XMLtoCSV(root)
@@ -32,8 +32,7 @@ def process_data(cin_data, as_dict=False):
             "Assessments": data_files.Assessments,
             "Disabilities": data_files.Disabilities,
         }
-        for v in cin_tables_dict.values():
-            v = process_date_columns(v)
+
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
