@@ -143,4 +143,4 @@ class CinValidationSession:
                 self.all_rules_issue_locs["ERROR_ID"] == self.issue_id
             ]
         else:
-            pass        
+            pass
