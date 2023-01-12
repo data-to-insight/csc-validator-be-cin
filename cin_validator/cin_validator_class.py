@@ -8,15 +8,7 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-def process_data(cin_data, as_dict=False):
-    try:
-        # files passed in from command line interface (__main__.py)
-        fulltree = ET.parse(cin_data)
-        root = fulltree.getroot()
-    except:
-        # files uploaded in the frontend
-        filetext = cin_data.read().decode("utf-8")
-        root = ET.fromstring(filetext)
+def process_data(root, as_dict=False):
 
     data_files = XMLtoCSV(root)
     if as_dict:
