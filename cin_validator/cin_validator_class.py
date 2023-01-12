@@ -5,18 +5,32 @@ import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper
+from cin_validator.utils import DataContainerWrapper, process_date_columns
 
 
 def process_data(cin_data, as_dict=False):
     try:
+        fulltree = ET.parse(cin_data)
+        root = fulltree.getroot()
+        data_files = XMLtoCSV(root)
+        tables = [
+            data_files.Header,
+            data_files.ChildIdentifiers,
+            data_files.ChildCharacteristics,
+            data_files.ChildProtectionPlans,
+            data_files.CINdetails,
+            data_files.CINplanDates,
+            data_files.Reviews,
+            data_files.Section47,
+            data_files.Assessments,
+            data_files.Disabilities,
+        ]
+        for i in tables:
+            process_date_columns(i)
+    except:
         filetext = cin_data.read().decode("utf-8")
         fulltree = ET.parse(filetext)
         root = fulltree.getroot()
-    except:
-        fulltree = ET.parse(cin_data)
-        root = fulltree.getroot()
-    data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
             "Header": data_files.Header,
@@ -31,7 +45,7 @@ def process_data(cin_data, as_dict=False):
             "Disabilities": data_files.Disabilities,
         }
         for v in cin_tables_dict.values():
-            v = process_date_columns(v)
+            process_date_columns(v)
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
