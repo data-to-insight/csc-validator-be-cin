@@ -13,8 +13,14 @@ def get_values(xml_elements, table_dict, xml_block):
 
 
 def make_date(date_input):
-    """Allows Ymd or dmY date inputs, used for make_cancus_period.
-    Important for test_validate functions"""
+    """Allows Ymd or dmY date inputs, used for make_cencus_period.
+    Important for test_validate functions.
+
+    :param str date_input: Contains the data data to be converted to pd.datetime
+        object as a string.
+    :reutrns: Date data input as pd.datetime object.
+    :rtype: pd.datetime object.
+    """
     date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
     if pd.isna(date):
         date = pd.to_datetime(date_input, format="%d/%m/%Y", errors="coerce")

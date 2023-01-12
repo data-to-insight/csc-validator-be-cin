@@ -17,7 +17,7 @@ from .utils import get_values, make_census_period
 # tables should be attributes of a class that are accessible to the methods in create_child.
 class XMLtoCSV:
     """A class to convert data input as XML into CSV/DatFrame format for validation. Uses
-    ElementTree to pase the XML for each child, adding their data to relevant fields and tables.
+    ElementTree to parse the XML for each child, adding their data to relevant fields and tables.
 
     :param DataFrame Header: DataFrame of fields for the Header table for validation,
         to be populated with children's data from XML input.
@@ -39,7 +39,7 @@ class XMLtoCSV:
         to be populated with children's data from XML input.
     :param DataFrame Reviews: DataFrame of fields for the Reviews table for validation.
         to be populated with children's data from XML input.
-    :param list id_cols: List of columns containing IDs that cnas be used to merge tables.
+    :param list id_cols: List of columns containing IDs that can be used to merge tables.
     """
 
     # define column names from CINTable object.
@@ -146,7 +146,7 @@ class XMLtoCSV:
     # if not found, they should assign themselves to NaN
 
     def create_child(self, child):
-        """For every child uses relevant class methods to extract data from
+        """For every child, uses relevant class methods to extract data from
         input XML and append it to relevant DataFrames.
         """
         # at the start of every child, reset the value of LAchildID
@@ -166,9 +166,9 @@ class XMLtoCSV:
     # TODO get column names from the CINTable object instead of writing them out as strings?
     def create_Header(self, header):
         """Extracts header data from XML, run once as only one row is needed for the header.
-        Exists once per cencus return.
+        Exists once per census return.
 
-        :param object header: The location of the "Header" field in the input XML
+        :param object header: The element with the "Header" tag in the input XML
         :returns: A DataFrame of the Header table extracted from input XML.
         :rtype: DataFrame
         """
@@ -197,7 +197,7 @@ class XMLtoCSV:
         """Uses input XML data to extract data, per child, to populate the ChildIdentifiers
         table. One ChildIdentifiers block exists per child in CIN XML
 
-        :param str child: Individual instances of ChildIDs from the Children field of the input XML.
+        :param any child: Elements with child tag in XML input. Each contains the full information per child.
         :returns: DataFrame of data for an individual child for the ChildIdentifiers Table.
         :rtype: DataFrame
         """
@@ -221,7 +221,7 @@ class XMLtoCSV:
         table. One ChildCharacteristics block exists per child in CIN XML
 
         :param str child: Individual instances of ChildIDs from the Children field of the input XML.
-        :returns: DataFrame of data for an individual child for the CINdetails Table.
+        :returns: DataFrame of data for an individual child for the CHildCharacteristics Table.
         :rtype: DataFrame
         """
         # assign LAChild ID
