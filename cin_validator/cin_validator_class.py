@@ -12,12 +12,11 @@ def process_data(cin_data, as_dict=False):
     try:
         # files passed in from command line interface (__main__.py)
         fulltree = ET.parse(cin_data)
+        root = fulltree.getroot()
     except:
         # files uploaded in the frontend
         filetext = cin_data.read().decode("utf-8")
-        fulltree = ET.parse(filetext)
-
-    root = fulltree.getroot()
+        root = ET.fromstring(filetext)
 
     data_files = XMLtoCSV(root)
     if as_dict:
