@@ -1,7 +1,6 @@
 from prpc_python import RpcApp
 
 from cin_validator import cin_validator_class as cin_class
-from cin_validator.utils import json_response
 
 app = RpcApp("validate_cin")
 

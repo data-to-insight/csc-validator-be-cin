@@ -18,6 +18,7 @@ def process_data(cin_data, as_dict=False):
         fulltree = ET.parse(filetext)
 
     root = fulltree.getroot()
+
     data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
@@ -143,4 +144,4 @@ class CinValidationSession:
                 self.all_rules_issue_locs["ERROR_ID"] == self.issue_id
             ]
         else:
-            pass
+            pass        
