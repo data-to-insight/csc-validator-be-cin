@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 
+import numpy as np
 import pandas as pd
 
 
@@ -14,7 +15,7 @@ def get_values(xml_elements, table_dict, xml_block):
 
 
 def make_date(date_input):
-    """Allows Ymd or dmY date inputs, used for make_cencus_period.
+    """Allows Ymd or dmY date inputs, used for make_census_period.
     Important for test_validate functions"""
     date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
     if pd.isna(date):
@@ -95,28 +96,6 @@ class DataContainerWrapper:
         for k, v in self.__dict__.items():
             setattr(result, k, deepcopy(v, memo))
         return result
-
-
-def nan_to_none(df):
-    """
-    replaces all NaN values in a DataFrame with None values.
-    Used in preparation for JSON serialisation where nan values are not recognized but None values nicely typecast to null
-    :param DataFrame df: df that needs to be converted.
-    :return DataFrame df: converted df. inplace=True
-    """
-    df = df.where(pd.notnull(df), None)
-    return df
-
-
-def json_response(obj):
-    """
-    Serialises input by json-dumping with a special encoder then loads the result into json because the rpc return doesn't accept json
-    :param any obj: object that needs to be json-serialised
-    :return any    : json-serialisable object.
-    """
-    print("Serializing", obj)
-    #
-    return json.loads(json.dumps(obj, cls=json.JSONEncoder))
 
 
 def process_date_columns(df):

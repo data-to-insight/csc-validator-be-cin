@@ -5,7 +5,7 @@ import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper, nan_to_none
+from cin_validator.utils import DataContainerWrapper
 
 
 def process_data(cin_data, as_dict=False):
@@ -133,12 +133,8 @@ class CinValidationSession:
 
     def create_json_report(self):
         """Creates JSONs of error report and rule descriptors dfs."""
-        self.json_issue_report = nan_to_none(self.all_rules_issue_locs).to_dict(
-            orient="records"
-        )
-        self.json_rule_descriptors = nan_to_none(self.rule_descriptors).to_dict(
-            orient="records"
-        )
+        self.json_issue_report = self.all_rules_issue_locs.to_json(orient="records")
+        self.json_rule_descriptors = self.rule_descriptors.to_json(orient="records")
 
     def select_by_id(self):
         if self.issue_id is not None:
