@@ -50,7 +50,8 @@ def run_all(filename: str, ruleset, issue_id, output):
     all_rules_issue_locs = validator.all_rules_issue_locs
 
     if output:
-        error_report = validator.all_rules_issue_locs.to_json(orient="records")
+        # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
+        issue_report = validator.all_rules_issue_locs.to_json(orient="records")
         rule_defs = validator.rule_descriptors.to_json(orient="records")
 
         # generating sample files for the frontend.
@@ -61,7 +62,7 @@ def run_all(filename: str, ruleset, issue_id, output):
             json.dump(rule_defs, f)
 
         with open("issue_report.json", "w") as f:
-            json.dump(error_report, f)
+            json.dump(issue_report, f)
 
     # print(issue_instances)
     # print(all_rules_issue_locs)
