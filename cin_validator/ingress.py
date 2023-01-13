@@ -130,7 +130,14 @@ class XMLtoCSV:
     id_cols = ["LAchildID", "CINdetailsID", "CPPID"]
 
     def __init__(self, root):
-        """Constructor method."""
+        """Initialises XMLtoCSV class, creates header, sets collection
+        start and end to none, and iterates through input XML for every Child field
+        in the Children field.
+
+        :param ElementTree object root: Tambe I'm not sure what this is, it print's as a
+            'message' object?
+        :returns:
+        """
         header = root.find("Header")
         self.Header = self.create_Header(header)
 

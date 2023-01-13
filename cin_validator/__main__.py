@@ -24,6 +24,9 @@ def cli():
 def list_cmd(ruleset):
     """List all rules in a ruleset.
 
+    Call using:
+    python -m cin_validator list
+
     :param str ruleset: The name of a CIN validation ruleset, used to select rules for validating data.
     :returns: A list of validation rules in the given ruleset.
     :rtype: list
@@ -48,7 +51,8 @@ def run_all(filename: str, ruleset, issue_id, output):
 
     CLI command:
     python -m cin_validator run-all <filepath_to_data>
-    can be used to validate data via the data for a given rule set.
+
+    Can be used to validate data via the data for a given rule set.
     Runs with the cin2022_23 ruleset as standard.
 
     :param str filename: Refers to the filepath of data to be validated.
@@ -99,7 +103,8 @@ def run_all(filename: str, ruleset, issue_id, output):
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 def test_cmd(rule, ruleset):
-    """Test all (or individual) rules in a ruleset.
+    """Test all (or individual) rules in a ruleset. Note: tests the code
+    for the rule, this is not used for validating data.
 
     Allows use of the CLI to test a ruleset or individual rules against the
     pytest written in each of their files. Useful for bugfixing. Defaults
@@ -113,7 +118,8 @@ def test_cmd(rule, ruleset):
     python -m cin_validator test 8875
 
     :param str rule: Used to specify an individual rule to test.
-    :param str ruleset: Use to give the name of a set of validation rules to test.
+    :param str ruleset: Use to give the name of a set of validation rules to test
+        (defaults to rules.cin2022_23).
     :returns: Pytest output in terminal of rules passing and failing.
     :rtype: Pytest output in terminal.
     """
@@ -140,7 +146,8 @@ def test_cmd(rule, ruleset):
 def cli_converter(filename: str):
     """Converts XML to CSV at selected filepath, does not require
     XML to be validated against validation rules and does not validate
-    agaisnt rules. Called using:
+    agaisnt rules. Outputs files to directory ./CIN-validator/output_csvs
+    Called using:
     python -m cin_validator xmltocsv <filepath>
 
     :param str filename: Filename (including filepath) of XML file to convert to CSV.

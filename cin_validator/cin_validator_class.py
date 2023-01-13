@@ -16,8 +16,8 @@ def process_data(root, as_dict=False):
     for CLI interface.
 
     :param XML filename: XML files passed from either the front end or the CLI.
-    :returns: Data files as object or dict of dfs for validation.
-    :rtype: dictionary or DataContainerWrapper object
+    :returns: Data files as object or dict of DataFrames for validation.
+    :rtype: Dictionary or DataContainerWrapper object.
     """
     # generate tables
     data_files = XMLtoCSV(root)
@@ -74,7 +74,7 @@ class CinValidationSession:
     ) -> None:
         """Initialises CinValidationSession class.
 
-        Cretaes DataFrame containing error report, flattens DataFrame into JSON for FE,
+        Creates DataFrame containing error report, flattens DataFrame into JSON for FE,
         and allows selection of individual instances of error using ERROR_ID
 
 
@@ -98,7 +98,7 @@ class CinValidationSession:
         """Creates report of errors found when validating CIN data input to
         the tool.
 
-        This function takes the errors reported by individual validation rule functions,
+        This function takes the errors/rule violations reported by individual validation rule functions,
         including table, field, and index locations of errors. It is important that it uses deepcopy
         on the data per rule as some rules alter original data when only a standard .copy() function
         is used. It runs through every rule in the registry and:
@@ -107,9 +107,9 @@ class CinValidationSession:
         >Returns a dataframe of issue instances for broken validation rules.
         >Returns a dictionary of all rules codes and relevant messages.
 
-        :param DataFrame issue_instances: DataFrame of instances of issues found in  validation
+        :param DataFrame issue_instances: DataFrame of instances of issues found in  validation.
         :param DataFrame all_rules_issue_locs: DataFrame of locations of issues found in validation.
-        :param list rules_broken:An empty list which is populated with the codes of the rules that trigger
+        :param list rules_broken: An empty list which is populated with the codes of the rules that trigger
             issues in the data during validation.
         :param list la_rules_broken: An empty list of LA level rules broken, which is populated with the list
             of rules failing validation upon validation.
