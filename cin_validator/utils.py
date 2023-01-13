@@ -1,5 +1,7 @@
+import json
 from copy import deepcopy
 
+import numpy as np
 import pandas as pd
 
 
@@ -13,7 +15,7 @@ def get_values(xml_elements, table_dict, xml_block):
 
 
 def make_date(date_input):
-    """Allows Ymd or dmY date inputs, used for make_cencus_period.
+    """Allows Ymd or dmY date inputs, used for make_census_period.
     Important for test_validate functions"""
     date = pd.to_datetime(date_input, format="%Y/%m/%d", errors="coerce")
     if pd.isna(date):

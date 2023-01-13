@@ -1,5 +1,4 @@
 import importlib
-import xml.etree.ElementTree as ET
 
 import pandas as pd
 
@@ -8,29 +7,26 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper, process_date_columns
 
 
-def process_data(cin_data, as_dict=False):
-    try:
-        fulltree = ET.parse(cin_data)
-        root = fulltree.getroot()
-        data_files = XMLtoCSV(root)
-        tables = [
-            data_files.Header,
-            data_files.ChildIdentifiers,
-            data_files.ChildCharacteristics,
-            data_files.ChildProtectionPlans,
-            data_files.CINdetails,
-            data_files.CINplanDates,
-            data_files.Reviews,
-            data_files.Section47,
-            data_files.Assessments,
-            data_files.Disabilities,
-        ]
-        for df in tables:
-            process_date_columns(df)
-    except:
-        filetext = cin_data.read().decode("utf-8")
-        fulltree = ET.parse(filetext)
-        root = fulltree.getroot()
+def process_data(root, as_dict=False):
+    # generate tables
+    data_files = XMLtoCSV(root)
+    tables = [
+        data_files.Header,
+        data_files.ChildIdentifiers,
+        data_files.ChildCharacteristics,
+        data_files.ChildProtectionPlans,
+        data_files.CINdetails,
+        data_files.CINplanDates,
+        data_files.Reviews,
+        data_files.Section47,
+        data_files.Assessments,
+        data_files.Disabilities,
+    ]
+    # format all date columns in tables
+    for df in tables:
+        process_date_columns(df)
+
+    # return tables
     if as_dict:
         cin_tables_dict = {
             "Header": data_files.Header,
@@ -44,12 +40,9 @@ def process_data(cin_data, as_dict=False):
             "Assessments": data_files.Assessments,
             "Disabilities": data_files.Disabilities,
         }
-        for v in cin_tables_dict.values():
-            process_date_columns(v)
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
-
         return data_files_obj
 
 
@@ -146,8 +139,8 @@ class CinValidationSession:
 
     def create_json_report(self):
         """Creates JSONs of error report and rule descriptors dfs."""
-        self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
-        self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
+        self.json_issue_report = self.all_rules_issue_locs.to_json(orient="records")
+        self.json_rule_descriptors = self.rule_descriptors.to_json(orient="records")
 
     def select_by_id(self):
         if self.issue_id is not None:

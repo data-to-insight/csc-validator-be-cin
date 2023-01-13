@@ -37,7 +37,8 @@ def validate(
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
-    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
+    # LOGIC
+    # Within a <ChildProtectionPlans> group, <CPPstartDate> (N00105) must not be the same as the <CPPendDate> (N00115)
 
     #  Determine if the dates are the same by finding if the difference between dates is 0
     condition = df["CPPstartDate"] == df["CPPendDate"]
