@@ -1,5 +1,4 @@
 import importlib
-import xml.etree.ElementTree as ET
 
 import pandas as pd
 
@@ -8,7 +7,7 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-def process_data(filename, as_dict=False):
+def process_data(root, as_dict=False):
     """Takes input data and processes it for validation.
 
     This function takes input XML data, and uses ElementTree, and the custom class
@@ -20,8 +19,6 @@ def process_data(filename, as_dict=False):
     :returns: Data files as object or dict of dfs for validation.
     :rtype: dictionary or DataContainerWrapper object
     """
-    fulltree = ET.parse(filename)
-    root = fulltree.getroot()
     data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
@@ -36,9 +33,11 @@ def process_data(filename, as_dict=False):
             "Assessments": data_files.Assessments,
             "Disabilities": data_files.Disabilities,
         }
+
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
+
         return data_files_obj
 
 
@@ -193,8 +192,9 @@ class CinValidationSession:
         :returns: JSONs of CIN validation error reports.
         :rtype: JSON
         """
-        self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
-        self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
+
+        self.json_issue_report = self.all_rules_issue_locs.to_json(orient="records")
+        self.json_rule_descriptors = self.rule_descriptors.to_json(orient="records")
 
     def select_by_id(self):
         """Allows users to select reports of individual errors by ERROR_ID. Note:
@@ -205,6 +205,7 @@ class CinValidationSession:
         :returns: Validation information associated with specific ERROR_ID.
         :rtype: DataFrame
         """
+
         if self.issue_id is not None:
             self.issue_id = tuple(self.issue_id.split(", "))
             self.all_rules_issue_locs = self.all_rules_issue_locs[

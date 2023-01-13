@@ -6,7 +6,6 @@ import click
 import pytest
 
 from cin_validator import cin_validator_class as cin_class
-from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import registry
 
 
@@ -62,7 +61,11 @@ def run_all(filename: str, ruleset, issue_id, output):
         JSON when output is True.
     :rtype: DataFrame, JSON
     """
-    data_files = cin_class.process_data(filename)
+
+    fulltree = ET.parse(filename)
+    root = fulltree.getroot()
+
+    data_files = cin_class.process_data(root)
     validator = cin_class.CinValidationSession(data_files, ruleset, issue_id)
 
     issue_instances = validator.issue_instances
@@ -149,17 +152,8 @@ def cli_converter(filename: str):
     if Path(filename).exists():
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
-        data_files = XMLtoCSV(root)
-        cin_tables_dict = {
-            "Header": data_files.Header,
-            "ChildIdentifiers": data_files.ChildIdentifiers,
-            "ChildCharacteristics": data_files.ChildCharacteristics,
-            "ChildProtectionPlans": data_files.ChildProtectionPlans,
-            "CINdetails": data_files.CINdetails,
-            "CINplanDates": data_files.CINplanDates,
-            "Reviews": data_files.Reviews,
-            "Section47": data_files.Section47,
-        }
+
+        cin_tables_dict = cin_class.process_data(root, as_dict=True)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")

@@ -8,9 +8,9 @@ filelock==3.8.0
 identify==2.5.5
 iniconfig==1.1.1
 nodeenv==1.7.0
-numpy==1.23.3
+numpy==1.22.4
 packaging==21.3
-pandas==1.5.0
+pandas==1.4.2   
 platformdirs==2.5.2
 pluggy==1.0.0
 pre-commit==2.20.0

@@ -33,7 +33,6 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[Section47]
-
     # <DateOfInitialCPC> should not be a Saturday, Sunday
     # .weekday() returns the integer value for each day (0-6) with weekends being 5 and 6
     failing_indices = df[df[DateOfInitialCPC].dt.weekday >= 5].index

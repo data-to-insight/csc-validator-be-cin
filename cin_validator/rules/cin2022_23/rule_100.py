@@ -15,6 +15,7 @@ from cin_validator.test_engine import run_rule
 
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
+Year = Header.Year
 
 # define characteristics of rule
 @rule_definition(
@@ -36,15 +37,17 @@ def validate(
     # implement rule logic as descriped by the Github issue. Put the description as a comment above the implementation as shown.
 
     # <ReferenceDate> (N00603) must be present and must equal 2022-03-31
-    df[ReferenceDate] = pd.to_datetime(
-        df[ReferenceDate], format="%d/%m/%Y", errors="coerce"
+
+    # ReferenceDate is expected to be the 31st of March in the collection year
+    df["expected_date"] = "31/03/" + df[Year]
+    df["expected_date"] = pd.to_datetime(
+        df["expected_date"], format="%d/%m/%Y", errors="coerce"
     )
+
     # Checks that the reference date is present
     is_present = df[ReferenceDate].isna()
-    # Checks the error date is equal to 31/03/2022.
-    error_date = df[ReferenceDate] != pd.to_datetime(
-        "31/03/2022", format="%d/%m/%Y", errors="coerce"
-    )
+    # Checks the error date is equal to 31/03/[collection_year].
+    error_date = df[ReferenceDate] != df["expected_date"]
     failing_indices = df[is_present | error_date].index
 
     # Replace Header and ReferenceDate with the table and column name concerned in your rule, respectively.
@@ -54,8 +57,18 @@ def validate(
 
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
+    # Sidenote: a typical Header table will only have one row.
     header = pd.DataFrame(
-        [["31/03/2022"], [pd.NA], [pd.NA], ["30/11/2021"]], columns=[ReferenceDate]
+        [
+            {Year: "2022", ReferenceDate: "31/03/2022"},
+            {Year: "2022", ReferenceDate: pd.NA},
+            {Year: "2022", ReferenceDate: pd.NA},
+            {Year: "2022", ReferenceDate: "30/11/2021"},
+        ]
+    )
+
+    header[ReferenceDate] = pd.to_datetime(
+        header[ReferenceDate], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run rule function passing in our sample data

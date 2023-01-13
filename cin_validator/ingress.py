@@ -8,8 +8,7 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 
-# TODO make this work with from cin_validator.utils import get_values
-from .utils import get_values, make_census_period
+from .utils import get_values, make_census_period, process_date_columns
 
 
 # initialize all data sets as empty dataframes with columns names
@@ -191,6 +190,7 @@ class XMLtoCSV:
         header_dict = get_values(source_elements, header_dict, source)
 
         header_df = pd.DataFrame.from_dict([header_dict])
+        header_df = process_date_columns(header_df)
         return header_df
 
     def create_ChildIdentifiers(self, child):
@@ -212,6 +212,7 @@ class XMLtoCSV:
         self.LAchildID = identifiers_dict.get("LAchildID", pd.NA)
 
         identifiers_df = pd.DataFrame.from_dict([identifiers_dict])
+        process_date_columns(identifiers_df)
         self.ChildIdentifiers = pd.concat(
             [self.ChildIdentifiers, identifiers_df], ignore_index=True
         )
@@ -238,6 +239,7 @@ class XMLtoCSV:
         )
 
         characteristics_df = pd.DataFrame.from_dict([characteristics_dict])
+        process_date_columns(characteristics_df)
         self.ChildCharacteristics = pd.concat(
             [self.ChildCharacteristics, characteristics_df], ignore_index=True
         )
@@ -277,6 +279,7 @@ class XMLtoCSV:
             self.create_ChildProtectionPlans(cin_detail)
 
         cin_details_df = pd.DataFrame(cin_details_list)
+        process_date_columns(cin_details_df)
         self.CINdetails = pd.concat(
             [self.CINdetails, cin_details_df], ignore_index=True
         )
@@ -309,6 +312,7 @@ class XMLtoCSV:
                 assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
+        process_date_columns(assessments_df)
         self.Assessments = pd.concat(
             [self.Assessments, assessments_df], ignore_index=True
         )
@@ -335,6 +339,7 @@ class XMLtoCSV:
             dates_list.append(date_dict)
 
         dates_df = pd.DataFrame(dates_list)
+        process_date_columns(dates_df)
         self.CINplanDates = pd.concat([self.CINplanDates, dates_df], ignore_index=True)
 
     def create_Section47(self, cin_detail):
@@ -359,6 +364,7 @@ class XMLtoCSV:
             sections_list.append(section_dict)
 
         sections_df = pd.DataFrame(sections_list)
+        process_date_columns(sections_df)
         self.Section47 = pd.concat([self.Section47, sections_df], ignore_index=True)
 
     # CINdetails and CPPID needed
@@ -392,6 +398,7 @@ class XMLtoCSV:
             self.create_Reviews(plan)
 
         plans_df = pd.DataFrame(plans_list)
+        process_date_columns(plans_df)
         self.ChildProtectionPlans = pd.concat(
             [self.ChildProtectionPlans, plans_df], ignore_index=True
         )
@@ -421,6 +428,7 @@ class XMLtoCSV:
             reviews_list.append(review_dict)
 
         reviews_df = pd.DataFrame(reviews_list)
+        process_date_columns(reviews_df)
         self.Reviews = pd.concat([self.Reviews, reviews_df], ignore_index=True)
 
 
