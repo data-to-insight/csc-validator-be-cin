@@ -8,14 +8,8 @@ from cin_validator.rule_engine import RuleContext, registry
 from cin_validator.utils import DataContainerWrapper
 
 
-def process_data(cin_data, as_dict=False):
-    try:
-        filetext = cin_data.read().decode("utf-8")
-        fulltree = ET.parse(filetext)
-        root = fulltree.getroot()
-    except:
-        fulltree = ET.parse(cin_data)
-        root = fulltree.getroot()
+def process_data(root, as_dict=False):
+
     data_files = XMLtoCSV(root)
     if as_dict:
         cin_tables_dict = {
@@ -30,8 +24,7 @@ def process_data(cin_data, as_dict=False):
             "Assessments": data_files.Assessments,
             "Disabilities": data_files.Disabilities,
         }
-        for v in cin_tables_dict.values():
-            v = process_date_columns(v)
+
         return cin_tables_dict
     else:
         data_files_obj = DataContainerWrapper(data_files)
@@ -132,8 +125,8 @@ class CinValidationSession:
 
     def create_json_report(self):
         """Creates JSONs of error report and rule descriptors dfs."""
-        self.json_issue_report = self.all_rules_issue_locs.to_dict(orient="records")
-        self.json_rule_descriptors = self.rule_descriptors.to_dict(orient="records")
+        self.json_issue_report = self.all_rules_issue_locs.to_json(orient="records")
+        self.json_rule_descriptors = self.rule_descriptors.to_json(orient="records")
 
     def select_by_id(self):
         if self.issue_id is not None:
