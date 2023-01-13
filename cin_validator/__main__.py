@@ -50,8 +50,8 @@ def run_all(filename: str, ruleset, issue_id, output):
     all_rules_issue_locs = validator.all_rules_issue_locs
 
     if output:
-        error_report = validator.json_issue_report
-        rule_defs = validator.json_rule_descriptors
+        error_report = validator.all_rules_issue_locs.to_json(orient="records")
+        rule_defs = validator.rule_descriptors.to_json(orient="records")
 
         # generating sample files for the frontend.
         # TODO. when frontend dev is complete, change this to generate csv.

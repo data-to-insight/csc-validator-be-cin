@@ -45,8 +45,8 @@ def cin_validate(cin_data, ruleset="rules.cin2022_23"):
     raw_data = cin_class.process_data(root, as_dict=True)
 
     # make return data json-serialisable
-    issue_report = validator.json_issue_report
-    rule_defs = validator.json_rule_descriptors
+    issue_report = validator.all_rules_issue_locs.to_json(orient="records")
+    rule_defs = validator.rule_descriptors.to_json(orient="records")
     json_data_files = {
         table_name: table_df.to_json(orient="records")
         for table_name, table_df in raw_data.items()

@@ -56,7 +56,6 @@ class CinValidationSession:
         self.issue_id = issue_id
 
         self.create_error_report_df()
-        self.create_json_report()
         self.select_by_id()
 
     def create_error_report_df(self):
@@ -136,11 +135,6 @@ class CinValidationSession:
             self.rule_descriptors = pd.concat([child_level_rules, la_level_rules])
         else:
             self.rule_descriptors = child_level_rules
-
-    def create_json_report(self):
-        """Creates JSONs of error report and rule descriptors dfs."""
-        self.json_issue_report = self.all_rules_issue_locs.to_json(orient="records")
-        self.json_rule_descriptors = self.rule_descriptors.to_json(orient="records")
 
     def select_by_id(self):
         if self.issue_id is not None:
