@@ -2,7 +2,7 @@ This file groups rules that have similar logic.
 # Rule Groups
 
 #### - value must be present and equal to ...
-100, 4180, 4220, 8500, 8568, 8640, 8650, 8910
+100, 4180, 4220, 8500, 8568, 8640, 8650, 8910, 8842Q
 
 #### -  compare variable to specific hardcoded value.
 8617, 8730, 8750, 8790, 8897, 8905, 8899Q, 8866

@@ -12,19 +12,15 @@ from cin_validator.rule_engine import (
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 Reviews = CINTable.Reviews
 CPPreviewDate = Reviews.CPPreviewDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
     code="8842Q",
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Reviews,
     rule_type=RuleType.QUERY,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Please check: Review Record has a missing date",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[CPPreviewDate],
@@ -32,7 +28,7 @@ CPPreviewDate = Reviews.CPPreviewDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
+    # Replace Reviews with the name of the table you need.
     df = data_container[Reviews]
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
@@ -42,10 +38,9 @@ def validate(
     # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1025195/Children_in_need_census_2022_to_2023_guide.pdf
     condition = df[CPPreviewDate].isna()
 
+    # This is a straightforward check because it is not possible to have multiple <CPPreviewdate> that belong to the same review group.
     failing_indices = df[condition].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(table=Reviews, field=CPPreviewDate, row=failing_indices)
 
 
@@ -75,6 +70,6 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8842Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8842Q"
     assert result.definition.message == "Please check: Review Record has a missing date"
