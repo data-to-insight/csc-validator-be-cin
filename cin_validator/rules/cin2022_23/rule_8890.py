@@ -37,7 +37,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_47 = data_container[Section47].copy()
     df_47_2 = data_container[Section47].copy()
 
@@ -78,7 +77,7 @@ def validate(
         suffixes=("_47", "_472"),
     )
 
-    # Exclude rows where the CPPID is the same on both sides
+    # prevent a session from being compared to itself
     same_start = (
         df_merged["S47ActualStartDate_47"] == df_merged["S47ActualStartDate_472"]
     )
@@ -109,7 +108,6 @@ def validate(
     ].reset_index()
 
     # create an identifier for each error instance.
-    # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     df_merged["ERROR_ID"] = tuple(
         zip(
             df_merged[LAchildID],
@@ -118,7 +116,6 @@ def validate(
         )
     )
 
-    # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_47_issues = (
         df_47.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_47")
@@ -234,11 +231,10 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type3_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 0 will contain the Section47 columns because that's the first thing pushed above.
     issues = issues_list[0]
 
     # get table name and check it. Replace Reviews with the name of your table.
@@ -251,7 +247,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 3 with the number of failing points you expect from the sample data.
+    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.

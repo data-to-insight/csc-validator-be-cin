@@ -33,7 +33,7 @@ multiple tables
 4004, 8794, 8839, 8896, 8935, 8898
 
 #### - value should not exist between any other interval within group. replace missing ends with RefDate
-8940
+8940, 8890
   - unless equal to something: 4016, 4017
 
 #### - value must be unique in data
