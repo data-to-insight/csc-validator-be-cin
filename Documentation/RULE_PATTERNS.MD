@@ -27,7 +27,8 @@ multiple tables: 2885
 8805, 8810, 8840, 8841, 8873, 8869
 multiple tables
 8585Q, 8614, 8615, 8867
-  - on any: 4001,
+  - on any: 4001, 
+  - must happen on all instances: 8868
 
 #### - there must be only one in group
 4004, 8794, 8839, 8896, 8935, 8898
