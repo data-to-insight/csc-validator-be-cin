@@ -53,17 +53,17 @@ def validate(
         .count()
         .reset_index()
     )
-    #
+
     # when you groupby as shown above a series is returned where the columns in the round brackets become the index and the groupby result are the values.
     # resetting the index pushes the columns in the () back as columns of the dataframe and assigns the groupby result to the column in the square bracket.
-    #
+
     # filter out the instances where AssessmentAuthorisationDate is missing more than once in a CINdetails group.
     df_check = df_check[df_check[AssessmentAuthorisationDate] > 1]
     issue_ids = tuple(zip(df_check[LAchildID], df_check[CINdetailsID]))
 
     # DF_ISSUES: GET ALL THE DATA ABOUT THE LOCATIONS THAT WERE IDENTIFIED IN DF_CHECK
     df["ERROR_ID"] = tuple(zip(df[LAchildID], df[CINdetailsID]))
-    df_issues = df[df.ERROR_ID.isin(issue_ids)]
+    df_issues = df[df["ERROR_ID"].isin(issue_ids)]
 
     df_issues = (
         df_issues.groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -134,7 +134,7 @@ def test_validate():
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
+    # check that the right columns were pushed.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentAuthorisationDate]
 
