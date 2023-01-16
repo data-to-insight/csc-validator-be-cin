@@ -10,15 +10,8 @@ Rule message: Please check: Assessment started more than 45 working days before 
 from typing import Mapping
 
 import pandas as pd
-import datetime as dt
 
-from cin_validator.rule_engine import (
-    CINTable,
-    IssueLocator,
-    RuleContext,
-    RuleType,
-    rule_definition,
-)
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 

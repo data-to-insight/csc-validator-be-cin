@@ -5,7 +5,6 @@ from typing import Mapping
 import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
-from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
