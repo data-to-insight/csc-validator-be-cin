@@ -42,7 +42,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_ass = data_container[Assessments].copy()
     df_47 = data_container[Section47].copy()
     df_cin = data_container[CINdetails].copy()
@@ -54,7 +53,6 @@ def validate(
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with a for loop? e.g for df in [df_ass, df_47, df_cin]
     df_47.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
     df_ass.reset_index(inplace=True)
@@ -275,7 +273,7 @@ def test_validate():
     issues_list = result.type2_issues
     assert len(issues_list) == 3
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 0 will contain the CINdetails columns because that's the first thing pushed above.
     issues = issues_list[0]
 
     # get table name and check it. Replace Section47 with the name of your table.
@@ -288,7 +286,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 4 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 4
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -335,7 +333,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8831 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8831
     assert (
         result.definition.message
