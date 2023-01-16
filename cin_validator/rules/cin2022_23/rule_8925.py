@@ -14,9 +14,8 @@ LAchildID = ChildProtectionPlans.LAchildID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=8925,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child Protection Plan End Date earlier than Start Date",
@@ -28,7 +27,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildProtectionPlans]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"

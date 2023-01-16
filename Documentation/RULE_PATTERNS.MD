@@ -50,6 +50,7 @@ multiple tables
 8500 - 1 column
 ### type1 stem:
 8840 - multiple columns in the same table.
+8925 - link-id explanation
 ### type2 stem:
 2885 - multiple tables
 ### type3 stem
