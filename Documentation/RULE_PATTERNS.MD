@@ -2,10 +2,10 @@ This file groups rules that have similar logic.
 # Rule Groups
 
 #### - value must be present and equal to ...
-100, 4180, 4220, 8500, 8568, 8640, 8650, 
+100, 4180, 4220, 8500, 8568, 8640, 8650, 8910
 
 #### -  compare variable to specific hardcoded value.
-8617, 8730, 8750, 8790, 8897, 8905
+8617, 8730, 8750, 8790, 8897, 8905, 
 
 #### - date value should be on or after
 1103, 1105, 4008, 4011, 4012, 4015, 8520, 8535Q, 8555, 8565, 8608, 8630, 8720, 8915, 8920, 8925
