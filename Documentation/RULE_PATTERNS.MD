@@ -5,7 +5,7 @@ This file groups rules that have similar logic.
 100, 4180, 4220, 8500, 8568, 8640, 8650, 8910, 8842Q
 
 #### -  compare variable to specific hardcoded value.
-8617, 8730, 8750, 8790, 8897, 8905, 8899Q, 8866
+8617, 8730, 8750, 8790, 8897, 8905, 8899Q, 8866, 8832
 
 #### - date value should be on or after
 1103, 1105, 4008, 4011, 4012, 4015, 8520, 8535Q, 8555, 8565, 8608, 8630, 8720, 8915, 8920, 8925
@@ -24,11 +24,11 @@ This file groups rules that have similar logic.
 multiple tables: 2885
 
 #### - if something happens (value present/absent) in module, another thing shouldn't happen (value present/absent)
-8805, 8810, 8840, 8841, 8873, 8869
+8805, 8810, 8840, 8841, 8873, 8869,8832
 multiple tables
-8585Q, 8614, 8615, 8867
+8585Q, 8614, 8615, 
   - on any: 4001, 
-  - must happen on all instances: 8868
+  - must happen on all instances: 8867, 8868
 
 #### - there must be only one in group
 4004, 8794, 8839, 8896, 8935, 8898
