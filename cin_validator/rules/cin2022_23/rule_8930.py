@@ -12,7 +12,6 @@ from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPendDate = ChildProtectionPlans.CPPendDate
@@ -23,7 +22,7 @@ ReferenceDate = Header.ReferenceDate
 @rule_definition(
     # write the rule code here, in place of 8930
     code=8930,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
+    # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child Protection Plan End Date must fall within the census year",
@@ -33,7 +32,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[ChildProtectionPlans]
 
     # ReferenceDate exists in the heder table so we get header table too.
@@ -50,8 +48,6 @@ def validate(
         (df[CPPendDate] < collection_start) | (df[CPPendDate] > reference_date)
     ].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
         table=ChildProtectionPlans, field=CPPendDate, row=failing_indices
     )
