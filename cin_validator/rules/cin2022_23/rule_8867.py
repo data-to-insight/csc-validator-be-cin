@@ -32,7 +32,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_cind = data_container[CINdetails].copy()
     df_ass = data_container[Assessments].copy()
 
