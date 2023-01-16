@@ -15,9 +15,7 @@ ICPCnotRequired = Section47.ICPCnotRequired
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8896
     code=8839,
-    # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Section47,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Within one CINDetails group there are 2 or more open S47 Assessments",
@@ -29,7 +27,7 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace Assessments with the name of the table you need.
+    # Replace Section47 with the name of the table you need.
     df = data_container[Section47]
     # Before you begin, rename the index and make it a column, so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
@@ -63,10 +61,10 @@ def validate(
         .count()
         .reset_index()
     )
-    #
+
     # when you groupby as shown above a series is returned where the columns in the round brackets become the index and the groupby result are the values.
     # resetting the index pushes the columns in the () back as columns of the dataframe and assigns the groupby result to the column in the square bracket.
-    #
+
     # filter out the instances where DateOfInitialCPC is missing more than once in a CINdetails group.
     df_check = df_check[df_check["CountICPC"] > 1]
     issue_ids = tuple(
@@ -160,11 +158,9 @@ def test_validate():
 
     issues = issues_list[0]
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == Section47
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [DateOfInitialCPC]
 
@@ -205,7 +201,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8839 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8839
     assert (
         result.definition.message
