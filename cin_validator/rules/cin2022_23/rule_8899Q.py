@@ -41,7 +41,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_ass = data_container[Assessments].copy()
     df_dis = data_container[Disabilities].copy()
 
@@ -51,15 +50,15 @@ def validate(
 
     df_ass.reset_index(inplace=True)
     df_dis.reset_index(inplace=True)
-    # get collection period
 
+    # get collection period
     header = data_container[Header]
     ref_date_series = header[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_date_series)
 
     # If disability is not NONE and <AssessmentAuthorisationDate> (N00160) is on or after [Start_Of_Census_Year] then <AssessmentFactors> (must include one or both of 5A or 6A)
     #  Returns rows without NONE or NANs (to catch exceptions in formatting).
-    df_dis = df_dis[(df_dis[Disability] != "NONE")]
+    df_dis = df_dis[(df_dis[Disability].str.upper() != "NONE")]
 
     # Returns only rows that happened after the census start
     df_ass = df_ass[df_ass[AssessmentAuthorisationDate] >= collection_start]
@@ -161,9 +160,9 @@ def test_validate():
                 "LAchildID": "child1",
                 "Disability": "NONE",
             },
-            {  # 2 ignore Disability=="NONE"
+            {  # 2 ignore Disability=="NONE. would have failed"
                 "LAchildID": "child2",
-                "Disability": "NONE",
+                "Disability": "None",  # will be evaluated as "NONE".
             },
             {  # 3 fail
                 "LAchildID": "child10",
@@ -206,7 +205,7 @@ def test_validate():
     issues_list = result.type2_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
+    # pick any table and check it's values. the tuple in location 0 will contain the Assessments columns because that's the first thing pushed above.
     issues = issues_list[0]
 
     # get table name and check it. Replace Assessments with the name of your table.

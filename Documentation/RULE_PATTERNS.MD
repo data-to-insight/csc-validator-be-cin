@@ -5,7 +5,7 @@ This file groups rules that have similar logic.
 100, 4180, 4220, 8500, 8568, 8640, 8650, 8910
 
 #### -  compare variable to specific hardcoded value.
-8617, 8730, 8750, 8790, 8897, 8905, 
+8617, 8730, 8750, 8790, 8897, 8905, 8899Q,
 
 #### - date value should be on or after
 1103, 1105, 4008, 4011, 4012, 4015, 8520, 8535Q, 8555, 8565, 8608, 8630, 8720, 8915, 8920, 8925
@@ -56,3 +56,6 @@ multiple tables
 ### type3 stem
 4016 - intra group interval overlap checks
 8896 - check duplication of values
+
+# Notes
+Since the Asssessments table has no ID to distinguish groups from each other, the AssessmentAuthorisationDate is used as a differentiator.
