@@ -112,13 +112,12 @@ def test_validate():
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentActualStartDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 1 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 1
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)

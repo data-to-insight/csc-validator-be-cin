@@ -30,7 +30,7 @@ multiple tables
   - on any: 4001,
 
 #### - there must be only one in group
-4004, 8794, 8839, 8896, 8935
+4004, 8794, 8839, 8896, 8935, 8898
 
 #### - value should not exist between any other interval within group. replace missing ends with RefDate
 8940
