@@ -35,7 +35,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_ass = data_container[Assessments].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -179,7 +178,7 @@ def test_validate():
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace easonForClosure with a list of your columns.
+    # check that the right columns were returned. Replace ReasonForClosure with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [ReasonForClosure]
 
