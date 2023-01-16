@@ -24,7 +24,7 @@ This file groups rules that have similar logic.
 multiple tables: 2885
 
 #### - if something happens (value present/absent) in module, another thing shouldn't happen (value present/absent)
-8805, 8810, 8840, 8841
+8805, 8810, 8840, 8841, 8873
 multiple tables
 8585Q, 8614, 8615, 8867
   - on any: 4001,
@@ -53,6 +53,7 @@ multiple tables
 8925 - link-id explanation
 ### type2 stem:
 2885 - multiple tables
+8873 - merging a table on itself to compare values within group.
 ### type3 stem
 4016 - intra group interval overlap checks
 8896 - check duplication of values
