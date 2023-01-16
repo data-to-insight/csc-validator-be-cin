@@ -18,9 +18,7 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=8897,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Parental or child factors at assessment information is missing from a completed assessment",
@@ -32,7 +30,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Assessments]
 
     header = data_container[Header]
@@ -190,17 +187,15 @@ def test_validate():
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentAuthorisationDate, AssessmentFactors]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -243,7 +238,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8897 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8897
     assert (
         result.definition.message
