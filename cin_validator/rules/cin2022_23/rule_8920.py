@@ -30,7 +30,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_cpp = data_container[ChildProtectionPlans].copy()
     df_child = data_container[ChildIdentifiers].copy()
 
@@ -47,7 +46,7 @@ def validate(
     # Implement rule logic as described by the Github issue.
     # Put the description as a comment above the implementation as shown.
 
-    # f <PersonDeathDate> (N00108) is present, then <CPPendDate> (N00115) must be on or before <PersonDeathDate> (N00108)
+    # If <PersonDeathDate> (N00108) is present, then <CPPendDate> (N00115) must be on or before <PersonDeathDate> (N00108)
     # Issues dfs should return rows where PersonDeathDate is less than or equal to the CPPendDate
 
     #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
@@ -75,7 +74,7 @@ def validate(
         zip(df_merged[LAchildID], df_merged[CPPendDate], df_merged[PersonDeathDate])
     )
 
-    # The merges were done on copies of cpp_df and child_df so that the column names in dataframes themselves aren't affected by the suffixes.
+    # The merges were done on copies of df_cpp and df_child so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cpp_issues = (
         df_cpp.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cpp")
