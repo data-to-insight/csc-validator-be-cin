@@ -171,7 +171,7 @@ def include_issue_child(issue_df, cin_data):
         # select the data for the rows with appear in issue_df and get the child ids
         linker_df = table_data.iloc[table_rows][["LAchildID", "ROW_ID"]]
 
-        # work around: ensure that columns from both sourcing have the same type to prevent merge error
+        # work around: ensure that columns from both sources have the same type to prevent merge error
         table_df["ROW_ID"] = table_df["ROW_ID"].astype("int64")
         linker_df["ROW_ID"] = linker_df["ROW_ID"].astype("int64")
         # map the child ids back to issue_df
