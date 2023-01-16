@@ -9,8 +9,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -163,17 +162,16 @@ def test_validate():
 
     issues = issues_list[1]
 
-    # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
     assert issue_table == ChildIdentifiers
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
+    # check that the right columns were returned. Replace PersonDeathDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [PersonDeathDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 3 with the number of failing points you expect from the sample data.
+    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
