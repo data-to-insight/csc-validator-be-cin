@@ -3,7 +3,6 @@ from typing import Mapping
 import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
-from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -43,18 +42,18 @@ def validate(
 
     # DF_CHECK: APPLY GROUPBYs IN A SEPARATE DATAFRAME SO THAT OTHER COLUMNS ARE NOT LOST OR CORRUPTED. THEN, MAP THE RESULTS TO THE INITIAL DATAFRAME.
     df_check = df.copy()
-    # get all the locations where AssessmentAuthorisationDate is null
+    # get all the locations where CPPendDate is null
     df_check = df_check[df_check[CPPendDate].isna()]
     # We'll have to count the number of nan values per group. NaNs cannot be counted so replace them with something that can.
     # Do this only if your rule requires that you interact with a column made up of all NaNs.
     df_check[CPPendDate].fillna(1, inplace=True)
     # count how many occurences of missing CPPendDate per ChildProtectionPlan group in each child.
     df_check = df_check.groupby([LAchildID, CPPID])[CPPendDate].count().reset_index()
-    #
+
     # when you groupby as shown above a series is returned where the columns in the round brackets become the index and the groupby result are the values.
     # resetting the index pushes the columns in the () back as columns of the dataframe and assigns the groupby result to the column in the square bracket.
-    #
-    # filter out the instances where AssessmentAuthorisationDate is missing more than once in a CP plan group.
+
+    # filter out the instances where CPPendDate is missing more than once in a CP plan group.
     df_check = df_check[df_check[CPPendDate] > 1]
     issue_ids = tuple(zip(df_check[LAchildID], df_check[CPPID]))
 
