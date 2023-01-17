@@ -24,7 +24,7 @@ This file groups rules that have similar logic.
 multiple tables: 2885
 
 #### - if something happens (value present/absent) in module, another thing shouldn't happen (value present/absent)
-8805, 8810, 8840, 8841, 8873, 8869,8832, 8831, 
+8805, 8810, 8840, 8841, 8873, 8869,8832, 8831, 8816
 multiple tables
 8585Q, 8614, 8615, 8825Q
   - on any: 4001, 
