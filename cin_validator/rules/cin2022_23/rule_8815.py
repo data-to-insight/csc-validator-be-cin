@@ -44,7 +44,7 @@ def validate(
     # If more than one <CINdetails> module is present for the same child, then there must only be one where:
     # <CINclosureDate> (N00102) is missing; and
     # <ReferralNFA> (N00112) = false or 0
-    #
+
     # Notes: a) <CINclosureDate> (N00102) can be present on all modules,
     # b) there may be more than one module with no <CINclosureDate> where <ReferralNFA> (N00112) = true/1.
     falsezero = ["false", "0"]
@@ -185,7 +185,6 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 4
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
