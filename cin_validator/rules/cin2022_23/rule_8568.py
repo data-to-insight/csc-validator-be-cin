@@ -13,7 +13,7 @@ from cin_validator.test_engine import run_rule
 CINdetails = CINTable.CINdetails
 ReferralNFA = CINdetails.ReferralNFA
 
-# define characteristics of rule
+
 @rule_definition(
     code=8568,
     module=CINTable.CINdetails,
@@ -24,9 +24,8 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[CINdetails]
-    """
-    <ReferralNFA> (N00112) must be present and must be 1 or 0, true or false
-    """
+
+    # <ReferralNFA> (N00112) must be present and must be 1 or 0, true or false
     df["ReferralNFA"] = df["ReferralNFA"].astype(str).str.lower()
     df = df[~df["ReferralNFA"].isin(["1", "0", "false", "true"])]
 

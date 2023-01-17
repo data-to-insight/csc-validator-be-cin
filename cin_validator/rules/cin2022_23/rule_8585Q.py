@@ -10,11 +10,10 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
 ReasonForClosure = CINdetails.ReasonForClosure
@@ -23,7 +22,7 @@ ChildIdentifiers = CINTable.ChildIdentifiers
 LAchildID = ChildIdentifiers.LAchildID
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
 
-# define characteristics of rule
+
 @rule_definition(
     code="8585Q",
     module=CINTable.CINdetails,
@@ -47,9 +46,6 @@ def validate(
     df_CIN.reset_index(inplace=True)
 
     # <ReasonForClosure> (N00103) = RC2 (Died) then a valid <PersonDeathDate> (N00108) must be present.
-
-    # Join 2 tables together
-
     df = df_CI.merge(
         df_CIN,
         left_on=["LAchildID"],
@@ -58,9 +54,7 @@ def validate(
         suffixes=("_CPP", "_CIN"),
     )
 
-    # Return rows with RC2 as ReasonForClosure
     df = df[df[ReasonForClosure] == "RC2"]
-    # Return those where no death date
     df = df[df[PersonDeathDate].isna()].reset_index()
 
     df["ERROR_ID"] = tuple(
@@ -90,7 +84,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_CIN = pd.DataFrame(
         [
             {
@@ -129,7 +122,6 @@ def test_validate():
         sample_CI[PersonDeathDate], format="%d/%m/%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(
         validate,
         {
@@ -138,25 +130,19 @@ def test_validate():
         },
     )
 
-    # The result contains a list of issues encountered
     issues_list = result.type2_issues
     assert len(issues_list) == 2
 
     issues = issues_list[1]
 
-    # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [ReasonForClosure]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 1
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 

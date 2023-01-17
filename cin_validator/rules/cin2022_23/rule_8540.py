@@ -5,26 +5,20 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-
 ChildIdentifiers = CINTable.ChildIdentifiers
 CINdetails = CINTable.CINdetails
 Disabilities = CINTable.Disabilities
 
 LAchildID = ChildIdentifiers.LAchildID
 PersonBirthDate = ChildIdentifiers.PersonBirthDate
-
 ReferralNFA = CINdetails.ReferralNFA
-
 Disability = Disabilities.Disability
 
-# define characteristics of rule
+
 @rule_definition(
     code=8540,
     module=CINTable.ChildCharacteristics,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Child’s disability is missing or invalid (see Disability table)",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[Disability, PersonBirthDate, ReferralNFA],
 )
 def validate(
@@ -61,10 +55,6 @@ def validate(
         "AUT",
         "DDA",
     ]
-    falseorzero = [
-        "false",
-        "0",
-    ]
 
     df_ci_cin = df_ci.merge(
         df_cin, on="LAchildID", how="left", suffixes=("_ci", "_cin")
@@ -75,9 +65,8 @@ def validate(
 
     merged_df = merged_df[~merged_df[Disability].isin(valid_dis)]
     merged_df = merged_df[merged_df[PersonBirthDate].notna()]
-    merged_df = merged_df[merged_df[ReferralNFA].isin(falseorzero)]
+    merged_df = merged_df[merged_df[ReferralNFA].isin(["false", "0"])]
 
-    # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(
         zip(
             merged_df[LAchildID],
@@ -104,7 +93,6 @@ def validate(
         .reset_index()
     )
 
-    # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=ChildIdentifiers, columns=[PersonBirthDate], row_df=df_ci_issues
     )
@@ -117,7 +105,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_ci = pd.DataFrame(
         [
             {
@@ -190,7 +177,6 @@ def test_validate():
         ]
     )
 
-    # Run the rule function, passing in our sample data.
     result = run_rule(
         validate,
         {
@@ -200,34 +186,21 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type2_issues
     assert len(issues_list) == 3
-    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
     issues = issues_list[1]
 
-    # get table name and check it. Replace Disabilities with the name of your table.
     issue_table = issues.table
     assert issue_table == Disabilities
 
-    # check that the right columns were returned. Replace Disabilities with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [Disability]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on, in your zip, earlier.
-    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
-
-    # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
             {
@@ -248,9 +221,6 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    # Check that the rule definition is what you wrote in the context above.
-
-    # replace 8540 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8540
     assert (
         result.definition.message

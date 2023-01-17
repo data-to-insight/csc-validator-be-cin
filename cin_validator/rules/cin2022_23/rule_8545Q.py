@@ -17,7 +17,7 @@ Header = CINTable.Header
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
 ReferenceDate = Header.ReferenceDate
 
-# define characteristics of rule
+
 @rule_definition(
     code="8545Q",
     module=CINTable.ChildIdentifiers,
@@ -32,7 +32,6 @@ def validate(
     df_ref = data_container[Header]
 
     # If present, <PersonDeathDate> (N00108) must be within [Period_of_Census]
-
     df = df[[PersonDeathDate]]
 
     # Death date must not be null, invalid text dates are made null in the line above

@@ -6,8 +6,6 @@ from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-
 CINplanDates = CINTable.CINplanDates
 CINPlanStartDate = CINplanDates.CINPlanStartDate
 LAchildID = CINplanDates.LAchildID
@@ -15,10 +13,9 @@ LAchildID = CINplanDates.LAchildID
 CINdetails = CINTable.CINdetails
 CINreferralDate = CINdetails.CINreferralDate
 
-# define characteristics of rule
+
 @rule_definition(
     code=4015,
-    # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINplanDates,
     message="The CIN Plan start date cannot be before the referral date",
     affected_fields=[
@@ -41,6 +38,7 @@ def validate(
     df_cindetail.reset_index(inplace=True)
     df_cinplan.reset_index(inplace=True)
 
+    # Where present, the <CINPlanStartDate> (N00689) must be on or after the <CINReferralDate> (N00100)
     df_cinplan = df_cinplan[df_cinplan[CINPlanStartDate].notna()]
 
     df_merged = df_cindetail.merge(
@@ -78,7 +76,6 @@ def validate(
         .reset_index()
     )
 
-    # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=CINplanDates, columns=[CINPlanStartDate], row_df=df_cindet_issues
     )
@@ -88,7 +85,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     plan_is = (
         # ID     #CINID   #PlanStartDate
         ("1", "45", "2020-05-05"),  # 0
@@ -124,7 +120,6 @@ def test_validate():
             "CINreferralDate": [x[2] for x in cin_is],
         }
     )
-    # If rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     fake_cinplan[CINPlanStartDate] = pd.to_datetime(
         fake_cinplan[CINPlanStartDate], format=r"%Y-%m-%d", errors="coerce"
     )
@@ -143,8 +138,6 @@ def test_validate():
     issues_list = result.type2_issues
 
     assert len(issues_list) == 2
-    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the CINdetails columns because that's the second thing pushed above.
     issues = issues_list[1]
 
     issue_table = issues.table
