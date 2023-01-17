@@ -22,7 +22,8 @@ def cli():
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 def list_cmd(ruleset):
-    """List all rules in a ruleset.
+    """
+    List all rules in a ruleset.
 
     Call using:
     python -m cin_validator list
@@ -31,6 +32,7 @@ def list_cmd(ruleset):
     :returns: A list of validation rules in the given ruleset.
     :rtype: list
     """
+
     importlib.import_module(f"cin_validator.{ruleset}")
     for rule in registry:
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
@@ -47,7 +49,8 @@ def list_cmd(ruleset):
 @click.option("--issue_id", "-e", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
 def run_all(filename: str, ruleset, issue_id, output):
-    """Used to run all of a set of validation rules on input data.
+    """
+    Used to run all of a set of validation rules on input data.
 
     CLI command:
     python -m cin_validator run-all <filepath_to_data>
@@ -104,7 +107,8 @@ def run_all(filename: str, ruleset, issue_id, output):
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 def test_cmd(rule, ruleset):
-    """Test all (or individual) rules in a ruleset. Note: tests the code
+    """
+    Test all (or individual) rules in a ruleset. Note: tests the code
     for the rule, this is not used for validating data.
 
     Allows use of the CLI to test a ruleset or individual rules against the
@@ -114,7 +118,7 @@ def test_cmd(rule, ruleset):
     Can be called to test all rules using:
     python -m cin_validator test
     To test individual rules:
-    python -m cin_vaslidator <rulecode>
+    python -m cin_validator <rulecode>
     For example:
     python -m cin_validator test 8875
 
@@ -124,6 +128,7 @@ def test_cmd(rule, ruleset):
     :returns: Pytest output in terminal of rules passing and failing.
     :rtype: Pytest output in terminal.
     """
+
     module = importlib.import_module(f"cin_validator.{ruleset}")
     module_folder = Path(module.__file__).parent
 
@@ -145,13 +150,12 @@ def test_cmd(rule, ruleset):
 @cli.command(name="xmltocsv")
 @click.argument("filename", type=click.Path(), required=True)
 def cli_converter(filename: str):
-    """Converts XML to CSV at selected filepath, does not require
-    XML to be validated against validation rules and does not validate
-    agaisnt rules. Outputs files to directory ./CIN-validator/output_csvs
+    """
+    Converts XML to CSV at selected filepath. Does not require XML to be validated against validation rules and does not validate against rules.
     Called using:
     python -m cin_validator xmltocsv <filepath>
 
-    :param str filename: Filename (including filepath) of XML file to convert to CSV.
+    :param str filename: filename (or path) of XML file to convert to CSV.
     :returns: CSV of XML input into output_csvs directory (which will be created
         if it doesn't already exist).
     :rtype: CSVs (multiple).

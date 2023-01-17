@@ -9,8 +9,8 @@ from cin_validator.utils import create_issue_locs
 
 @dataclass(frozen=True, eq=True)
 class IssueLocator:
-    """Dataclass used to contain information to locate and highlight  issues in the
-    originial data.
+    """
+    Dataclass used to specify definite locations of issues that should be highlighted in the user's data.
 
     :param CINTable-object table: Contains the name of the module/table in erorr for
         a validation rule.
@@ -27,13 +27,16 @@ class IssueLocator:
 
 @dataclass(frozen=True, eq=True)
 class Type1:
+    """Dataclass to define issue locations when more than one column is involved."""
+
     table: CINTable
     columns: List[str]
     row_df: pd.DataFrame
 
 
 class RuleContext:
-    """The RuleContext class includes methods that befine how error locations
+    """
+    The RuleContext class includes methods that define how error locations
     should be stored per validation rule.
 
     >Type 0 rules contain 1 table and 1 column.
@@ -45,7 +48,8 @@ class RuleContext:
     """
 
     def __init__(self, definition: RuleDefinition):
-        """Initialises RuleContext class.
+        """
+        Initialises RuleContext class.
 
         :param RuleDefinition-object definition: Member of the rule definition dataclass,
             contains information about each validation rule.
@@ -53,6 +57,7 @@ class RuleContext:
         :param list type2_issues: Empty list to be populated with type 2 issues.
         :param list type3_issues: Empty list to be populated with type 3 issues.
         """
+
         self.__definition = definition
 
         self.__issues = []
@@ -61,11 +66,13 @@ class RuleContext:
 
     @property
     def definition(self):
-        """Used to call information about validation rules.
+        """
+        Used to call information about validation rules.
 
         :returns: Object containing information about each validation rule.
         :rtype: RuleDefinition object.
         """
+
         return self.__definition
 
     # TODO create list of rules according to types to prevent checking all attributes each time a rule is run.
@@ -73,68 +80,76 @@ class RuleContext:
 
     # METHODS THAT DEFINE HOW ERROR LOCATIONS SHOULD BE STORED PER RULE STRUCTURE
     def push_issue(self, table, field, row):
-        """Rules that use only 1 table and 1 column in it.
-
-        :param CINTable-object table: A CINTable object denoting the table a validation error ocurred in.
-        :param CINTable-object column: A CINTable object denoting the column a validation error ocurred in.
-        :param DataFrame row_df: DataFrame containing the errors for a validation rule by table.
-        :returns: IssueLocator object containing information to locate validation errors in original data.
-        :rtype: IssueLocator object.
         """
+        For rules that check only a single column.
+
+        :param CINTable-object table: the table a validation error ocurred in.
+        :param CINTable-object column: the column a validation error ocurred in.
+        :param DataFrame row_df: errors for a validation rule by table.
+        :returns: information to locate validation errors in original data.
+        :rtype: list of IssueLocator objects.
+        """
+
         for i in row:
             self.__issues.append(IssueLocator(table, field, i))
 
     def push_type_1(self, table, columns, row_df):
-        """Many columns, One Table, no merge involved.
-
-        :param CINTable-object table: A CINTable object denoting the table a validation error ocurred in.
-        :param CINTable-object column: A CINTable object denoting the column a validation error ocurred in.
-        :param DataFrame row_df: DataFrame containing the errors for a validation rule by table.
-        :returns: RuleContext object containing information to locate validation errors in original data.
-        :rtype: RuleContext object
         """
+        For rules that check multiple columns in a single table, no merge involved.
+
+        :param CINTable-object table: the table a validation error ocurred in.
+        :param CINTable-object column: the column a validation error ocurred in.
+        :param DataFrame row_df: the errors for a validation rule by table.
+        :returns: information to locate validation errors in original data.
+        :rtype: dataclass object
+        """
+
         self.__type1_issues = Type1(table, columns, row_df)
 
     def push_type_2(self, table, columns, row_df):
-        """Multiple columns, multiple tables.
-
-        :param CINTable-object table: A CINTable object denoting the table a validation error ocurred in.
-        :param CINTable-object column: A CINTable object denoting the column a validation error ocurred in.
-        :param DataFrame row_df: DataFrame containing the errors for a validation rule by table.
-        :returns: RuleContext object containing information to locate validation errors in original data.
-        :rtype: RuleContext object
         """
+        For rules that check multiple columns across multiple tables.
+
+        :param CINTable-object table: the table a validation error ocurred in.
+        :param CINTable-object column:the column a validation error ocurred in.
+        :param DataFrame row_df: the errors for a validation rule by table.
+        :returns: information to locate validation errors in original data.
+        :rtype: list of dataclass objects
+        """
+
         table_tuple = Type1(table, columns, row_df)
         self.__type2_issues.append(table_tuple)
 
     def push_type_3(self, table, columns, row_df):
-        """One Table, values are checked per group.
-
-        :param CINTable-object table: A CINTable object denoting the table a validation error ocurred in.
-        :param CINTable-object column: A CINTable object denoting the column a validation error ocurred in.
-        :param DataFrame row_df: DataFrame containing the errors for a validation rule by table.
-        :returns: RuleContext object containing information to locate validation errors in original data.
-        :rtype: RuleContext object
         """
+        For rules that check values in a group with respect to each other.
+
+        :param CINTable-object table: the table a validation error ocurred in.
+        :param CINTable-object column: the column a validation error ocurred in.
+        :param DataFrame row_df: the errors for a validation rule by table.
+        :returns: information to locate validation errors in original data.
+        :rtype: list of dataclass objects
+        """
+
         table_tuple = Type1(table, columns, row_df)
         self.__type3_issues.append(table_tuple)
 
     def push_la_level(self, rule_code, rule_description):
-        """Rules that check relationships across the whole local authority
-
-        :param CINTable-object table: A CINTable object denoting the table a validation error ocurred in.
-        :param CINTable-object column: A CINTable object denoting the column a validation error ocurred in.
-        :param DataFrame row_df: DataFrame containing the errors for a validation rule by table.
-        :returns: RuleContext object containing information to locate validation errors in original data.
-        :rtype: RuleContext object
         """
+        For rules that check relationships across the whole local authority
+
+        :param CINTable-object table: the table a validation error ocurred in.
+        :param CINTable-object column: the column a validation error ocurred in.
+        :param DataFrame row_df: the errors for a validation rule by table.
+        :returns: information to locate validation errors in original data.
+        :rtype: list of tuples
+        """
+
         self.__la_issues = (rule_code, rule_description)
 
     # PROPERTIES FOR TEST_VALIDATE FUNCTIONS
     @property
     def issues(self):
-        # for issues in self.__issues:
-        #     yield from issues
         return self.__issues
 
     @property
@@ -156,7 +171,8 @@ class RuleContext:
     # PROPERTIES FOR CREATING THE ERROR REPORT
     @property
     def type_zero_issues(self):
-        """Expands issues object into a dataframe where each row represents a location in the data
+        """
+        Expands issues object into a dataframe where each row represents a location in the data
         by a unique table-column-index combination.
 
         :returns: DataFrame that contains failing locations of rules that involve only 1 column
@@ -183,7 +199,8 @@ class RuleContext:
 
     @property
     def type_one_issues(self):
-        """Expands type1 issue object into a dataframe where each row represents a location in the data
+        """
+        Expands type1 issue object into a dataframe where each row represents a location in the data
         by a unique table-column-index combination.
 
         :returns: DataFrame that contains failing locations of rules that involve only 1 table
@@ -200,15 +217,17 @@ class RuleContext:
             # all non-type1 rules run this.
             return []
 
-    # TODO decide if type_one_issues and type_two_issues should be combined to ease maintainability or left apart for readability.
+    # type_one_issues and type_two_issues, though similar, should be left apart for readability.
     @property
     def type_two_issues(self):
-        """Expands type2 issue object into a dataframe where each row represents a location in the data
+        """
+        Expands type2 issue object into a dataframe where each row represents a location in the data
         by a unique table-column-index combination
 
         :returns: DataFrame that contains failing locations of rules that involve multiple tables.
-        :rtype: DatFrame
+        :rtype: DataFrame
         """
+
         try:
             # if it is a type2 rule i.e __type2_issues.row_df exists, do this.
             issues_per_table = self.__type2_issues
@@ -228,12 +247,14 @@ class RuleContext:
 
     @property
     def type_three_issues(self):
-        """expands type3 issue object into a dataframe where each row represents a location in the data
+        """
+        Expands type3 issue object into a dataframe where each row represents a location in the data
         by a unique table-column-index combination.
 
         :returns: DataFrame that contains failing locations of rules that involve errors within groups.
-        :rtype: DatFrame
+        :rtype: DataFrame
         """
+
         try:
             # if it is a type3 rule i.e __type3_issues.row_df exists, do this.
             issues_per_table = self.__type3_issues
@@ -253,10 +274,11 @@ class RuleContext:
 
     @property
     def la_level_issues(self):
-        """Creates DataFrame of return level validation errors.
+        """
+        Creates DataFrame of return level validation errors.
 
-        :returns: DataFrame that contains failing locations of rules that entire LAs.
-        :rtype: DatFrame
+        :returns: DataFrame containing rule code/description of la-level rules that the data failed.
+        :rtype: DataFrame
         """
         try:
             code, desc = self.__la_issues
