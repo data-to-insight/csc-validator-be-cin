@@ -47,8 +47,9 @@ def list_cmd(ruleset):
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
 @click.option("--issue_id", "-e", default=None)
+@click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
-def run_all(filename: str, ruleset, issue_id, output):
+def run_all(filename: str, ruleset, issue_id, select, output):
     """
     Used to run all of a set of validation rules on input data.
 
@@ -73,7 +74,9 @@ def run_all(filename: str, ruleset, issue_id, output):
     root = fulltree.getroot()
 
     data_files = cin_class.process_data(root)
-    validator = cin_class.CinValidationSession(data_files, ruleset, issue_id)
+    validator = cin_class.CinValidationSession(
+        data_files, ruleset, issue_id, selected_rules=select
+    )
 
     issue_instances = validator.issue_instances
     all_rules_issue_locs = validator.all_rules_issue_locs
