@@ -39,7 +39,7 @@ def validate(
     # Change the line below to ensure values are >=0 ie not null
 
     failing_indices = df[
-        (df[NumberOfPreviousCPP].isna()) | (df[NumberOfPreviousCPP] < 0)
+        (df[NumberOfPreviousCPP].isna()) | (df[NumberOfPreviousCPP].astype(int) < 0)
     ].index
 
     # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
