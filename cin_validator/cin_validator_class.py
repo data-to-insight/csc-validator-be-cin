@@ -71,7 +71,11 @@ class CinValidationSession:
     """
 
     def __init__(
-        self, data_files=None, ruleset="rules.cin2022_23", issue_id=None
+        self,
+        data_files=None,
+        ruleset="rules.cin2022_23",
+        issue_id=None,
+        selected_rules=None,
     ) -> None:
         """
         Initialises CinValidationSession class.
@@ -82,6 +86,7 @@ class CinValidationSession:
         :param list ruleset: The list of rules used in an individual validation session.
             Refers to rules in particular subdirectories of the rules directory.
         :param str issue_id: Can be used to choose a particular instance of an error using ERROR_ID.
+        :param list selected_rules: array of rule codes (as strings) selected by the user. Determines what rules should be run.
         :returns: DataFrame of error report which could be a filtered version if issue_id is input.
         :rtype: DataFrame
         """
@@ -90,10 +95,32 @@ class CinValidationSession:
         self.ruleset = ruleset
         self.issue_id = issue_id
 
-        self.create_issue_report_df()
+        self.create_issue_report_df(selected_rules)
         self.select_by_id()
 
+    def get_rules_to_run(self, registry, selected_rules):
+        """
+        Filters rules to be run based on user's selection in the frontend.
+        :param Registry-class registry: record of all existing rules in rule pack
+        :param list selected_rules: array of rule codes as strings
+        """
+        if selected_rules:
+            rules_to_run = [
+                rule for rule in registry if str(rule.code) in selected_rules
+            ]
+            return rules_to_run
+        else:
+            return registry
+
     def process_issues(self, rule, ctx):
+        """
+        process result of running a rule on the user's data.
+
+        :param RuleDefinition-class rule: the rule that was run on the data
+        :param RuleContext-object ctx: "manages state" per rule. contains updated issue_dfs if any were added when rule was run on the data.
+        :returns : None
+
+        """
         # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
         issue_dfs_per_rule = pd.Series(
             [
@@ -143,7 +170,7 @@ class CinValidationSession:
             self.rules_broken.append(rule.code)
             self.rule_messages.append(f"{str(rule.code)} - {rule.message}")
 
-    def create_issue_report_df(self):
+    def create_issue_report_df(self, selected_rules):
         """
         Creates report of errors found when validating CIN data input to
         the tool.
@@ -177,7 +204,8 @@ class CinValidationSession:
 
         importlib.import_module(f"cin_validator.{self.ruleset}")
 
-        for rule in registry:
+        rules_to_run = self.get_rules_to_run(registry, selected_rules)
+        for rule in rules_to_run:
             data_files = self.data_files.__deepcopy__({})
             ctx = RuleContext(rule)
             try:
