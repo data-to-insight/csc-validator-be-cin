@@ -69,7 +69,10 @@ def validate(
     )
 
     df_cin_47 = df_cin.merge(
-        df_47, on=["LAchildID", "CINdetailsID", DateOfInitialCPC], how="left", suffixes=["_cin", "_47"]
+        df_47,
+        on=["LAchildID", "CINdetailsID", DateOfInitialCPC],
+        how="left",
+        suffixes=["_cin", "_47"],
     )
 
     df_cin_cin_pd = df_cin.merge(

@@ -132,18 +132,18 @@ def validate(
                 CINdetailsID,
                 "ROW_ID_CIN",
                 CINclosureDate,
-                "DateOfInitialCPC"
+                "DateOfInitialCPC",
             ],
-            right_on = [
-                 LAchildID,
+            right_on=[
+                LAchildID,
                 CINdetailsID,
                 "ROW_ID_CIN",
                 CINclosureDate,
-                "DateOfInitialCPC_CIN"               
+                "DateOfInitialCPC_CIN",
             ],
             # left_on = ["DateOfInitialCPC_CIN"],
             # right_on = [DateOfInitialCPC],
-            suffixes = ("_dd", "_done")
+            suffixes=("_dd", "_done"),
         )
         .merge(
             df_CIN_CPP,
@@ -434,8 +434,8 @@ def test_validate():
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID5",
-                "S47ActualStartDate": "31/07/2022", 
-                "DateOfInitialCPC": "30/12/2020" # Fails S47 starts after CIN closure
+                "S47ActualStartDate": "31/07/2022",
+                "DateOfInitialCPC": "30/12/2020"  # Fails S47 starts after CIN closure
                 # Fail
             },
             {

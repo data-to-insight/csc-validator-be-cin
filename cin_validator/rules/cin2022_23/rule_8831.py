@@ -70,16 +70,19 @@ def validate(
 
     # Check columns in Section47 table
     df_cin_47 = df_cin.merge(
-        df_47, on=["LAchildID", "CINdetailsID", "DateOfInitialCPC"], how="left", suffixes=["_cin", "_47"]
+        df_47,
+        on=["LAchildID", "CINdetailsID", "DateOfInitialCPC"],
+        how="left",
+        suffixes=["_cin", "_47"],
     )
     # filter out rows that have an S47ActualStartDate or DateOfInitialCPC
     condition_1 = (
         df_cin_47[DateOfInitialCPC].notna() | df_cin_47[S47ActualStartDate].notna()
     )
     df_cin_47 = df_cin_47[condition_1]
-    
+
     df_cin_47["ERROR_ID"] = tuple(zip(df_cin_47[LAchildID], df_cin_47[CINdetailsID]))
-    
+
     df_47_issues = (
         df_47.merge(df_cin_47, left_on="ROW_ID", right_on="ROW_ID_47")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
