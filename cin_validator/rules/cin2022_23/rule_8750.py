@@ -15,7 +15,7 @@ GenderCurrent = ChildIdentifiers.GenderCurrent
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
+    # write the rule code here, in place of 8750
     code=8750,
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
@@ -48,15 +48,7 @@ def validate(
     df_issues = df[condition].reset_index()
 
     # SUBMIT ERRORS
-    # Generate a unique ID for each instance of an error. In this case,
-    # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
-    # We don't want that because in reality, a child can have multiple instances of an error.
-    # - If we use the LAchildID-CPPstartDate combination, that artificially cancels out the instances where a start date repeats for the same child.
-    # Another rule checks for that condition. Not this one.
-    # - It is very unlikely that a combination of LAchildID-CPPstartDate-CPPendDate will repeat in the DataFrame.
-    # Hence, it can be used as a unique identifier of the row.
-
-    # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
+    # Generate a unique ID for each instance of an error.
     link_id = tuple(
         zip(
             df_issues[LAchildID],
@@ -134,11 +126,11 @@ def test_validate():
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
+    # get table name and check it. Replace ChildIdentifiers with the name of your table.
     issue_table = issues.table
     assert issue_table == ChildIdentifiers
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
+    # check that the right columns were returned.
     issue_columns = issues.columns
     assert issue_columns == [GenderCurrent, PersonBirthDate, ExpectedPersonBirthDate]
 
@@ -179,6 +171,6 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8750 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8750
     assert result.definition.message == "Gender must equal 0 for an unborn child"
