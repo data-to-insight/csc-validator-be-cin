@@ -24,14 +24,13 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[Disabilities]
-    """
-    If there is more than one <Disability> (N00099) for a child, then none of the values should appear more than once
-    """
 
+    # If there is more than one <Disability> (N00099) for a child, then none of the values should appear more than once
     df_orig = df.copy()
     df_orig.reset_index(inplace=True)
 
-    # Create a 'counts' column, a count of rows partitioned by LAchildID and Disability
+    # Create a 'counts' column, a count of rows partitioned by LAchildID and Disability such that
+    # if an LAchildID-Disability combination appears twice, then it'll have a count of 2, and so on.
     df = df.groupby(["LAchildID", "Disability"]).size().reset_index(name="counts")
 
     # Add the count column back into the original dataframe, joining by LAchildID and Disability
