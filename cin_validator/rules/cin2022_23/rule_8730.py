@@ -34,8 +34,10 @@ def validate(
     # Change the line below to ensure values are >=0 ie not null
 
     failing_indices = df[
-        (df[NumberOfPreviousCPP].isna()) | (df[NumberOfPreviousCPP].astype(int) < 0)
+        (df[NumberOfPreviousCPP].isna()) | (df[NumberOfPreviousCPP].astype("Int64") < 0)
     ].index
+    # Int64 dtype is used instead of int because it tolerates the possibility of NaN values in the column
+    # nullable integers ==  Int64 dtype
 
     rule_context.push_issue(
         table=ChildProtectionPlans, field=NumberOfPreviousCPP, row=failing_indices
