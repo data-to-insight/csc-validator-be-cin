@@ -15,7 +15,7 @@ This file groups rules that have similar logic.
   - Conditionally: 8736, 8740, 8930
 
 #### - date value compared to reference value minus n days
-8530, 8670Q
+8530, 8670Q, 8675Q
 
 #### - UPN syntax
 1510, 1530, 1540, 1550, 
