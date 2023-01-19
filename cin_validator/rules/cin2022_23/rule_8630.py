@@ -23,9 +23,7 @@ def validate(
 ):
     df = data_container[CINdetails]
 
-    """
-    If present <CINclosureDate> (N00102) must be on or after <CINreferralDate> (N00100) in the same <CINdetails> instance
-    """
+    # If present <CINclosureDate> (N00102) must be on or after <CINreferralDate> (N00100) in the same <CINdetails> instance
 
     df.index.name = "ROW_ID"
 
