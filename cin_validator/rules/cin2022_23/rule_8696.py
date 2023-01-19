@@ -12,7 +12,6 @@ from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 Assessments = CINTable.Assessments
 Header = CINTable.Header
@@ -29,7 +28,7 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
+
     df = data_container[Assessments]
     df_ref = data_container[Header]
 
@@ -50,9 +49,6 @@ def validate(
     rule_context.push_issue(
         table=Assessments, field=AssessmentAuthorisationDate, row=failing_indices
     )
-
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
 
 
 def test_validate():
