@@ -5,7 +5,6 @@ Rule details: Where present, within an <Assessments> group, if <AssessmentAuthor
 (N00159) should not be before the <ReferenceDate> (N00603) minus 45 working days.
 
 Rule message: Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date. 
-
 """
 from typing import Mapping
 
@@ -120,17 +119,17 @@ def test_validate():
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildIdentifiers with the name of your table.
+    # get table name and check it. Replace Assessments with the name of your table.
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. Replace PersonDeathDate and PersonBirthDate with a list of your columns.
+    # check that the right columns were returned. Replace AssessmentAuthorisationDate and AssessmentActualStartDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentAuthorisationDate, AssessmentActualStartDate]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 1 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 1
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -151,7 +150,7 @@ def test_validate():
 
     assert issue_rows.equals(expected_df)
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8670Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8670Q"
     assert (
         result.definition.message
