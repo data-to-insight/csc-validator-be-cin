@@ -178,14 +178,12 @@ def test_validate():
     issues_list = result.type2_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
     issues = issues_list[1]
 
     # get table name and check it. Replace Section47 with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace DateOfInitialCPC  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINclosureDate]
 
