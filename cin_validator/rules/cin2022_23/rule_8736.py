@@ -29,7 +29,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Assessments]
     header = data_container[Header]
     ref_date_series = header[ReferenceDate]
@@ -52,15 +51,7 @@ def validate(
     df_issues = df[condition_1 & ~condition_2].reset_index()
 
     # SUBMIT ERRORS
-    # Generate a unique ID for each instance of an error. In this case,
-    # - If only LAchildID is used as an identifier, multiple instances of the error on a child will be understood as 1 instance.
-    # We don't want that because in reality, a child can have multiple instances of an error.
-    # - If we use the LAchildID-CPPstartDate combination, that artificially cancels out the instances where a start date repeats for the same child.
-    # Another rule checks for that condition. Not this one.
-    # - It is very unlikely that a combination of LAchildID-CPPstartDate-CPPendDate will repeat in the DataFrame.
-    # Hence, it can be used as a unique identifier of the row.
-
-    # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
+    # Generate a unique ID for each instance of an error.
     link_id = tuple(
         zip(
             df_issues[LAchildID],
@@ -74,7 +65,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=Assessments,
         columns=[AssessmentAuthorisationDate, AssessmentActualStartDate],
@@ -148,7 +138,6 @@ def test_validate():
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == Assessments
 
@@ -158,7 +147,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -201,7 +190,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8736 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8736
     assert (
         result.definition.message
