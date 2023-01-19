@@ -69,7 +69,7 @@ def validate(
     )
 
     df_cin_47 = df_cin.merge(
-        df_47, on=["LAchildID", "CINdetailsID"], how="left", suffixes=["_cin", "_47"]
+        df_47, on=["LAchildID", "CINdetailsID", DateOfInitialCPC], how="left", suffixes=["_cin", "_47"]
     )
 
     df_cin_cin_pd = df_cin.merge(
@@ -89,7 +89,7 @@ def validate(
             "ReasonForClosure",
         ],
         how="left",
-        suffixes=["", ""],
+        suffixes=["_cin_cpp", "_cin_47"],
     )
     merged_df = df_cin_cpp_47.merge(
         df_cin_cin_pd,
@@ -101,7 +101,7 @@ def validate(
             "ReasonForClosure",
         ],
         how="left",
-        suffixes=["", ""],
+        suffixes=["_cin_cpp_47", "_cin_cin_pd"],
     )
 
     # Logical conditions - other than this, of the tables can merge, it means there's modules and they are in error
@@ -206,30 +206,37 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child2",  # fails for having a module
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child2",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID3",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -310,6 +317,9 @@ def test_validate():
 
     sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
         sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
+    sample_section47["DateOfInitialCPC"] = pd.to_datetime(
+        sample_section47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run the rule function, passing in our sample data.
