@@ -22,7 +22,7 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
+    # write the rule code here, in place of 8770Q
     code="8770Q",
     rule_type=RuleType.QUERY,
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
@@ -41,7 +41,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_cid = data_container[ChildIdentifiers].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -107,7 +106,6 @@ def validate(
     # create an identifier for each error instance.
     df_merged["ERROR_ID"] = tuple(zip(df_merged[LAchildID]))
 
-    # The merges were done on copies of df_cid and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cid_issues = (
         df_cid.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID")
@@ -208,14 +206,12 @@ def test_validate():
     issues_list = result.type2_issues
     assert len(issues_list) == 1
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Section47 columns because that's the second thing pushed above.
+    # pick any table and check it's values.
     issues = issues_list[0]
 
-    # get table name and check it. Replace Section47 with the name of your table.
     issue_table = issues.table
     assert issue_table == ChildIdentifiers
 
-    # check that the right columns were returned. Replace DateOfInitialCPC  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [UPN, UPNunknown]
 
@@ -248,7 +244,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8770Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8770Q"
     assert (
         result.definition.message
