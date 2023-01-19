@@ -155,21 +155,21 @@ def test_validate():
     assert len(issues_list) == 2
 
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the Reviews columns because that's the second thing pushed above.
+    # pick any table and check it's values.
     issues = issues_list[1]
 
-    # get table name and check it. Replace Reviews with the name of your table.
+    # get table name and check it. Replace CINdetails with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
+    # check that the right columns were returned. Replace ReferralNFA with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [ReferralNFA]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
 
-    # replace 3 with the number of failing points you expect from the sample data.
+    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -203,7 +203,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8772 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8772
     assert (
         result.definition.message
