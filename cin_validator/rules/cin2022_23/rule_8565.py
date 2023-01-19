@@ -127,13 +127,23 @@ def validate(
     df = (
         df_CIN_assessments.merge(
             df_CIN_S47,
-            on=[
+            left_on=[
                 LAchildID,
                 CINdetailsID,
                 "ROW_ID_CIN",
                 CINclosureDate,
-                DateOfInitialCPC,
+                "DateOfInitialCPC"
             ],
+            right_on = [
+                 LAchildID,
+                CINdetailsID,
+                "ROW_ID_CIN",
+                CINclosureDate,
+                "DateOfInitialCPC_CIN"               
+            ],
+            # left_on = ["DateOfInitialCPC_CIN"],
+            # right_on = [DateOfInitialCPC],
+            suffixes = ("_dd", "_done")
         )
         .merge(
             df_CIN_CPP,
@@ -397,48 +407,56 @@ def test_validate():
                 "LAchildID": "child1",
                 "CINdetailsID": "cinID1",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Pass
             },
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "cinID2",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on initial CPC date
             },
             {
                 "LAchildID": "child3",
                 "CINdetailsID": "cinID3",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on assessment start date
             },
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "cinID4",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on assessment authorisation date
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID5",
-                "S47ActualStartDate": "31/07/2022",  # Fails S47 starts after CIN closure
+                "S47ActualStartDate": "31/07/2022", 
+                "DateOfInitialCPC": "30/12/2020" # Fails S47 starts after CIN closure
                 # Fail
             },
             {
                 "LAchildID": "child6",
                 "CINdetailsID": "cinID6",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CPP start date
             },
             {
                 "LAchildID": "child7",
                 "CINdetailsID": "cinID7",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan start date
             },
             {
                 "LAchildID": "child8",
                 "CINdetailsID": "cinID8",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan end date
             },
         ]
