@@ -5,8 +5,6 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-
 ChildIdentifiers = CINTable.ChildIdentifiers
 CINplanDates = CINTable.CINplanDates
 
@@ -15,7 +13,6 @@ PersonDeathDate = ChildIdentifiers.PersonDeathDate
 CINPlanEndDate = CINplanDates.CINPlanEndDate
 
 
-# define characteristics of rule
 @rule_definition(
     code=4009,
     module=CINTable.ChildIdentifiers,
@@ -49,7 +46,7 @@ def validate(
         suffixes=["_ci", "_cin"],
     )
 
-    condition = merged_df[CINPlanEndDate] > merged_df[PersonDeathDate]
+    condition = merged_df[PersonDeathDate] < merged_df[CINPlanEndDate]
 
     merged_df = merged_df[condition].reset_index()
 
@@ -60,7 +57,6 @@ def validate(
         )
     )
 
-    # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_ci_issues = (
         df_ci.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_ci")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -75,7 +71,6 @@ def validate(
         .reset_index()
     )
 
-    # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=ChildIdentifiers, columns=[PersonDeathDate], row_df=df_ci_issues
     )
@@ -85,7 +80,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_ci = pd.DataFrame(
         [
             {

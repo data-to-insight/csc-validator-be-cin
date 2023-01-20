@@ -5,35 +5,25 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 CINplanDates = CINTable.CINplanDates
 CINPlanStartDate = CINplanDates.CINPlanStartDate
 CINPlanEndDate = CINplanDates.CINPlanEndDate
 LAchildID = CINplanDates.LAchildID
 
-# define characteristics of rule
+
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=4011,
-    # replace CINplanDates with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.CINplanDates,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="CIN Plan End Date earlier than Start Date",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[CINPlanEndDate, CINPlanStartDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # PREPARING DATA
-
-    # Replace CINplanDates with the name of the table you need.
     df = data_container[CINplanDates]
-    # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
 
     # <If present <CINPlanEndDate> (N00690) must be on or after the <CINPlanStartDate> (N00689)
-
     # Remove all rows with no end date
     df = df[~df[CINPlanEndDate].isna()]
 
@@ -61,7 +51,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     cin_plan = pd.DataFrame(
         [
             {
@@ -93,7 +82,6 @@ def test_validate():
             },
         ]
     )
-    # Conver to dates
     cin_plan[CINPlanEndDate] = pd.to_datetime(
         cin_plan[CINPlanEndDate], format="%d/%m/%Y", errors="coerce"
     )
@@ -101,28 +89,20 @@ def test_validate():
         cin_plan[CINPlanStartDate], format="%d/%m/%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(validate, {CINplanDates: cin_plan})
 
-    # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
     issue_table = issues.table
     assert issue_table == CINplanDates
 
-    # check that the right columns were returned. Replace CINPlanEndDate and CINPlanStartDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINPlanEndDate, CINPlanStartDate]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 1
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
-
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
 
     expected_df = pd.DataFrame(
         [
@@ -137,8 +117,6 @@ def test_validate():
         ]
     )
     assert issue_rows.equals(expected_df)
-
-    # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 4011
     assert result.definition.message == "CIN Plan End Date earlier than Start Date"

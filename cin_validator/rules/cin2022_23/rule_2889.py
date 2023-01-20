@@ -12,7 +12,7 @@ CINdetails = CINTable.CINdetails
 CINreferralDate = CINdetails.CINreferralDate
 LAchildID = CINdetails.LAchildID
 
-# define characteristics of rule
+
 @rule_definition(
     code=2889,
     module=CINTable.Section47,
@@ -26,18 +26,13 @@ def validate(
     df_s47 = data_container[Section47]
     df_cin = data_container[CINdetails]
 
-    # rename the index so that the initial row positions can be kept intact.
     df_s47.index.name = "ROW_ID"
     df_cin.index.name = "ROW_ID"
 
-    # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
-    # so that they can come along when the merge is done.
     df_s47.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
 
-    # LOGIC
     # Where present, the <S47ActualStartDate> (N00148) should be on or after the <CINReferralDate> (N00100)
-
     # Remove null S47Starts
     df_s47 = df_s47[df_s47[S47ActualStartDate].notna()]
 
@@ -49,7 +44,7 @@ def validate(
     # Check for S47 Start < Cin Ref date which are the error rows
     condition = df_merged[S47ActualStartDate] < df_merged[CINreferralDate]
     df_merged = df_merged[condition].reset_index()
-    # create an identifier for each instance of the error.
+
     df_merged["ERROR_ID"] = tuple(
         zip(
             df_merged[LAchildID],
@@ -116,7 +111,6 @@ def test_validate():
         }
     )
 
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     fake_s47[S47ActualStartDate] = pd.to_datetime(
         fake_s47[S47ActualStartDate], format=r"%Y-%m-%d", errors="coerce"
     )
@@ -124,32 +118,20 @@ def test_validate():
         fake_cin[CINreferralDate], format=r"%Y-%m-%d", errors="coerce"
     )
 
-    # run rule on the data
     result = run_rule(validate, {Section47: fake_s47, CINdetails: fake_cin})
 
-    # verify that the results are as expected.
     issues_list = result.type2_issues
-    # check errors were recorded across both tables involved
     assert len(issues_list) == 2
 
-    # pick a table and check its values
     issues = issues_list[1]
     assert issues.table == Section47
     assert issues.columns == [S47ActualStartDate]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on, in your zip, earlier.
-    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
-
-    # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
             {
@@ -179,8 +161,6 @@ def test_validate():
         ]
     )
     assert issue_rows.equals(expected_df)
-
-    # Check that the rule definition is what you wrote in the context above.
 
     assert result.definition.code == 2889
     assert (
