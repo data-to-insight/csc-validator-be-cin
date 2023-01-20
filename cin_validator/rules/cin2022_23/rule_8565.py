@@ -16,8 +16,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -92,7 +96,14 @@ def validate(
 
     df_CIN = df_CIN[df_CIN[CINclosureDate].notna()]
 
-    # <CINclosureDate> (N00102) is present then it must be on or after all of the following dates
+    # <CINclosureDate> (N00102) is present then it must be on or after all of the following dates that are present:
+    # <AssessmentActualStartDate> (N00159)
+    # <AssessmentAuthorisationDate>(N00160)
+    # <S47ActualStartDate> (N00148)
+    # <DateOfInitialCPC> (N00110)
+    # <CPPendDate> (N00115)
+    # <CINPlanStartDate> (N00689)
+    # <CINPlanEndDate> (N00690)
 
     # Join tables together
 
@@ -139,10 +150,8 @@ def validate(
                 CINdetailsID,
                 "ROW_ID_CIN",
                 CINclosureDate,
-                "DateOfInitialCPC_CIN",
+                "DateOfInitialCPC_CIN",  # Merges on DateOfInitialCPC from the CIN module
             ],
-            # left_on = ["DateOfInitialCPC_CIN"],
-            # right_on = [DateOfInitialCPC],
             suffixes=("_dd", "_done"),
         )
         .merge(
@@ -168,7 +177,6 @@ def validate(
     )
 
     # Return those where dates don't align
-
     condition1 = df[CINclosureDate] < df[DateOfInitialCPC]
     condition2 = df[CINclosureDate] < df[AssessmentActualStartDate]
     condition3 = df[CINclosureDate] < df[AssessmentAuthorisationDate]
@@ -176,6 +184,7 @@ def validate(
     condition5 = df[CINclosureDate] < df[CPPendDate]
     condition6 = df[CINclosureDate] < df[CINPlanStartDate]
     condition7 = df[CINclosureDate] < df[CINPlanEndDate]
+    condition8 = df[CINclosureDate] < df["DateOfInitialCPC_CIN"]
 
     df = df[
         condition1
@@ -185,6 +194,7 @@ def validate(
         | condition5
         | condition6
         | condition7
+        | condition8
     ].reset_index()
 
     df["ERROR_ID"] = tuple(
