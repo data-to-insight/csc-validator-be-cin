@@ -12,7 +12,7 @@ This open source tool allows users to validate CIN census data for the DfE retur
 
 The tool is useable both in browser (URL TO BE DECIDED) and via the command line interface and validates data that is in the XML format that same data would be in for the DfE tool.
 
-This tool was developed by a UK wide group of analysts and local authority employees, in collaboration with Social Finance, a not for profit consultancy aiming to tackle social problems in the UK and Globally, and Data to Insight, a national project led by local authorities with support from the ADCS, DLUHC, DfE, and Ofsted to help local authorities make better use of data.
+This tool was developed by a UK-wide group of analysts and local authority employees, in collaboration with Social Finance, a not for profit consultancy aiming to scale better solutions to complex social problems, and Data to Insight, a national project led by local authorities with support from the ADCS, DLUHC, DfE, and Ofsted to help local authorities make better use of data.
 
 The continued existence and relevance of the tool relies on users, and those who are interested, contributing the to the maintenance and development of the tool. For instance, reporting bugs, fixing bugs, and updating the tool with new rules when the DfE releases new rules or changes current ones.
 
@@ -51,7 +51,7 @@ You can't run the CIN validator by pressing the run button like you do with some
 `python -m cin_validator list`
 - To run rules on a file and generate a table of error locations:  
 `python -m cin_validator run-all <path to test data>`
--To run rules on the sample data and explore the output of the CLI:
+- To run rules on the sample data and explore the output of the CLI:
 `python -m cin_validator run-all path/to/your/cin/validator/CIN-validator/fake_data/fake_CIN_data.xml`
 - To run rules on a file and select an instance of an error based on its ID:  
 `python -m cin_validator run-all <path to test data> -e "<ERROR_ID as string>"`
@@ -103,4 +103,4 @@ Community maintenance: The CIN validation tool relies on the community of analys
 
 CIN validator extensions: We are currently in the process of organising how to port the 903 validation tool over to the same framework as the CIN validation tool. Doing so will improve our insight into how we can build other validation tools on top of the CIN/903 validator more easily.
 
-CSV functionality: the tool should eventually be able to take in CSVs as well as XMLs, it should also be able to output XMLs as the current method of conversion offered byt he DfE is very slow and clunky.
+CSV functionality: the tool should eventually be able to take in CSVs as well as XMLs, it should also be able to output XMLs as the current method of conversion offered by the DfE is very slow and clunky.
