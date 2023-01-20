@@ -54,19 +54,19 @@ def validate(
 
     merged_df = CINclosure_present.merge(
         df_47,
-        on=[LAchildID, "CINdetailsID", DateOfInitialCPC],
+        on=[
+            LAchildID,
+            "CINdetailsID",
+        ],
         how="left",
         suffixes=["_cin", "_47"],
     )
 
-    # condition = (merged_df[DateOfInitialCPC].isna()) & (
-    #    ~merged_df[ICPCnotRequired].isin(oneortrue)
-    # )
-
-    condition_1 = (merged_df[DateOfInitialCPC].isna()) & (
+    # Checks DateOfInitialCPC from s47 model
+    condition_1 = (merged_df["DateOfInitialCPC_47"].isna()) & (
         ~merged_df[ICPCnotRequired].isin(["1", "true"])
     )
-    condition_2 = (merged_df[DateOfInitialCPC].notna()) & (
+    condition_2 = (merged_df["DateOfInitialCPC_47"].notna()) & (
         merged_df[ICPCnotRequired].isin(["1", "true"])
     )
 
@@ -132,7 +132,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": pd.NA,  # 4 fail
+                "DateOfInitialCPC": "26/10/1999",  # 4 fail
                 "ICPCnotRequired": "nottrue",
                 "CINdetailsID": "cinID2",
             },
@@ -156,7 +156,7 @@ def test_validate():
                 "LAchildID": "child1",  # 0 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/10/1999",
                 "CINdetailsID": "cinID1",
-                "DateOfInitialCPC": pd.NA,
+                "DateOfInitialCPC": "26/10/2001",
             },
             {
                 "LAchildID": "child1",  # 1 pass
@@ -174,13 +174,13 @@ def test_validate():
                 "LAchildID": "child3",  # 3 pass
                 "CINclosureDate": "28/05/2000",
                 "CINdetailsID": "cinID1",
-                "DateOfInitialCPC": "27/05/2000",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child3",  # 4 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID2",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child3",  # 5 fail. not present in section47 table so none of the values meets the requirements
