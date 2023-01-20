@@ -65,19 +65,23 @@ def validate(
     # <S47ActualStartDate> (N00148)
     # <DateOfInitialCPC> (N00110)
 
-    trueor1 = ["true", "1"]
-    df_cin = df_cin[df_cin[ReferralNFA].isin(trueor1)]
+    df_cin = df_cin[df_cin[ReferralNFA].isin(["true", "1"])]
 
     # Check columns in Section47 table
     df_cin_47 = df_cin.merge(
         df_47,
-        on=["LAchildID", "CINdetailsID", "DateOfInitialCPC"],
+        on=[
+            "LAchildID",
+            "CINdetailsID",
+        ],
         how="left",
         suffixes=["_cin", "_47"],
     )
-    # filter out rows that have an S47ActualStartDate or DateOfInitialCPC
+
+    # filter out rows that have an S47ActualStartDate or DateOfInitialCPC from the CINdetails module
     condition_1 = (
-        df_cin_47[DateOfInitialCPC].notna() | df_cin_47[S47ActualStartDate].notna()
+        df_cin_47["DateOfInitialCPC_cin"].notna()
+        | df_cin_47[S47ActualStartDate].notna()
     )
     df_cin_47 = df_cin_47[condition_1]
 
