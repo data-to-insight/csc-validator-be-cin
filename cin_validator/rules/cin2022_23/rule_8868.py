@@ -54,18 +54,24 @@ def validate(
 
     merged_df = CINclosure_present.merge(
         df_47,
-        on=[LAchildID, "CINdetailsID"],
+        on=[
+            LAchildID,
+            "CINdetailsID",
+        ],
         how="left",
         suffixes=["_cin", "_47"],
     )
 
-    oneortrue = ["1", "true"]
-    condition = (merged_df[DateOfInitialCPC].isna()) & (
-        ~merged_df[ICPCnotRequired].isin(oneortrue)
+    # Checks DateOfInitialCPC from s47 model
+    condition_1 = (merged_df["DateOfInitialCPC_47"].isna()) & (
+        ~merged_df[ICPCnotRequired].isin(["1", "true"])
+    )
+    condition_2 = (merged_df["DateOfInitialCPC_47"].notna()) & (
+        merged_df[ICPCnotRequired].isin(["1", "true"])
     )
 
     # get all the data that fits the failing condition.
-    merged_df = merged_df[condition].reset_index()
+    merged_df = merged_df[condition_1 | condition_2].reset_index()
 
     # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(zip(merged_df[LAchildID], merged_df[CINdetailsID]))
@@ -121,12 +127,12 @@ def test_validate():
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "27/05/2000",  # 3 pass DateOfInitialCPC present
-                "ICPCnotRequired": "true",
+                "ICPCnotRequired": "false",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
-                "DateOfInitialCPC": pd.NA,  # 4 fail
+                "DateOfInitialCPC": "26/10/1999",  # 4 fail
                 "ICPCnotRequired": "nottrue",
                 "CINdetailsID": "cinID2",
             },
@@ -150,36 +156,43 @@ def test_validate():
                 "LAchildID": "child1",  # 0 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/10/1999",
                 "CINdetailsID": "cinID1",
+                "DateOfInitialCPC": "26/10/2001",
             },
             {
                 "LAchildID": "child1",  # 1 pass
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID2",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child2",  # 2
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID1",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child3",  # 3 pass
                 "CINclosureDate": "28/05/2000",
                 "CINdetailsID": "cinID1",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child3",  # 4 fail: contains a section47 group that fails.
                 "CINclosureDate": "26/05/2000",
                 "CINdetailsID": "cinID2",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child3",  # 5 fail. not present in section47 table so none of the values meets the requirements
                 "CINclosureDate": "26/05/2003",
                 "CINdetailsID": "cinID3",
+                "DateOfInitialCPC": pd.NA,
             },
             {
                 "LAchildID": "child4",
                 "CINclosureDate": pd.NA,  # 6 ignore: date absent
                 "CINdetailsID": "cinID4",
+                "DateOfInitialCPC": pd.NA,
             },
         ]
     )
@@ -189,6 +202,9 @@ def test_validate():
     )
     sample_section47["DateOfInitialCPC"] = pd.to_datetime(
         sample_section47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
+    sample_cin["DateOfInitialCPC"] = pd.to_datetime(
+        sample_cin["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
 
     # Run the rule function, passing in our sample data.

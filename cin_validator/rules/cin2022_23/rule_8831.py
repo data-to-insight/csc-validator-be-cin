@@ -65,19 +65,28 @@ def validate(
     # <S47ActualStartDate> (N00148)
     # <DateOfInitialCPC> (N00110)
 
-    trueor1 = ["true", "1"]
-    df_cin = df_cin[df_cin[ReferralNFA].isin(trueor1)]
+    df_cin = df_cin[df_cin[ReferralNFA].isin(["true", "1"])]
 
     # Check columns in Section47 table
     df_cin_47 = df_cin.merge(
-        df_47, on=["LAchildID", "CINdetailsID"], how="left", suffixes=["_cin", "_47"]
+        df_47,
+        on=[
+            "LAchildID",
+            "CINdetailsID",
+        ],
+        how="left",
+        suffixes=["_cin", "_47"],
     )
-    # filter out rows that have an S47ActualStartDate or DateOfInitialCPC
+
+    # filter out rows that have an S47ActualStartDate or DateOfInitialCPC from the CINdetails module
     condition_1 = (
-        df_cin_47[DateOfInitialCPC].notna() | df_cin_47[S47ActualStartDate].notna()
+        df_cin_47["DateOfInitialCPC_cin"].notna()
+        | df_cin_47[S47ActualStartDate].notna()
     )
     df_cin_47 = df_cin_47[condition_1]
+
     df_cin_47["ERROR_ID"] = tuple(zip(df_cin_47[LAchildID], df_cin_47[CINdetailsID]))
+
     df_47_issues = (
         df_47.merge(df_cin_47, left_on="ROW_ID", right_on="ROW_ID_47")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -137,31 +146,38 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child2",  # fails for having a module
                 "CINdetailsID": "cinID2",
+                "DateOfInitialCPC": pd.NA,
                 "S47ActualStartDate": "01/01/2000",
             },
             {
                 "LAchildID": "child2",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID3",
             },
             {
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -250,6 +266,9 @@ def test_validate():
 
     sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
         sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
+    sample_section47["DateOfInitialCPC"] = pd.to_datetime(
+        sample_section47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
     sample_section47["S47ActualStartDate"] = pd.to_datetime(
         sample_section47["S47ActualStartDate"], format="%d/%m/%Y", errors="coerce"

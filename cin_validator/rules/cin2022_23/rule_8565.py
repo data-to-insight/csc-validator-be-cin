@@ -103,6 +103,15 @@ def validate(
     # Remove rows without a CIN closure date
     df_CIN = df_CIN[df_CIN[CINclosureDate].notna()]
 
+    # <CINclosureDate> (N00102) is present then it must be on or after all of the following dates that are present:
+    # <AssessmentActualStartDate> (N00159)
+    # <AssessmentAuthorisationDate>(N00160)
+    # <S47ActualStartDate> (N00148)
+    # <DateOfInitialCPC> (N00110)
+    # <CPPendDate> (N00115)
+    # <CINPlanStartDate> (N00689)
+    # <CINPlanEndDate> (N00690)
+
     # Join tables together
     df_CIN_assessments = df_CIN.copy().merge(
         df_assessments.copy(),
@@ -135,13 +144,21 @@ def validate(
     df = (
         df_CIN_assessments.merge(
             df_CIN_S47,
-            on=[
+            left_on=[
                 LAchildID,
                 CINdetailsID,
                 "ROW_ID_CIN",
                 CINclosureDate,
-                DateOfInitialCPC,
+                "DateOfInitialCPC",
             ],
+            right_on=[
+                LAchildID,
+                CINdetailsID,
+                "ROW_ID_CIN",
+                CINclosureDate,
+                "DateOfInitialCPC_CIN",  # Merges on DateOfInitialCPC from the CIN module
+            ],
+            suffixes=("_dd", "_done"),
         )
         .merge(
             df_CIN_CPP,
@@ -166,7 +183,6 @@ def validate(
     )
 
     # Return those where dates don't align
-
     condition1 = df[CINclosureDate] < df[DateOfInitialCPC]
     condition2 = df[CINclosureDate] < df[AssessmentActualStartDate]
     condition3 = df[CINclosureDate] < df[AssessmentAuthorisationDate]
@@ -174,6 +190,7 @@ def validate(
     condition5 = df[CINclosureDate] < df[CPPendDate]
     condition6 = df[CINclosureDate] < df[CINPlanStartDate]
     condition7 = df[CINclosureDate] < df[CINPlanEndDate]
+    condition8 = df[CINclosureDate] < df["DateOfInitialCPC_CIN"]
 
     df = df[
         condition1
@@ -183,6 +200,7 @@ def validate(
         | condition5
         | condition6
         | condition7
+        | condition8
     ].reset_index()
 
     df["ERROR_ID"] = tuple(
@@ -404,48 +422,56 @@ def test_validate():
                 "LAchildID": "child1",
                 "CINdetailsID": "cinID1",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Pass
             },
             {
                 "LAchildID": "child2",
                 "CINdetailsID": "cinID2",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on initial CPC date
             },
             {
                 "LAchildID": "child3",
                 "CINdetailsID": "cinID3",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on assessment start date
             },
             {
                 "LAchildID": "child4",
                 "CINdetailsID": "cinID4",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on assessment authorisation date
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID5",
-                "S47ActualStartDate": "31/07/2022",  # Fails S47 starts after CIN closure
+                "S47ActualStartDate": "31/07/2022",
+                "DateOfInitialCPC": "30/12/2020"  # Fails S47 starts after CIN closure
                 # Fail
             },
             {
                 "LAchildID": "child6",
                 "CINdetailsID": "cinID6",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CPP start date
             },
             {
                 "LAchildID": "child7",
                 "CINdetailsID": "cinID7",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan start date
             },
             {
                 "LAchildID": "child8",
                 "CINdetailsID": "cinID8",
                 "S47ActualStartDate": "01/01/2021",
+                "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan end date
             },
         ]
