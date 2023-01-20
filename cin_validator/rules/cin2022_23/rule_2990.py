@@ -70,7 +70,10 @@ def validate(
 
     df_cin_47 = df_cin.merge(
         df_47,
-        on=["LAchildID", "CINdetailsID", DateOfInitialCPC],
+        on=[
+            "LAchildID",
+            "CINdetailsID",
+        ],
         how="left",
         suffixes=["_cin", "_47"],
     )
@@ -84,19 +87,35 @@ def validate(
 
     df_cin_cpp_47 = df_cin_cpp.merge(
         df_cin_47,
-        on=[
+        left_on=[
             "LAchildID",
             "CINdetailsID",
             "ROW_ID_cin",
             "DateOfInitialCPC",
             "ReasonForClosure",
         ],
+        right_on=[
+            "LAchildID",
+            "CINdetailsID",
+            "ROW_ID_cin",
+            "DateOfInitialCPC_cin",
+            "ReasonForClosure",
+        ],
         how="left",
         suffixes=["_cin_cpp", "_cin_47"],
     )
+
+    # This merge uses the DateOfInitialCPC values from the original CIN table using their different suffixes from each merge
     merged_df = df_cin_cpp_47.merge(
         df_cin_cin_pd,
-        on=[
+        left_on=[
+            "LAchildID",
+            "CINdetailsID",
+            "ROW_ID_cin",
+            "DateOfInitialCPC_cin",
+            "ReasonForClosure",
+        ],
+        right_on=[
             "LAchildID",
             "CINdetailsID",
             "ROW_ID_cin",
@@ -108,8 +127,8 @@ def validate(
     )
 
     # Logical conditions - other than this, of the tables can merge, it means there's modules and they are in error
-
-    condition_1 = merged_df[DateOfInitialCPC].notna()
+    # Checks for the DateOfInitialCPC caqrried on through from the original CINdetails table
+    condition_1 = merged_df["DateOfInitialCPC_cin"].notna()
     condition_2 = merged_df["ROW_ID_cpp"].notna()
     condition_3 = merged_df["ROW_ID_47"].notna()
     condition_4 = merged_df["ROW_ID_pd"].notna()
