@@ -2,8 +2,13 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    RuleType,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 CINplanDates = CINTable.CINplanDates
@@ -11,7 +16,7 @@ CINPlanStartDate = CINplanDates.CINPlanStartDate
 CINPlanEndDate = CINplanDates.CINPlanEndDate
 LAchildID = CINplanDates.LAchildID
 
-# define characteristics of rule
+
 @rule_definition(
     code="4012Q",
     rule_type=RuleType.QUERY,
@@ -24,9 +29,7 @@ def validate(
 ):
     df = data_container[CINplanDates]
 
-    """
-    Within a <CINPlanDates> group, <CINPlanStartDate> (N00689) should not be the same as the <CINPlanEndDate> (N00690)
-    """
+    # Within a <CINPlanDates> group, <CINPlanStartDate> (N00689) should not be the same as the <CINPlanEndDate> (N00690)
     df.index.name = "ROW_ID"
     df = df[df["CINPlanStartDate"] == df["CINPlanEndDate"]]
 
@@ -43,7 +46,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=CINplanDates, columns=[CINPlanStartDate, CINPlanEndDate], row_df=df_issues
     )
@@ -85,7 +87,6 @@ def test_validate():
         {"LAchildID": IDS_are, "CINPlanStartDate": starts, "CINPlanEndDate": ends}
     )
 
-    # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     fake_dataframe[CINPlanStartDate] = pd.to_datetime(
         fake_dataframe[CINPlanStartDate], format=r"%d-%m-%Y", errors="coerce"
     )
@@ -93,33 +94,21 @@ def test_validate():
         fake_dataframe[CINPlanEndDate], format=r"%d-%m-%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(validate, {CINplanDates: fake_dataframe})
 
-    # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == CINplanDates
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINPlanStartDate, CINPlanEndDate]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
-    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
-
-    # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
             {

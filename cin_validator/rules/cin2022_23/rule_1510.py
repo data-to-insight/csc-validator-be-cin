@@ -10,30 +10,22 @@ from cin_validator.rule_engine import (
 )
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
-
 ChildIdentifiers = CINTable.ChildIdentifiers
 UPN = ChildIdentifiers.UPN
 
-# define characteristics of rule
+
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=1510,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="UPN invalid (wrong check letter at character 1)",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[UPN],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
+
     df = data_container[ChildIdentifiers]
 
-    # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
     """
     <UPN> (N00001) if present must contain the correct check letter
 
@@ -52,10 +44,8 @@ def validate(
     14 = Q;  15 = R;  16 = T;  17 = U;  18 = V;  19 = W;  20 = X;
     """
 
-    # save the original index so that it doesn't get distorted as the data is moved around.
     df.reset_index(inplace=True)
 
-    # select columns of interest and rows where upn is present and at full length.
     df2 = df[["index", "UPN"]]
     df2 = df2[(df2["UPN"].str.len() == 13) & df2["UPN"].notna()]
 

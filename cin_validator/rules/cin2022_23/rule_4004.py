@@ -14,14 +14,12 @@ from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 CINplanDates = CINTable.CINplanDates
 LAchildID = CINplanDates.LAchildID
 CINPlanEndDate = CINplanDates.CINPlanEndDate
 CINdetailsID = CINplanDates.CINdetailsID
 
 
-# define characteristics of rule
 @rule_definition(
     code=4004,
     module=CINTable.CINplanDates,
@@ -32,12 +30,10 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[CINplanDates]
-    # Rename and reset index
     df.index.name = "ROW_ID"
     df.reset_index(inplace=True)
 
     # There must be only one <CINplanDates> group where the <CINPlanEnd Date> (N00690) is missing
-
     df_check = df.copy()
     df_check = df_check[df_check[CINPlanEndDate].isna()]
 
@@ -67,7 +63,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_CINplanDates = pd.DataFrame(
         [  # child1
             {
@@ -103,45 +98,30 @@ def test_validate():
             },
         ]
     )
-    # if rule requires columns containing date values, convert those columns to
-    # datetime objects first. Do it here in the test_validate function, not above.
     sample_CINplanDates[CINPlanEndDate] = pd.to_datetime(
         sample_CINplanDates[CINPlanEndDate],
         format="%d/%m/%Y",
         errors="coerce",
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(validate, {CINplanDates: sample_CINplanDates})
 
-    # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
     issues_list = result.type3_issues
 
-    # Issues list contains the objects pushed in their respective order. Since push_type3 was only used once, there will be one object in issues_list.
     assert len(issues_list) == 1
     issues = issues_list[0]
 
-    # get table name and check it. Replace CINplanDates with the name of your table.
     issue_table = issues.table
     assert issue_table == CINplanDates
 
-    # check that the right columns were returned. Replace CINPlanEndDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINPlanEndDate]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
-    # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
-    # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
-
-    # The ROW ID values represent the index positions where you expect the sample data to fail the validation check.
     expected_df = pd.DataFrame(
         [
             {
@@ -162,9 +142,6 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    # Check that the rule definition is what you wrote in the context above.
-
-    # replace 8925 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 4004
     assert (
         result.definition.message

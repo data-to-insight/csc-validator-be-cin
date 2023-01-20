@@ -6,8 +6,6 @@ from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
@@ -76,7 +74,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_header = pd.DataFrame(
         [{ReferenceDate: "31/03/2001"}]  # collection_start is 01/04/2000
     )
@@ -131,7 +128,6 @@ def test_validate():
         ]
     )
 
-    # if date columns are involved, the validate function will be expecting them as dates so convert before passing them in.
     sample_cpp[CPPstartDate] = pd.to_datetime(
         sample_cpp[CPPstartDate], format="%d/%m/%Y", errors="coerce"
     )
@@ -142,7 +138,6 @@ def test_validate():
         sample_section47[DateOfInitialCPC], format="%d/%m/%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(
         validate,
         {

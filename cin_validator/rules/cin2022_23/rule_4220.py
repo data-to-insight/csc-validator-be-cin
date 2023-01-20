@@ -13,7 +13,7 @@ from cin_validator.test_engine import run_rule
 ChildCharacteristics = CINTable.ChildCharacteristics
 Ethnicity = ChildCharacteristics.Ethnicity
 
-# define characteristics of rule
+
 @rule_definition(
     code=4220,
     module=CINTable.ChildCharacteristics,
@@ -52,9 +52,9 @@ def validate(
     ]
 
     df.reset_index(inplace=True)
-    df2 = df[["index", "Ethnicity"]]
+
     # Ethnicity is not in list or is null.
-    df2 = df2[(~df2["Ethnicity"].isin(eth_list)) | df2["Ethnicity"].isna()]
+    df2 = df[(~df["Ethnicity"].isin(eth_list)) | df["Ethnicity"].isna()]
 
     failing_indices = df2.set_index("index").index
 

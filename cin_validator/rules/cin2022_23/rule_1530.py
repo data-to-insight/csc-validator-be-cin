@@ -13,7 +13,7 @@ from cin_validator.test_engine import run_rule
 ChildIdentifiers = CINTable.ChildIdentifiers
 UPN = ChildIdentifiers.UPN
 
-# define characteristics of rule
+
 @rule_definition(
     code=1530,
     module=CINTable.ChildIdentifiers,
@@ -83,7 +83,6 @@ def validate(
             933,
         ]
     )
-    # That was fun
 
     LA_list = [str(x) for x in LA_list]
 
@@ -107,7 +106,7 @@ def test_validate():
                 "A38100178301",  # 0 In LA list
                 pd.NA,  # 1
                 "H003278544154",  # 2 In LA list
-                "R325",  # 3 Nonsense
+                "R34",  # 3 Nonsense
                 # These should fail
                 "R421962919251",  # 4 Not in LA list
                 "X817558133462",  # 5 Not in LA list
