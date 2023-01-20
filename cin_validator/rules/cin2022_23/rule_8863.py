@@ -5,7 +5,6 @@ from typing import Mapping
 import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
-from cin_validator.rules.cin2022_23.rule_8925 import LAchildID
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -59,7 +58,6 @@ def validate(
     # OR
     # b) the <AssessmentActualStartDate> (N00159) and the <ReferenceDate> (N00603) where the <AssessmentAuthorisationDate> (N00160) is missing
 
-    #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
     df_ass = df_ass[df_ass[AssessmentActualStartDate].notna()]
     df_ass_2 = df_ass_2[df_ass_2[AssessmentActualStartDate].notna()]
 
@@ -88,7 +86,7 @@ def validate(
     duplicate = same_start & same_end
     df_merged = df_merged[~duplicate]
 
-    # Determine whether CPP overlaps another CPP
+    # Determine whether assessment overlaps with another assessment
     ass_started_after_start = (
         df_merged["AssessmentActualStartDate_ass"]
         >= df_merged["AssessmentActualStartDate_ass2"]
@@ -221,7 +219,6 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type3_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
@@ -232,7 +229,6 @@ def test_validate():
     issue_table = issues.table
     assert issue_table == Assessments
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [AssessmentActualStartDate]
 
@@ -282,7 +278,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8863 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8863
     assert (
         result.definition.message

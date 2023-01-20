@@ -9,10 +9,8 @@ from cin_validator.rule_engine import (
     rule_definition,
 )
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 CPPstartDate = ChildProtectionPlans.CPPstartDate
@@ -47,7 +45,7 @@ def validate(
 
     failing_indices = df[condition].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
+    # Replace ChildProtectionPlans and CPPstartDate with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
         table=ChildProtectionPlans, field=CPPstartDate, row=failing_indices

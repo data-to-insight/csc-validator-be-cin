@@ -12,7 +12,6 @@ from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 Section47 = CINTable.Section47
 DateOfInitialCPC = Section47.DateOfInitialCPC
@@ -29,7 +28,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Section47]
 
     # ReferenceDate exists in the header table so we get header table too.
@@ -47,7 +45,7 @@ def validate(
         | (df[DateOfInitialCPC] > reference_date)
     ].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
+    # Replace Section47 and DateOfInitialCPC with the table and column name concerned in your rule, respectively.
     rule_context.push_issue(
         table=Section47, field=DateOfInitialCPC, row=failing_indices
     )
@@ -95,7 +93,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8715 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8715
     assert (
         result.definition.message

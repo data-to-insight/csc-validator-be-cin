@@ -233,7 +233,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 1 with the number of failing points you expect from the sample data.
+    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)

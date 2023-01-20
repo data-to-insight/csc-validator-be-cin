@@ -15,9 +15,7 @@ LAchildID = CINdetails.LAchildID
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
     code=8810,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="A CIN case cannot have a Reason for Closure without a CIN Closure Date",
@@ -29,7 +27,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[CINdetails]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df.index.name = "ROW_ID"
@@ -44,7 +41,6 @@ def validate(
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
     df_issues = df[condition].reset_index()
 
-    # Replace CPPstartDate and CPPendDate below with the columns concerned in your rule.
     link_id = tuple(
         zip(df_issues[LAchildID], df_issues[ReasonForClosure], df_issues[CINdetailsID])
     )
@@ -110,11 +106,10 @@ def test_validate():
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
+    # check that the right columns were returned.
     issue_columns = issues.columns
     assert issue_columns == [ReasonForClosure, CINclosureDate]
 
@@ -155,7 +150,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
+    # replace 8810 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8810
     assert (
         result.definition.message

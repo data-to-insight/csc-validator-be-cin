@@ -127,11 +127,9 @@ def test_validate():
     # The result contains a NamedTuple of issues encountered
     issues = result.type1_issues
 
-    # get table name and check it. Replace ChildProtectionPlans with the name of your table.
     issue_table = issues.table
     assert issue_table == CINdetails
 
-    # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [CINreferralDate, ReferralSource]
 
@@ -169,7 +167,6 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8840 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8866
     assert (
         result.definition.message == "Source of Referral is missing or an invalid code"

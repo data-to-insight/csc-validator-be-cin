@@ -24,9 +24,8 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df = data_container[CINdetails]
-    """
-    If present <PrimaryNeedCode> (N00101) must be a valid primary need code value
-    """
+
+    # If present <PrimaryNeedCode> (N00101) must be a valid primary need code value
     PriNeed_list = ["N0", "N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9"]
 
     # Primary Need Code is not in list.

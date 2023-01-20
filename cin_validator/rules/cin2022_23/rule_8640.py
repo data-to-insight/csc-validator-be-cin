@@ -10,9 +10,6 @@ from cin_validator.rule_engine import (
 )
 from cin_validator.test_engine import run_rule
 
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
-
 CINdetails = CINTable.CINdetails
 ReasonForClosure = CINdetails.ReasonForClosure
 
@@ -26,7 +23,6 @@ ReasonForClosure = CINdetails.ReasonForClosure
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[CINdetails]
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
@@ -43,7 +39,7 @@ def validate(
 
     failing_indices = df.index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
+    # Replace CINdetails and ReasonForClosure with the table and column name concerned in your rule, respectively.
     # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(
         table=CINdetails, field=ReasonForClosure, row=failing_indices

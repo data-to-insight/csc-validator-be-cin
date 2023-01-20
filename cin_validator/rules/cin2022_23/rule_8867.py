@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -33,7 +32,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_cind = data_container[CINdetails].copy()
     df_ass = data_container[Assessments].copy()
 

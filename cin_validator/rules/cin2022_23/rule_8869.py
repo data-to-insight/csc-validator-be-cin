@@ -37,7 +37,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df = data_container[Assessments].copy()
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.

@@ -2,8 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
 
 Section47 = CINTable.Section47
@@ -23,10 +22,7 @@ def validate(
 ):
     df = data_container[Section47]
 
-    """
-    Within a <Section47> group, if <DateOfInitialCPC> (N00110) is present then <S47ActualStartDate> (N00148) must be present and on or before the <DateOfInitialCPC> (N00110)
-    """
-
+    # Within a <Section47> group, if <DateOfInitialCPC> (N00110) is present then <S47ActualStartDate> (N00148) must be present and on or before the <DateOfInitialCPC> (N00110)
     df.index.name = "ROW_ID"
 
     df.query(

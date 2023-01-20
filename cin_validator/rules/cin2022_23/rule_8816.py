@@ -62,7 +62,7 @@ def validate(
         (df_cin[CINclosureDate].isna()) & (df_cin[ReferralNFA].isin(falseorzero))
     ]
     # check those that do not meet the requirements
-    condition = df_cin[CINreferralDate] < df_cin["latest_referral"]
+    condition = df_cin[CINreferralDate] != df_cin["latest_referral"]
     df_cin = df_cin[condition]
 
     df_cin["ERROR_ID"] = tuple(

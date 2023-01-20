@@ -11,7 +11,6 @@ from cin_validator.rule_engine import (
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 Assessments = CINTable.Assessments
 AssessmentFactors = Assessments.AssessmentFactors
@@ -19,7 +18,7 @@ AssessmentFactors = Assessments.AssessmentFactors
 # define characteristics of rule
 @rule_definition(
     code=8617,
-    # replace AssessmentFators with the value in the module column of the excel sheet corresponding to this rule .
+    # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Code 8A has been returned. This code is not a valid code.",
@@ -37,8 +36,7 @@ def validate(
     # Code 8A has been returned as an <AssessmentFactors> (N00181) code
     failing_indices = df[df[AssessmentFactors] == "8A"].index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
+    # Replace Assessments and AssessmentFactors with the table and column name concerned in your rule, respectively.
     rule_context.push_issue(
         table=Assessments, field=AssessmentFactors, row=failing_indices
     )
@@ -66,7 +64,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8617 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8617
     assert (
         result.definition.message

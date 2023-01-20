@@ -19,21 +19,17 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
+    # write the rule code here, in place of 8675Q
     code="8675Q",
     rule_type=RuleType.QUERY,
-    # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Section47,
-    # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Please check: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference.",
-    # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[DateOfInitialCPC, S47ActualStartDate],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     # PREPARING DATA
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[Section47]
     header = data_container[Header]
     # Before you begin, rename the index so that the initial row positions can be kept intact.
@@ -144,7 +140,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 1 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 1
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)

@@ -4,7 +4,6 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -39,7 +38,6 @@ def validate(
 ):
     # PREPARING DATA
 
-    # Replace ChildProtectionPlans with the name of the table you need.
     df_cpp = data_container[ChildProtectionPlans].copy()
     df_reviews = data_container[Reviews].copy()
 
@@ -285,7 +283,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8841 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8841
     assert (
         result.definition.message

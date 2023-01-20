@@ -39,8 +39,8 @@ def validate(
     # PREPARING DATA
 
     # Replace CINdetails with the name of the table you need.
-    df_cin = data_container[CINdetails].copy()
-    df_cin2 = data_container[CINdetails].copy()
+    df_cin = data_container[CINdetails]
+    df_cin2 = data_container[CINdetails]
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_cin.index.name = "ROW_ID"
@@ -68,7 +68,7 @@ def validate(
     #
     # Note: the effect of this rule is that there cannot be overlapping referrals, although the end date of one referral may be the same as the start date of the following referral.
 
-    #  Create dataframes which only have rows with CP plans, and which should have one plan per row.
+    #  Create dataframes which only have rows with CINreferralDate, and which should have one plan per row.
     df_cin = df_cin[df_cin[CINreferralDate].notna()]
     df_cin2 = df_cin2[df_cin2[CINreferralDate].notna()]
 
@@ -80,12 +80,12 @@ def validate(
         suffixes=("_cin", "_cin2"),
     )
 
-    # Exclude rows where the CPPID is the same on both sides
+    # Exclude rows where the ID is the same on both sides
     df_merged = df_merged[
         (df_merged["CINdetailsID_cin"] != df_merged["CINdetailsID_cin2"])
     ]
 
-    # Determine whether CPP overlaps another CPP
+    # Determine overlaps
     cin_started_after_start = (
         df_merged["CINreferralDate_cin"] >= df_merged["CINreferralDate_cin2"]
     )
@@ -116,13 +116,13 @@ def validate(
 
     # The merges were done on copies of cpp_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
-    df_cpp_issues = (
+    df_cin_issues = (
         df_cin.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cin")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
     )
-    df_cpp2_issues = (
+    df_cin2_issues = (
         df_cin2.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cin2")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
@@ -131,12 +131,12 @@ def validate(
 
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_3(
-        table=CINdetails, columns=[CINreferralDate], row_df=df_cpp_issues
+        table=CINdetails, columns=[CINreferralDate], row_df=df_cin_issues
     )
     rule_context.push_type_3(
         table=CINdetails,
         columns=[CINreferralDate, CINclosureDate],
-        row_df=df_cpp2_issues,
+        row_df=df_cin2_issues,
     )
 
 
@@ -229,11 +229,9 @@ def test_validate():
         },
     )
 
-    # Use .type2_issues to check for the result of .push_type2_issues() which you used above.
     issues_list = result.type3_issues
     assert len(issues_list) == 2
     # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the CINdetails columns because that's the second thing pushed above.
     issues = issues_list[0]
 
     # get table name and check it. Replace CINdetails with the name of your table.
@@ -246,7 +244,7 @@ def test_validate():
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 3 with the number of failing points you expect from the sample data.
+    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.

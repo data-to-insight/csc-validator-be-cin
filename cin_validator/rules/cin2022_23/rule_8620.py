@@ -12,7 +12,6 @@ from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
-# Replace ChildIdentifiers with the table name, and LAChildID with the column name you want.
 
 CINdetails = CINTable.CINdetails
 CINclosureDate = CINdetails.CINclosureDate
@@ -29,14 +28,10 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # Replace ChildIdentifiers with the name of the table you need.
     df = data_container[CINdetails]
     df_ref = data_container[Header]
 
-    df = df[df[CINclosureDate].notna()]
-
     # ReferenceDate exists in the header table so we get header table too.
-
     ref_date_series = df_ref[ReferenceDate]
 
     # the make_census_period function generates the start and end date so that you don't have to do it each time.
@@ -45,6 +40,7 @@ def validate(
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
     # If <CINclosureDate> (N00102) is present, it must be within [Period_of_Census]
+    df = df[df[CINclosureDate].notna()]
     df = df[
         ~(
             (df[CINclosureDate] > collection_start)
@@ -53,8 +49,6 @@ def validate(
     ]
     failing_indices = df.index
 
-    # Replace ChildIdentifiers and LAchildID with the table and column name concerned in your rule, respectively.
-    # If there are multiple columns or table, make this sentence multiple times.
     rule_context.push_issue(table=CINdetails, field=CINclosureDate, row=failing_indices)
 
 
@@ -98,7 +92,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
+    # replace 8620 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8620
     assert (
         result.definition.message
