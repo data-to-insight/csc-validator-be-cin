@@ -12,7 +12,7 @@ for rule in registry:
     )
 
 all_rules = pd.DataFrame(all_rules)
-all_rules = all_rules.to_dict(orient="records")
+all_rules = all_rules.to_json(orient="records")
 
 with open("write_all_rules.json", "w") as f:
     json.dump(all_rules, f)
