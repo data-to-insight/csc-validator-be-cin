@@ -28,9 +28,10 @@ def generate_tables(cin_data):
 
 
 @app.call
-def cin_validate(cin_data, ruleset="rules.cin2022_23"):
+def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     """
-    :param cin_data: file reference to a CIN XML file
+    :param file-ref cin_data: file reference to a CIN XML file
+    :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
     :param ruleset: rule pack that should be run. cin2022_23 is for the year 2022
 
     :return issue_report: issue locations in the data.
@@ -41,7 +42,9 @@ def cin_validate(cin_data, ruleset="rules.cin2022_23"):
     root = ET.fromstring(filetext)
 
     data_files = cin_class.process_data(root)
-    validator = cin_class.CinValidationSession(data_files, ruleset)
+    validator = cin_class.CinValidationSession(
+        data_files, ruleset, selected_rules=selected_rules
+    )
     raw_data = cin_class.process_data(root, as_dict=True)
 
     issue_df = validator.all_rules_issue_locs

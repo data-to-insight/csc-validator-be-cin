@@ -16,9 +16,6 @@ from cin_validator.rule_engine import (
     rule_definition,
 )
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
-
-# Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
@@ -27,7 +24,7 @@ LAchildID = ChildIdentifiers.LAchildID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
-# define characteristics of rule
+
 @rule_definition(
     code="8530Q",
     module=CINTable.ChildIdentifiers,
@@ -43,7 +40,6 @@ def validate(
 
     df_ref = data_container[Header]
     ref_date = df_ref[ReferenceDate].iloc[0]
-    # collection_start, collection_end = make_census_period(ref_date_series)
 
     #  <ExpectedPersonBirthDate> (N00098) should be between [<ReferenceDate> (N00603) minus 30 days] and [<ReferenceDate> (N00603) plus 9 months]
 
@@ -76,7 +72,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_ChildIdentifiers = pd.DataFrame(
         [
             {
@@ -114,7 +109,6 @@ def test_validate():
         sample_header[ReferenceDate], format="%d/%m/%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(
         validate,
         {
@@ -125,27 +119,19 @@ def test_validate():
 
     issues_list = result.type2_issues
     assert len(issues_list) == 1
-    # the function returns a list on NamedTuples where each NamedTuple contains (table, column_list, df_issues)
-    # pick any table and check it's values. the tuple in location 1 will contain the ChildIdentifiers columns because that's the second thing pushed above.
     issues = issues_list[0]
 
-    # get table name and check it. Replace ChildIdentifiers with the name of your table.
     issue_table = issues.table
     assert issue_table == ChildIdentifiers
 
-    # check that the right columns were returned. Replace PersonDeathDate and PersonBirthDate with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [ExpectedPersonBirthDate]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
-    # replace 2 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 2
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
-    # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
     expected_df = pd.DataFrame(
         [
             {
@@ -167,7 +153,6 @@ def test_validate():
 
     assert issue_rows.equals(expected_df)
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8530Q"
     assert (
         result.definition.message

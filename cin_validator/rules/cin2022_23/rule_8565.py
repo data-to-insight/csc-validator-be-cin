@@ -16,8 +16,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -51,7 +55,6 @@ CINPlanStartDate = CINplanDates.CINPlanStartDate
 CINPlanEndDate = CINplanDates.CINPlanEndDate
 
 
-# define characteristics of rule
 @rule_definition(
     code=8565,
     module=CINTable.ChildProtectionPlans,
@@ -88,14 +91,19 @@ def validate(
     df_CPP.reset_index(inplace=True)
     df_CINplan.reset_index(inplace=True)
 
-    # Remove rows without a CIN closure date
+    # Rule details: If <CINclosureDate> (N00102) is present then it must be on or after all of the following dates that are present:
+    #     <AssessmentActualStartDate> (N00159)
+    #     <AssessmentAuthorisationDate>(N00160)
+    #     <S47ActualStartDate> (N00148)
+    #     <DateOfInitialCPC> (N00110)
+    #     <CPPendDate> (N00115)
+    #     <CINPlanStartDate> (N00689)
+    #     <CINPlanEndDate> (N00690)
 
+    # Remove rows without a CIN closure date
     df_CIN = df_CIN[df_CIN[CINclosureDate].notna()]
 
-    # <CINclosureDate> (N00102) is present then it must be on or after all of the following dates
-
     # Join tables together
-
     df_CIN_assessments = df_CIN.copy().merge(
         df_assessments.copy(),
         on=[LAchildID, CINdetailsID],
@@ -250,7 +258,6 @@ def validate(
 
 
 def test_validate():
-    # Create some sample data such that some values pass the validation and some fail.
     sample_CIN = pd.DataFrame(
         [
             {
@@ -573,7 +580,6 @@ def test_validate():
         sample_CINplan["CINPlanEndDate"], format="%d/%m/%Y", errors="coerce"
     )
 
-    # Run rule function passing in our sample data
     result = run_rule(
         validate,
         {
@@ -585,29 +591,23 @@ def test_validate():
         },
     )
 
-    # The result contains a list of issues encountered
     issues_list = result.type2_issues
     assert len(issues_list) == 5
 
     issues = issues_list[0]
 
-    # get table name and check it. Replace Reviews with the name of your table.
     issue_table = issues.table
     assert issue_table == CINDetails
 
-    # check that the right columns were returned. Replace CPPreviewDate  with a list of your columns.
     issue_columns = issues.columns
     assert issue_columns == [
         CINclosureDate,
         DateOfInitialCPC,
     ]
 
-    # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     print(issue_rows)
-    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issue_rows) == 7
-    # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 

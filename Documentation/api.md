@@ -40,7 +40,9 @@ The Header contains the metadata including collection_year and census type. If C
 ## Validation: cin_validate
 This is the default feature. File input is converted into tabular-format (dataframes) and the data is validated based on rules [defined by the DfE](https://www.gov.uk/government/publications/children-in-need-census-2022-to-2023-specification) and coded in the `rules` folder.
 
-The `cin_validate` function receives two arguments: a reference to the xml file that needs to be validated and an optional choice of which rule pack to run. The second parameter (ruleset) will only need to be changed if the user choses to validate their data based on the rules of a year different from the one they're in.
+The `cin_validate` function receives three arguments: a reference to the xml file that needs to be validated, an optional choice of rules, and an optional choice of which rule pack to run. The third parameter (ruleset) will only need to be changed if the user choses to validate their data based on the rules of a year different from the one they're in.
+
+The `selected_rules` parameter works with a single string or an array (list/tuple) of strings where each value is a rule code that the user chose to run in the frontend.
 
 The validation process returns an issue report, rule definitions of only the rules that triggered issues, and a tabular format of the CIN data it received.
 
