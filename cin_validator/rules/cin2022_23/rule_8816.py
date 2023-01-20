@@ -45,6 +45,9 @@ def validate(
     # <ReferralNFA> (N00112) = false or 0
     # then the <CINreferralDate> (N00100) for this module must be the latest of all Referral Dates for that child.
 
+    # removing nans prevents ValueError: attempt to get argmax of an empty sequence, when no CINreferralDate is present
+    df_cin = df_cin[df_cin[CINreferralDate].notna()]
+
     # find out the latest referral date (and its index position) for each child and attach it to all the rows for that child.
     df_cin["latest_referral"] = df_cin.groupby(LAchildID)[CINreferralDate].transform(
         "max"
@@ -140,6 +143,20 @@ def test_validate():
                 "CINclosureDate": pd.NA,
                 "CINreferralDate": "26/10/1990",  # 5 fail: not latest referral in child2
                 "CINdetailsID": "cinID3",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child4",
+                "CINclosureDate": pd.NA,
+                "CINreferralDate": pd.NA,
+                "CINdetailsID": "cinID3",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child4",
+                "CINclosureDate": pd.NA,
+                "CINreferralDate": pd.NA,
+                "CINdetailsID": "cinID4",
                 "ReferralNFA": "0",
             },
         ]
