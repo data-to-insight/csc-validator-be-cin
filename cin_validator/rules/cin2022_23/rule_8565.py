@@ -103,7 +103,6 @@ def validate(
     # Remove rows without a CIN closure date
     df_CIN = df_CIN[df_CIN[CINclosureDate].notna()]
 
-
     # <CINclosureDate> (N00102) is present then it must be on or after all of the following dates that are present:
     # <AssessmentActualStartDate> (N00159)
     # <AssessmentAuthorisationDate>(N00160)
