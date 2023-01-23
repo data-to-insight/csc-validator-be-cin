@@ -260,7 +260,8 @@ def include_issue_child(issue_df, cin_data):
         table_df = issue_df[issue_df["tables_affected"] == table]
 
         # get index values of the rows that fail.
-        table_rows = table_df["ROW_ID"].unique()
+        # some ROW_ID values exist as ints and others as strs. Unify so that .unique() doesn't contain doubles.
+        table_rows = table_df["ROW_ID"].astype("int").unique()
 
         # naming the index of the data allows it to be mapped back to the issue_df
         table_data = cin_data[table]
