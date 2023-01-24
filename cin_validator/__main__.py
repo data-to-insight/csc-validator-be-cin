@@ -73,7 +73,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
 
-    data_files = cin_class.process_data(root, as_dict=True)
+    data_files = cin_class.process_data(root)
     validator = cin_class.CinValidationSession(
         data_files, ruleset, issue_id, selected_rules=select
     )
@@ -168,7 +168,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.process_data(root, as_dict=True)
+        cin_tables_dict = cin_class.process_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")

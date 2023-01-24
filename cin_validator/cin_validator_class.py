@@ -5,7 +5,7 @@ import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import CINTable, RuleContext, registry
-from cin_validator.utils import DataContainerWrapper, process_date_columns
+from cin_validator.utils import process_date_columns
 
 
 def enum_keys(dict_input):
@@ -20,7 +20,7 @@ def enum_keys(dict_input):
     return enumed_dict
 
 
-def process_data(root, as_dict=False):
+def process_data(root):
     """
     Takes input data and processes it for validation.
 
@@ -36,40 +36,27 @@ def process_data(root, as_dict=False):
 
     # generate tables
     data_files = XMLtoCSV(root)
-    tables = [
-        data_files.Header,
-        data_files.ChildIdentifiers,
-        data_files.ChildCharacteristics,
-        data_files.ChildProtectionPlans,
-        data_files.CINdetails,
-        data_files.CINplanDates,
-        data_files.Reviews,
-        data_files.Section47,
-        data_files.Assessments,
-        data_files.Disabilities,
-    ]
-    # format all date columns in tables
-    for df in tables:
-        process_date_columns(df)
 
     # return tables
-    if as_dict:
-        cin_tables_dict = {
-            "Header": data_files.Header,
-            "ChildIdentifiers": data_files.ChildIdentifiers,
-            "ChildCharacteristics": data_files.ChildCharacteristics,
-            "ChildProtectionPlans": data_files.ChildProtectionPlans,
-            "CINdetails": data_files.CINdetails,
-            "CINplanDates": data_files.CINplanDates,
-            "Reviews": data_files.Reviews,
-            "Section47": data_files.Section47,
-            "Assessments": data_files.Assessments,
-            "Disabilities": data_files.Disabilities,
-        }
-        return cin_tables_dict
-    else:
-        data_files_obj = DataContainerWrapper(data_files)
-        return data_files_obj
+    cin_tables = {
+        "Header": data_files.Header,
+        "ChildIdentifiers": data_files.ChildIdentifiers,
+        "ChildCharacteristics": data_files.ChildCharacteristics,
+        "ChildProtectionPlans": data_files.ChildProtectionPlans,
+        "CINdetails": data_files.CINdetails,
+        "CINplanDates": data_files.CINplanDates,
+        "Reviews": data_files.Reviews,
+        "Section47": data_files.Section47,
+        "Assessments": data_files.Assessments,
+        "Disabilities": data_files.Disabilities,
+    }
+
+    # format all date columns in tables
+    cin_tables_dict = {
+        name: process_date_columns(table) for name, table in cin_tables.items()
+    }
+
+    return cin_tables_dict
 
 
 class CinValidationSession:

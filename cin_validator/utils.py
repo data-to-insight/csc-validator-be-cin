@@ -98,30 +98,6 @@ def create_issue_locs(issues):
     return df_issue_locs
 
 
-class DataContainerWrapper:
-    def __init__(self, value) -> None:
-        self.value = value
-
-    def __getitem__(self, name):
-        # converts all atributes, of the class input, to key-value pairs in a dictionary.
-        return getattr(self.value, name.name)
-
-    def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
-        return result
-
-    def __deepcopy__(self, memo):
-        # the memo param is a dictionary that defines the parts of the class the should be shared between copies.
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        for k, v in self.__dict__.items():
-            setattr(result, k, deepcopy(v, memo))
-        return result
-
-
 def process_date_columns(df):
     """
     Takes a DataFrame in and converts all columns with Date or date in the

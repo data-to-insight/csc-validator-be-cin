@@ -1,3 +1,4 @@
+import copy
 import xml.etree.ElementTree as ET
 
 from prpc_python import RpcApp
@@ -16,7 +17,7 @@ def generate_tables(cin_data):
     filetext = cin_data.read().decode("utf-8")
     root = ET.fromstring(filetext)
 
-    data_files = cin_class.process_data(root, as_dict=True)
+    data_files = cin_class.process_data(root)
 
     # make data json-serialisable
     json_data_files = {
@@ -41,11 +42,11 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     filetext = cin_data.read().decode("utf-8")
     root = ET.fromstring(filetext)
 
-    data_files = cin_class.process_data(root)
+    raw_data = cin_class.process_data(root)
+    data_files = copy.deepcopy(raw_data)
     validator = cin_class.CinValidationSession(
         data_files, ruleset, selected_rules=selected_rules
     )
-    raw_data = cin_class.process_data(root, as_dict=True)
 
     issue_df = validator.all_rules_issue_locs
     issue_df = cin_class.include_issue_child(issue_df, raw_data)
