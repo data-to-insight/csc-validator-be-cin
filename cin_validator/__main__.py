@@ -73,7 +73,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
 
-    data_files = cin_class.process_data(root)
+    data_files = cin_class.process_data(root, as_dict=True)
     validator = cin_class.CinValidationSession(
         data_files, ruleset, issue_id, selected_rules=select
     )

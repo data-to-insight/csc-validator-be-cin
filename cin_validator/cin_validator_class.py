@@ -1,10 +1,23 @@
+import copy
 import importlib
 
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import RuleContext, registry
+from cin_validator.rule_engine import CINTable, RuleContext, registry
 from cin_validator.utils import DataContainerWrapper, process_date_columns
+
+
+def enum_keys(dict_input):
+    """
+    Convert keys of a dictionary to its corresponding CINTable format.
+    :param dict dict_input: dictionary of dataframes of CIN data
+    :return dict enumed_dict: same data content with keys replaced.
+    """
+    enumed_dict = {}
+    for enum_key in CINTable:
+        enumed_dict[enum_key] = dict_input[str(enum_key)[9:]]
+    return enumed_dict
 
 
 def process_data(root, as_dict=False):
@@ -194,6 +207,7 @@ class CinValidationSession:
         :raises: Errors with rules that raise errors when validating data.
         """
 
+        enum_data_files = enum_keys(self.data_files)
         self.issue_instances = pd.DataFrame()
         self.all_rules_issue_locs = pd.DataFrame()
         self.rules_passed = []
@@ -206,7 +220,8 @@ class CinValidationSession:
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
-            data_files = self.data_files.__deepcopy__({})
+            # data_files = self.data_files.__deepcopy__({})
+            data_files = copy.deepcopy(enum_data_files)
             ctx = RuleContext(rule)
             try:
                 rule.func(data_files, ctx)
