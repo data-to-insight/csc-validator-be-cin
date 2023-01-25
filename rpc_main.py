@@ -50,7 +50,7 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     validator = cin_class.CinValidationSession(
         data_files, ruleset, selected_rules=selected_rules
     )
-    issue_df = validator.all_rules_issue_locs
+    issue_df = validator.full_issue_df
 
     # make return data json-serialisable
     issue_report = issue_df.to_json(orient="records")

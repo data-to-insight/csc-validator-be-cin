@@ -145,9 +145,7 @@ class CinValidationSession:
         self.select_by_id()
 
         # add child_id to issue location report.
-        self.all_rules_issue_locs = include_issue_child(
-            self.all_rules_issue_locs, raw_data
-        )
+        self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
 
     def get_rules_to_run(self, registry, selected_rules):
         """
@@ -212,8 +210,8 @@ class CinValidationSession:
             issue_dfs_per_rule[ind]["rule_type"] = ind
 
             # combine this rule's error_df with the cummulative error_df
-            self.all_rules_issue_locs = pd.concat(
-                [self.all_rules_issue_locs, issue_dfs_per_rule[ind]],
+            self.full_issue_df = pd.concat(
+                [self.full_issue_df, issue_dfs_per_rule[ind]],
                 ignore_index=True,
             )
 
@@ -247,7 +245,7 @@ class CinValidationSession:
 
         enum_data_files = enum_keys(self.data_files)
         self.issue_instances = pd.DataFrame()
-        self.all_rules_issue_locs = pd.DataFrame()
+        self.full_issue_df = pd.DataFrame()
         self.rules_passed = []
 
         self.rules_broken = []
@@ -290,8 +288,8 @@ class CinValidationSession:
 
         if self.issue_id is not None:
             self.issue_id = tuple(self.issue_id.split(", "))
-            self.all_rules_issue_locs = self.all_rules_issue_locs[
-                self.all_rules_issue_locs["ERROR_ID"] == self.issue_id
+            self.full_issue_df = self.full_issue_df[
+                self.full_issue_df["ERROR_ID"] == self.issue_id
             ]
         else:
             pass
