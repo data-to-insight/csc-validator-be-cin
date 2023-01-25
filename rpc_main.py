@@ -16,7 +16,7 @@ def generate_tables(cin_data):
     filetext = cin_data.read().decode("utf-8")
     root = ET.fromstring(filetext)
 
-    data_files = cin_class.process_data(root, as_dict=True)
+    data_files = cin_class.process_data(root)
 
     # make data json-serialisable
     json_data_files = {
@@ -42,20 +42,18 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     root = ET.fromstring(filetext)
 
     data_files = cin_class.process_data(root)
+    json_data_files = {
+        table_name: table_df.to_json(orient="records")
+        for table_name, table_df in data_files.items()
+    }
+
     validator = cin_class.CinValidationSession(
         data_files, ruleset, selected_rules=selected_rules
     )
-    raw_data = cin_class.process_data(root, as_dict=True)
-
-    issue_df = validator.all_rules_issue_locs
-    issue_df = cin_class.include_issue_child(issue_df, raw_data)
+    issue_df = validator.full_issue_df
 
     # make return data json-serialisable
     issue_report = issue_df.to_json(orient="records")
     rule_defs = validator.rule_descriptors.to_json(orient="records")
-    json_data_files = {
-        table_name: table_df.to_json(orient="records")
-        for table_name, table_df in raw_data.items()
-    }
 
     return issue_report, rule_defs, json_data_files

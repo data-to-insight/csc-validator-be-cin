@@ -79,11 +79,11 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     )
 
     issue_instances = validator.issue_instances
-    all_rules_issue_locs = validator.all_rules_issue_locs
+    all_rules_issue_locs = validator.full_issue_df
 
     if output:
         # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
-        issue_report = validator.all_rules_issue_locs.to_json(orient="records")
+        issue_report = validator.full_issue_df.to_json(orient="records")
         rule_defs = validator.rule_descriptors.to_json(orient="records")
 
         # generating sample files for the frontend.
@@ -168,7 +168,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.process_data(root, as_dict=True)
+        cin_tables_dict = cin_class.process_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")

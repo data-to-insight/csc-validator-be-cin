@@ -1,13 +1,27 @@
+import copy
 import importlib
 
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import RuleContext, registry
-from cin_validator.utils import DataContainerWrapper, process_date_columns
+from cin_validator.rule_engine import CINTable, RuleContext, registry
+from cin_validator.utils import process_date_columns
 
 
-def process_data(root, as_dict=False):
+def enum_keys(dict_input):
+    """
+    Convert keys of a dictionary to its corresponding CINTable format.
+    :param dict dict_input: dictionary of dataframes of CIN data
+    :return dict enumed_dict: same data content with keys replaced.
+    """
+    enumed_dict = {}
+    for enum_key in CINTable:
+        # if enum_key == CINTable.Header, then enum_key.name == Header
+        enumed_dict[enum_key] = dict_input[str(enum_key.name)]
+    return enumed_dict
+
+
+def process_data(root):
     """
     Takes input data and processes it for validation.
 
@@ -23,40 +37,68 @@ def process_data(root, as_dict=False):
 
     # generate tables
     data_files = XMLtoCSV(root)
-    tables = [
-        data_files.Header,
-        data_files.ChildIdentifiers,
-        data_files.ChildCharacteristics,
-        data_files.ChildProtectionPlans,
-        data_files.CINdetails,
-        data_files.CINplanDates,
-        data_files.Reviews,
-        data_files.Section47,
-        data_files.Assessments,
-        data_files.Disabilities,
-    ]
-    # format all date columns in tables
-    for df in tables:
-        process_date_columns(df)
 
     # return tables
-    if as_dict:
-        cin_tables_dict = {
-            "Header": data_files.Header,
-            "ChildIdentifiers": data_files.ChildIdentifiers,
-            "ChildCharacteristics": data_files.ChildCharacteristics,
-            "ChildProtectionPlans": data_files.ChildProtectionPlans,
-            "CINdetails": data_files.CINdetails,
-            "CINplanDates": data_files.CINplanDates,
-            "Reviews": data_files.Reviews,
-            "Section47": data_files.Section47,
-            "Assessments": data_files.Assessments,
-            "Disabilities": data_files.Disabilities,
-        }
-        return cin_tables_dict
-    else:
-        data_files_obj = DataContainerWrapper(data_files)
-        return data_files_obj
+    cin_tables = {
+        "Header": data_files.Header,
+        "ChildIdentifiers": data_files.ChildIdentifiers,
+        "ChildCharacteristics": data_files.ChildCharacteristics,
+        "ChildProtectionPlans": data_files.ChildProtectionPlans,
+        "CINdetails": data_files.CINdetails,
+        "CINplanDates": data_files.CINplanDates,
+        "Reviews": data_files.Reviews,
+        "Section47": data_files.Section47,
+        "Assessments": data_files.Assessments,
+        "Disabilities": data_files.Disabilities,
+    }
+
+    # format all date columns in tables
+    cin_tables_dict = {
+        name: process_date_columns(table) for name, table in cin_tables.items()
+    }
+
+    return cin_tables_dict
+
+
+def include_issue_child(issue_df, cin_data):
+    """
+    :param DataFrame issue_df: complete data about all issue locations.
+    :param dict cin_data: dictionary of dataframes generated when cin xml is converted to tabular format.
+    """
+
+    la_level_issues = issue_df[issue_df["tables_affected"].isna()]
+    header_issues = issue_df[issue_df["tables_affected"] == "Header"]
+    tables_with_childid = [la_level_issues, header_issues]
+    for table in issue_df["tables_affected"].dropna().unique():
+        if table == "Header":
+            # the header table doesn't contain child id. It is like metadata
+            continue
+        table_df = issue_df[issue_df["tables_affected"] == table]
+
+        # get index values of the rows that fail.
+        # some ROW_ID values exist as ints and others as strs. Unify so that .unique() doesn't contain doubles.
+        table_rows = table_df["ROW_ID"].astype("int").unique()
+
+        # naming the index of the data allows it to be mapped back to the issue_df
+        table_data = cin_data[table]
+        table_data.index.name = "ROW_ID"
+        table_data.reset_index(inplace=True)
+        # select the data for the rows with appear in issue_df and get the child ids
+        linker_df = table_data.iloc[table_rows][["LAchildID", "ROW_ID"]]
+
+        # work around: ensure that columns from both sources have the same type to prevent merge error
+        table_df["ROW_ID"] = table_df["ROW_ID"].astype("int64")
+        linker_df["ROW_ID"] = linker_df["ROW_ID"].astype("int64")
+        # map the child ids back to issue_df
+        table_df = table_df.merge(linker_df, on=["ROW_ID"], how="left")
+
+        # save the result
+        tables_with_childid.append(table_df)
+
+    # regenerate issue_df from its updated constituent tables
+    issue_df = pd.concat(tables_with_childid)
+
+    return issue_df
 
 
 class CinValidationSession:
@@ -95,8 +137,15 @@ class CinValidationSession:
         self.ruleset = ruleset
         self.issue_id = issue_id
 
+        # save independent version of data to be used in report.
+        raw_data = copy.deepcopy(self.data_files)
+
+        # run
         self.create_issue_report_df(selected_rules)
         self.select_by_id()
+
+        # add child_id to issue location report.
+        self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
 
     def get_rules_to_run(self, registry, selected_rules):
         """
@@ -161,8 +210,8 @@ class CinValidationSession:
             issue_dfs_per_rule[ind]["rule_type"] = ind
 
             # combine this rule's error_df with the cummulative error_df
-            self.all_rules_issue_locs = pd.concat(
-                [self.all_rules_issue_locs, issue_dfs_per_rule[ind]],
+            self.full_issue_df = pd.concat(
+                [self.full_issue_df, issue_dfs_per_rule[ind]],
                 ignore_index=True,
             )
 
@@ -194,8 +243,9 @@ class CinValidationSession:
         :raises: Errors with rules that raise errors when validating data.
         """
 
+        enum_data_files = enum_keys(self.data_files)
         self.issue_instances = pd.DataFrame()
-        self.all_rules_issue_locs = pd.DataFrame()
+        self.full_issue_df = pd.DataFrame()
         self.rules_passed = []
 
         self.rules_broken = []
@@ -206,7 +256,8 @@ class CinValidationSession:
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
-            data_files = self.data_files.__deepcopy__({})
+            # data_files = self.data_files.__deepcopy__({})
+            data_files = copy.deepcopy(enum_data_files)
             ctx = RuleContext(rule)
             try:
                 rule.func(data_files, ctx)
@@ -237,49 +288,8 @@ class CinValidationSession:
 
         if self.issue_id is not None:
             self.issue_id = tuple(self.issue_id.split(", "))
-            self.all_rules_issue_locs = self.all_rules_issue_locs[
-                self.all_rules_issue_locs["ERROR_ID"] == self.issue_id
+            self.full_issue_df = self.full_issue_df[
+                self.full_issue_df["ERROR_ID"] == self.issue_id
             ]
         else:
             pass
-
-
-def include_issue_child(issue_df, cin_data):
-    """
-    :param DataFrame issue_df: complete data about all issue locations.
-    :param dict cin_data: dictionary of dataframes generated when cin xml is converted to tabular format.
-    """
-
-    la_level_issues = issue_df[issue_df["tables_affected"].isna()]
-    header_issues = issue_df[issue_df["tables_affected"] == "Header"]
-    tables_with_childid = [la_level_issues, header_issues]
-    for table in issue_df["tables_affected"].dropna().unique():
-        if table == "Header":
-            # the header table doesn't contain child id. It is like metadata
-            continue
-        table_df = issue_df[issue_df["tables_affected"] == table]
-
-        # get index values of the rows that fail.
-        # some ROW_ID values exist as ints and others as strs. Unify so that .unique() doesn't contain doubles.
-        table_rows = table_df["ROW_ID"].astype("int").unique()
-
-        # naming the index of the data allows it to be mapped back to the issue_df
-        table_data = cin_data[table]
-        table_data.index.name = "ROW_ID"
-        table_data.reset_index(inplace=True)
-        # select the data for the rows with appear in issue_df and get the child ids
-        linker_df = table_data.iloc[table_rows][["LAchildID", "ROW_ID"]]
-
-        # work around: ensure that columns from both sources have the same type to prevent merge error
-        table_df["ROW_ID"] = table_df["ROW_ID"].astype("int64")
-        linker_df["ROW_ID"] = linker_df["ROW_ID"].astype("int64")
-        # map the child ids back to issue_df
-        table_df = table_df.merge(linker_df, on=["ROW_ID"], how="left")
-
-        # save the result
-        tables_with_childid.append(table_df)
-
-    # regenerate issue_df from its updated constituent tables
-    issue_df = pd.concat(tables_with_childid)
-
-    return issue_df
