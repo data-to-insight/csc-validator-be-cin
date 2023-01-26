@@ -4,7 +4,7 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
+from cin_validator.utils import england_working_days, make_census_period
 
 CINdetails = CINTable.CINdetails
 
@@ -39,7 +39,7 @@ def validate(
 
     # If <CINreferralDate> (N00100) is before [Start_of_Census_Year] minus 1 working day, <ReferralNFA> (N00112) must be false
     df_cin_issues = df_cin[
-        df_cin[CINreferralDate] < (collection_start - pd.tseries.offsets.BDay(1))
+        df_cin[CINreferralDate] < (collection_start - england_working_days(1))
     ]
 
     df_cin_issues = df_cin_issues[
