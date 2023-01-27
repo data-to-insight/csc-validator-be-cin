@@ -12,7 +12,7 @@ import pandas as pd
 
 from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
-from cin_validator.utils import make_census_period
+from cin_validator.utils import england_working_days, make_census_period
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
@@ -48,7 +48,7 @@ def validate(
     df_assessments = df_assessments[df_assessments[AssessmentAuthorisationDate].isna()]
 
     # Find the reference date - 45
-    latest_date = collection_end - pd.tseries.offsets.BDay(45)
+    latest_date = collection_end - england_working_days(45)
 
     df_issues = df_assessments[
         df_assessments[AssessmentActualStartDate] < latest_date
