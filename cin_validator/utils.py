@@ -112,15 +112,9 @@ def process_date_columns(df):
     """
 
     for column in df:
-        if ("date" in column) | ("Date" in column):
-            try:
-                df[column] = pd.to_datetime(
-                    df[column], format="%d/%m/%Y", errors="coerce"
-                )
-            except:
-                df[column] = pd.to_datetime(
-                    df[column], format="%Y/%m/%d", errors="coerce"
-                )
+        if "date" in column.lower():
+            # pd.to_datetime is intelligent. It can deal with unforseen date formats
+            df[column] = pd.to_datetime(df[column], errors="coerce")
     return df
 
 
