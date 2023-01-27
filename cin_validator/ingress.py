@@ -246,6 +246,31 @@ class XMLtoCSV:
             [self.ChildCharacteristics, characteristics_df], ignore_index=True
         )
 
+        # The disabilities block for a child is found within a ChildCharacteristics block.
+        self.create_Disabilities(characteristics)
+
+    def create_Disabilities(self, characteristics):
+        """
+        Populates Disabilites table
+        """
+        disabilities_list = []
+        columns = self.Disabilities.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+        # get the Disabilities block
+        disabilities = characteristics.find("Disabilities")
+        for disability in disabilities:
+            disability_dict = {
+                "LAchildID": self.LAchildID,
+            }
+            disability_dict = get_values(elements, disability_dict, disability)
+            disability_dict["Disability"] = disability.text
+            disabilities_list.append(disability_dict)
+
+        disabilities_df = pd.DataFrame(disabilities_list)
+        self.Disabilities = pd.concat(
+            [self.Disabilities, disabilities_df], ignore_index=True
+        )
+
     # CINdetailsID needed
     def create_CINdetails(self, child):
         """Populates the CINdetails table. Multiple CIN details blocks can exist in one child.
