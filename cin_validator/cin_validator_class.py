@@ -21,18 +21,16 @@ def enum_keys(dict_input):
     return enumed_dict
 
 
-def process_data(root):
+def convert_data(root):
     """
     Takes input data and processes it for validation.
 
     This function takes input XML data, and uses ElementTree, and the custom class
-    XMLtoCSV to process the data into tables for validation. Returning as a dict
-    or DataContainerWrapper object. Returns as dict for front-end purposes and object
-    for CLI interface.
+    XMLtoCSV to process the data into tables for validation.
 
-    :param XML filename: XML files passed from either the front end or the CLI.
-    :returns: Data files as object or dict of DataFrames for validation.
-    :rtype: Dictionary or DataContainerWrapper object.
+    :param XML root: root created by parsing the user's xml file.
+    :returns: dict of DataFrames - each representing a CIN table.
+    :rtype: Dictionary
     """
 
     # generate tables
@@ -51,6 +49,15 @@ def process_data(root):
         "Assessments": data_files.Assessments,
         "Disabilities": data_files.Disabilities,
     }
+    return cin_tables
+
+
+def process_data(cin_tables):
+    """
+    formats date columns
+    :param dict cin_tables: data to be converted
+    :return dict cin_tables_dict: original dataframes where date columns have been formatted.
+    """
 
     # format all date columns in tables
     cin_tables_dict = {
