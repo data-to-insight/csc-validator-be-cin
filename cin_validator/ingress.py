@@ -258,18 +258,20 @@ class XMLtoCSV:
         elements = list(set(columns).difference(set(self.id_cols)))
         # get the Disabilities block
         disabilities = characteristics.find("Disabilities")
-        for disability in disabilities:
-            disability_dict = {
-                "LAchildID": self.LAchildID,
-            }
-            disability_dict = get_values(elements, disability_dict, disability)
-            disability_dict["Disability"] = disability.text
-            disabilities_list.append(disability_dict)
+        if disabilities:
+            # Only run this if a "Disabilities" xml block has been found
+            for disability in disabilities:
+                disability_dict = {
+                    "LAchildID": self.LAchildID,
+                }
+                disability_dict = get_values(elements, disability_dict, disability)
+                disability_dict["Disability"] = disability.text
+                disabilities_list.append(disability_dict)
 
-        disabilities_df = pd.DataFrame(disabilities_list)
-        self.Disabilities = pd.concat(
-            [self.Disabilities, disabilities_df], ignore_index=True
-        )
+            disabilities_df = pd.DataFrame(disabilities_list)
+            self.Disabilities = pd.concat(
+                [self.Disabilities, disabilities_df], ignore_index=True
+            )
 
     # CINdetailsID needed
     def create_CINdetails(self, child):
@@ -325,15 +327,17 @@ class XMLtoCSV:
         for assessment in assessments:
             # all the assessment descriptors repeat to create a row for each assessment factor.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
-            for factor in assessment_factors:
-                assessment_dict = {
-                    "LAchildID": self.LAchildID,
-                    "CINdetailsID": self.CINdetailsID,
-                }
-                assessment_dict = get_values(elements, assessment_dict, assessment)
-                # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
-                assessment_dict["AssessmentFactors"] = factor.text
-                assessments_list.append(assessment_dict)
+            if assessment_factors:
+                # if statement handles the non-iterable NoneType that .find produces if the element is not present.
+                for factor in assessment_factors:
+                    assessment_dict = {
+                        "LAchildID": self.LAchildID,
+                        "CINdetailsID": self.CINdetailsID,
+                    }
+                    assessment_dict = get_values(elements, assessment_dict, assessment)
+                    # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
+                    assessment_dict["AssessmentFactors"] = factor.text
+                    assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
