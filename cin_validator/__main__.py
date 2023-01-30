@@ -73,13 +73,15 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
 
-    data_files = cin_class.process_data(root)
+    raw_data = cin_class.convert_data(root)
+    data_files = cin_class.process_data(raw_data)
+
     validator = cin_class.CinValidationSession(
         data_files, ruleset, issue_id, selected_rules=select
     )
 
     issue_instances = validator.issue_instances
-    all_rules_issue_locs = validator.full_issue_df
+    full_issue_df = validator.full_issue_df
 
     if output:
         # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
@@ -96,7 +98,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
         with open("issue_report.json", "w") as f:
             json.dump(issue_report, f)
 
-    # print(issue_instances)
+    print(issue_instances)
     # print(all_rules_issue_locs)
     # print(validator.rule_descriptors)
 
