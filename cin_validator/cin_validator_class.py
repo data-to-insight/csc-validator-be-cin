@@ -100,6 +100,20 @@ def include_issue_child(issue_df, cin_data):
 
     return issue_df
 
+def error_report(issue_df, cin_data):
+    for table in issue_df["tables_affected"].dropna().unique():
+        if table == "Header":
+            # the header table doesn't contain child id. It is like metadata
+            continue
+        table_df = issue_df[issue_df["tables_affected"] == table]
+        raw_table = cin_data[table]
+        print(raw_table)
+        print(table_df)
+        # in the table_df, take the columns affected for each child, find the one that matches for raw_table, and add to table_df as data
+
+        for field in table_df['columns_affected'].dropna().unique():
+            field_df = raw_table[field]
+        print(field_df)
 
 class CinValidationSession:
     """
@@ -146,6 +160,9 @@ class CinValidationSession:
 
         # add child_id to issue location report.
         self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
+        #print(self.full_issue_df)
+
+        self.report_with_issues = error_report(self.full_issue_df, raw_data)
 
     def get_rules_to_run(self, registry, selected_rules):
         """
