@@ -73,7 +73,12 @@ def include_issue_child(issue_df, cin_data):
     :param dict cin_data: dictionary of dataframes generated when cin xml is converted to tabular format.
     """
 
-    la_level_issues = issue_df[issue_df["tables_affected"].isna()]
+    try:
+        la_level_issues = issue_df[issue_df["tables_affected"].isna()]
+    except:
+        # if no error locations were found, this allows an empty dataframe to be processed.
+        return issue_df
+
     header_issues = issue_df[issue_df["tables_affected"] == "Header"]
     tables_with_childid = [la_level_issues, header_issues]
     for table in issue_df["tables_affected"].dropna().unique():
