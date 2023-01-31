@@ -42,6 +42,7 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     root = ET.fromstring(filetext)
 
     raw_data = cin_class.convert_data(root)
+    # This is why raw_data was created: to prevent datetime conversion on data that will be sent to the frontend.
     json_data_files = {
         table_name: table_df.to_json(orient="records")
         for table_name, table_df in raw_data.items()
