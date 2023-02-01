@@ -76,7 +76,7 @@ def include_issue_child(issue_df, cin_data):
     try:
         la_level_issues = issue_df[issue_df["tables_affected"].isna()]
     except:
-        # if no error locations were found, this allows an empty dataframe to be processed.
+        # if no error locations were found, i.e issue_df doesn't exist, this allows an empty dataframe to be processed.
         return issue_df
 
     header_issues = issue_df[issue_df["tables_affected"] == "Header"]
@@ -215,8 +215,9 @@ class CinValidationSession:
                 [self.issue_instances, issue_dict_df], ignore_index=True
             )
 
-            # add a the rule's code to it's error_df
+            # add the rule's code and description to it's error_df
             issue_dfs_per_rule[ind]["rule_code"] = rule.code
+            issue_dfs_per_rule[ind]["rule_description"] = rule.message
 
             # temporary: add rule type to track if all types are in df.
             issue_dfs_per_rule[ind]["rule_type"] = ind

@@ -98,7 +98,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
         with open("issue_report.json", "w") as f:
             json.dump(issue_report, f)
 
-    print(issue_instances)
+    # print(issue_instances)
     # print(all_rules_issue_locs)
     # print(validator.rule_descriptors)
 
@@ -170,7 +170,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.process_data(root)
+        cin_tables_dict = cin_class.convert_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")
