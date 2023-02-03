@@ -182,12 +182,15 @@ def cli_converter(filename: str):
     else:
         click.echo(f"{filename} can't be found, have you entered it correctly?")
 
-@cli.command(name='timer')
-def timer():    
+
+@cli.command(name="timer")
+def timer():
     st = datetime.datetime.now()
-    os.system("python -m cin_validator run-all /workspaces/CIN-validator/fake_data/fake_CIN_data.xml")
+    os.system(
+        "python -m cin_validator run-all /workspaces/CIN-validator/fake_data/fake_CIN_data.xml"
+    )
     et = datetime.datetime.now()
-    time_elapsed = et- st
+    time_elapsed = et - st
     print(f"Time to run: {time_elapsed}")
 
 
