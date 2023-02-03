@@ -84,6 +84,8 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     full_issue_df = validator.full_issue_df
 
     if output:
+        validator.user_report.to_csv("user_report.csv")
+
         # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
         issue_report = validator.full_issue_df.to_json(orient="records")
         rule_defs = validator.rule_descriptors.to_json(orient="records")
@@ -101,6 +103,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     # print(issue_instances)
     # print(all_rules_issue_locs)
     # print(validator.rule_descriptors)
+    # print(validator.user_report)
 
 
 @cli.command(name="test")
