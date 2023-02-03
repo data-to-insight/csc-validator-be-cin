@@ -1,13 +1,12 @@
 """The code contained in this file automated the process of converting CIN rules 
 from rows on an excel sheet to issues on this github repo."""
 
-from github import Github
-
-import pandas as pd
-
 import os
 import sys
 import time
+
+import pandas as pd
+from github import Github
 
 # generate a github token for yourself here https://github.com/settings/tokens
 token = os.getenv("GITHUB_TOKEN", "write_your_token_here_keep_quotes")
