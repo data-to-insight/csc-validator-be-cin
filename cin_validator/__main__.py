@@ -5,6 +5,9 @@ from pathlib import Path
 import click
 import pytest
 
+import datetime
+import os
+
 from cin_validator import cin_validator_class as cin_class
 from cin_validator.rule_engine import registry
 
@@ -178,6 +181,14 @@ def cli_converter(filename: str):
             v.to_csv(filepath)
     else:
         click.echo(f"{filename} can't be found, have you entered it correctly?")
+
+@cli.command(name='timer')
+def timer():    
+    st = datetime.datetime.now()
+    os.system("python -m cin_validator run-all /workspaces/CIN-validator/fake_data/fake_CIN_data.xml")
+    et = datetime.datetime.now()
+    time_elapsed = et- st
+    print(f"Time to run: {time_elapsed}")
 
 
 if __name__ == "__main__":
