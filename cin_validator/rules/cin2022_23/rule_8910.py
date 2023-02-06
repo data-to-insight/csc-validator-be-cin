@@ -2,8 +2,12 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import rule_definition, CINTable, RuleContext
-from cin_validator.rule_engine import IssueLocator
+from cin_validator.rule_engine import (
+    CINTable,
+    IssueLocator,
+    RuleContext,
+    rule_definition,
+)
 from cin_validator.test_engine import run_rule
 
 ChildProtectionPlans = CINTable.ChildProtectionPlans
