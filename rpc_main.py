@@ -28,7 +28,7 @@ def generate_tables(cin_data):
 
 
 @app.call
-def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
+def cin_validate(cin_data=None, selected_rules=None, ruleset="rules.cin2022_23"):
     """
     :param file-ref cin_data: file reference to a CIN XML file
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
@@ -38,26 +38,37 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
     """
 
-    filetext = cin_data.read().decode("utf-8")
-    root = ET.fromstring(filetext)
+    # filetext = cin_data.read().decode("utf-8")
+    # root = ET.fromstring(filetext)
+
+    fulltree = ET.parse("fake_data\\fake_CIN_data.xml")
+    root = fulltree.getroot()
 
     raw_data = cin_class.convert_data(root)
-    # This is why raw_data was created: to prevent datetime conversion on data that will be sent to the frontend.
+
+    # Send string-format data to the frontend.
     json_data_files = {
         table_name: table_df.to_json(orient="records")
         for table_name, table_df in raw_data.items()
     }
 
-    # format date columns
+    # Convert date columns to datetime format to enable comparison in rules.
     data_files = cin_class.process_data(raw_data)
+
     # run validation
     validator = cin_class.CinValidationSession(
         data_files, ruleset, selected_rules=selected_rules
     )
-    issue_df = validator.full_issue_df
 
     # make return data json-serialisable
-    issue_report = issue_df.to_json(orient="records")
-    rule_defs = validator.rule_descriptors.to_json(orient="records")
+    issue_report = validator.full_issue_df.to_json(
+        orient="records"
+    )  # what the frontend will display
+    rule_defs = validator.rule_descriptors.to_json(
+        orient="records"
+    )  # what the frontend will display
+    user_report = validator.user_report.to_json(
+        orient="records"
+    )  # what the user will download
 
-    return issue_report, rule_defs, json_data_files
+    return issue_report, rule_defs, json_data_files, user_report
