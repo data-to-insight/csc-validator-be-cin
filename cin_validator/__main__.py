@@ -185,7 +185,7 @@ def cli_converter(filename: str):
     else:
         click.echo(f"{filename} can't be found, have you entered it correctly?")
 
-
+#TODO set this up to work outside codespaces so it can be passed a string filepath
 @cli.command(name="timer")
 def timer():
     st = datetime.datetime.now()
