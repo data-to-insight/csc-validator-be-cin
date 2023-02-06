@@ -84,6 +84,8 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     full_issue_df = validator.full_issue_df
 
     if output:
+        validator.user_report.to_csv("user_report.csv")
+
         # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
         issue_report = validator.full_issue_df.to_json(orient="records")
         rule_defs = validator.rule_descriptors.to_json(orient="records")
@@ -98,9 +100,10 @@ def run_all(filename: str, ruleset, issue_id, select, output):
         with open("issue_report.json", "w") as f:
             json.dump(issue_report, f)
 
-    print(issue_instances)
+    # print(issue_instances)
     # print(all_rules_issue_locs)
     # print(validator.rule_descriptors)
+    # print(validator.user_report)
 
 
 @cli.command(name="test")
@@ -170,7 +173,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.process_data(root)
+        cin_tables_dict = cin_class.convert_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")
