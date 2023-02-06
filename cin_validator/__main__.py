@@ -186,13 +186,11 @@ def cli_converter(filename: str):
         click.echo(f"{filename} can't be found, have you entered it correctly?")
 
 
-# TODO set this up to work outside codespaces so it can be passed a string filepath
 @cli.command(name="timer")
-def timer():
+@click.argument("filepath", type=str, required=True)
+def timer(filepath):
     st = datetime.datetime.now()
-    os.system(
-        "python -m cin_validator run-all /workspaces/CIN-validator/fake_data/fake_CIN_data.xml"
-    )
+    os.system(f"python -m cin_validator run-all {filepath}")
     et = datetime.datetime.now()
     time_elapsed = et - st
     print(f"Time to run: {time_elapsed}")
