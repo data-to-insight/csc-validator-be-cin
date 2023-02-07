@@ -30,7 +30,7 @@ def validate(
     df = df[~df[PersonDeathDate].isna()]
 
     # Return rows where DOB is prior to DOD
-    condition1 = df[PersonBirthDate] < df[PersonDeathDate]
+    condition1 = df[PersonBirthDate] > df[PersonDeathDate]
     # Return rows with no DOB
     condition2 = df[PersonBirthDate].isna()
 
@@ -67,13 +67,13 @@ def test_validate():
             },
             {
                 "LAchildID": "child2",
-                "PersonDeathDate": "26/05/2000",
-                "PersonBirthDate": "26/05/2001",
+                "PersonDeathDate": "26/05/2001",
+                "PersonBirthDate": "26/05/2000",
             },
             {
                 "LAchildID": "child3",
-                "PersonDeathDate": "26/05/2000",
-                "PersonBirthDate": "26/05/1999",
+                "PersonDeathDate": "26/05/1999",
+                "PersonBirthDate": "26/05/2000",
             },  # 2 error: end is before start
             {
                 "LAchildID": "child4",
@@ -83,8 +83,8 @@ def test_validate():
             },
             {
                 "LAchildID": "child5",
-                "PersonDeathDate": "26/05/2000",
-                "PersonBirthDate": "25/05/2000",
+                "PersonDeathDate": "25/05/2000",
+                "PersonBirthDate": "26/05/2000",
             },  # 4 error: end is before start
             {
                 "LAchildID": "child6",
@@ -121,8 +121,8 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child3",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                     pd.to_datetime("26/05/1999", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [2],
             },
@@ -137,8 +137,8 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child5",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                     pd.to_datetime("25/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [4],
             },
