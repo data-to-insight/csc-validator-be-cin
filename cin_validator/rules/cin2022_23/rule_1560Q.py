@@ -38,11 +38,15 @@ def validate(
     # FormerUPN does not contain a full digit between edges.
     digit_within = ~df["FormerUPN"].str[1:-1].str.isdigit()
     # FormerUPN's edges are not characters of th alphabet
-    check_edges = (~df["FormerUPN"].str[0].str.isalpha()) | (~df["FormerUPN"].str[-1].str.isalpha())
+    check_edges = (~df["FormerUPN"].str[0].str.isalpha()) | (
+        ~df["FormerUPN"].str[-1].str.isalpha()
+    )
 
     failing_indices = df[check_length | digit_within | check_edges].index
 
-    rule_context.push_issue(table=ChildIdentifiers, field=FormerUPN, row=failing_indices)
+    rule_context.push_issue(
+        table=ChildIdentifiers, field=FormerUPN, row=failing_indices
+    )
 
 
 def test_validate():
