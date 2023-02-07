@@ -50,10 +50,16 @@ def validate(
     df_CINdetails.reset_index(inplace=True)
 
     # If a <CINdetails> module has <ReferralNFA> (N00112) = true or 1, then there should be no Child Protection module present
+
+    # Excluding rows with false or 0 <ReferralNFA> to fix bug where they were flagged as failing
+    df_CINdetails = df_CINdetails[
+        ~(df_CINdetails[ReferralNFA].str.lower() == "false")
+        | ~(df_CINdetails[ReferralNFA].astype(str) == "0")
+    ]
+
     df_CINdetails = df_CINdetails[
         (df_CINdetails[ReferralNFA].str.lower() == "true")
         | (df_CINdetails[ReferralNFA].astype(str) == "1")
-        | (df_CINdetails[ReferralNFA] == True)
     ]
 
     #  Merge tables to get corresponding CP plan group and reviews
