@@ -40,7 +40,8 @@ def validate(
     # <GenderCurrent> (N00097) must be present and valid
 
     failing_indices = df[
-        df[GenderCurrent].isna() | (~df[GenderCurrent].isin(valid_gender_codes))
+        df[GenderCurrent].isna()
+        | (~df[GenderCurrent].astype("str").isin(valid_gender_codes))
     ].index
 
     # Replace ChildIdentifiers and GenderCurrent with the table and column name concerned in your rule, respectively.
