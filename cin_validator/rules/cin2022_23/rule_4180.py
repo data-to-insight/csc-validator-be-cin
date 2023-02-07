@@ -35,9 +35,10 @@ def validate(
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    valid_gender_codes = [1, 2, 0, 9]
+    valid_gender_codes = [1, 2, 0, 9, "1", "2", "0", "9"]
 
     # <GenderCurrent> (N00097) must be present and valid
+
     failing_indices = df[
         df[GenderCurrent].isna() | (~df[GenderCurrent].isin(valid_gender_codes))
     ].index
@@ -52,7 +53,7 @@ def validate(
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     child_identifiers = pd.DataFrame(
-        [[1], [pd.NA], [7], ["Male"]], columns=[GenderCurrent]
+        [1, pd.NA, 7, "Male", 2, 0, 9, "9"], columns=[GenderCurrent]
     )
 
     # Run rule function passing in our sample data
