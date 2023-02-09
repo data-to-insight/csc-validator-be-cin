@@ -28,7 +28,7 @@ def generate_tables(cin_data):
 
 
 @app.call
-def cin_validate(cin_data=None, selected_rules=None, ruleset="rules.cin2022_23"):
+def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     """
     :param file-ref cin_data: file reference to a CIN XML file
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
@@ -38,11 +38,11 @@ def cin_validate(cin_data=None, selected_rules=None, ruleset="rules.cin2022_23")
     :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
     """
 
-    # filetext = cin_data.read().decode("utf-8")
-    # root = ET.fromstring(filetext)
+    filetext = cin_data.read().decode("utf-8")
+    root = ET.fromstring(filetext)
 
-    fulltree = ET.parse("fake_data\\fake_CIN_data.xml")
-    root = fulltree.getroot()
+    # fulltree = ET.parse("fake_data\\fake_CIN_data.xml")
+    # root = fulltree.getroot()
 
     raw_data = cin_class.convert_data(root)
 
