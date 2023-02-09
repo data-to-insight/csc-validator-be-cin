@@ -15,7 +15,7 @@ from cin_validator.test_engine import run_rule
 Assessments = CINTable.Assessments
 LAchildID = Assessments.LAchildID
 AssessmentFactors = Assessments.AssessmentFactors
-CINdetailsID = Assessments.CINdetailsID
+AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 
 
 # define characteristics of rule
@@ -50,11 +50,14 @@ def validate(
     # If <AssessmentFactors> (N00181) = “21”, this must be the only <AssessmentFactors> (N00181) present.
     df_orig = df.copy()
 
-    df = df[df[AssessmentFactors] == "21"]
+    df = df[(df[AssessmentFactors] == "21") | (df[AssessmentFactors] == 21)]
 
     #  Merge tables
     df = df.merge(
-        df_orig, how="left", on=["LAchildID", "CINdetailsID"], suffixes=["", "_orig"]
+        df_orig,
+        how="left",
+        on=["LAchildID", "AssessmentAuthorisationDate"],
+        suffixes=["", "_orig"],
     )
 
     # Values that aren't 21 are now errors (using guidelines from rule 8790)
@@ -69,15 +72,39 @@ def validate(
 
 def test_validate():
     # 0      #1      #2      #3     #4      #5      #6      #7
-    ids = ["1", "1", "2", "3", "3", "4", "4", "5"]
-    assessmentfactors = ["21", "AIND", "NONE", pd.NA, "MOTH", "21", "AAAA", "AA"]
-    cinid = ["1", "1", "2", "3", "3", "4", "4", "5"]
+    ids = ["1", "1", "2", "3", "3", "4", "4", "5", "6", "6", "6"]
+    assessmentfactors = [
+        "21",
+        "AIND",
+        "NONE",
+        pd.NA,
+        "MOTH",
+        "21",
+        "AAAA",
+        "AA",
+        "21",
+        "14",
+        "15",
+    ]
+    assessmentauthorisationdate = [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3",
+        "4",
+        "4",
+        "5",
+        "2021-02-09",
+        "2020-12-15",
+        "2020-12-15",
+    ]
 
     fake_df = pd.DataFrame(
         {
             "LAchildID": ids,
             "AssessmentFactors": assessmentfactors,
-            "CINdetailsID": cinid,
+            "AssessmentAuthorisationDate": assessmentauthorisationdate,
         }
     )
 
