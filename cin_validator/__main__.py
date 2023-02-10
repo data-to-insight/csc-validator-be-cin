@@ -1,12 +1,11 @@
+import datetime
 import importlib
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
 import pytest
-
-import datetime
-import os
 
 from cin_validator import cin_validator_class as cin_class
 from cin_validator.rule_engine import registry
@@ -49,10 +48,9 @@ def list_cmd(ruleset):
     default="rules.cin2022_23",
     help="Which ruleset to use, e.g. rules.cin2022_23",
 )
-@click.option("--issue_id", "-e", default=None)
 @click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
-def run_all(filename: str, ruleset, issue_id, select, output):
+def run_all(filename: str, ruleset, select, output):
     """
     Used to run all of a set of validation rules on input data.
 
@@ -64,8 +62,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
 
     :param str filename: Refers to the filepath of data to be validated.
     :param str ruleset: The ruleset of validation rules to run input data against.
-    :param str issue_id: Can be used to select an individual instance of an
-        error, using indivdual ERROR_ID
+    :param select: specify the rules that should be run. CLI works with a single string only.
     :param bool output: If true, produces JSON error report output, if False (default)
         does not.
     :returns: DataFrame report of errors using selected validation rules, also output as
@@ -80,7 +77,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     data_files = cin_class.process_data(raw_data)
 
     validator = cin_class.CinValidationSession(
-        data_files, ruleset, issue_id, selected_rules=select
+        data_files, ruleset, selected_rules=select
     )
 
     issue_instances = validator.issue_instances
@@ -104,7 +101,7 @@ def run_all(filename: str, ruleset, issue_id, select, output):
             json.dump(issue_report, f)
 
     # print(issue_instances)
-    # print(all_rules_issue_locs)
+    print(full_issue_df)
     # print(validator.rule_descriptors)
     # print(validator.user_report)
 

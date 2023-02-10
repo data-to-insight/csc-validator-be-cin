@@ -170,15 +170,12 @@ class CinValidationSession:
     :param any data_files: Data files for validation, either a DataContainerWrapper object, or a
         dictionary of DataFrames.
     :param dir ruleset: The directory containing the validation rules to be run according to the year in which they were published.
-    :param str issue_id: ID of individual errors to be selected for viewing using
-        select_by_id method (Error IDs, not rule codes).
     """
 
     def __init__(
         self,
         data_files=None,
         ruleset="rules.cin2022_23",
-        issue_id=None,
         selected_rules=None,
     ) -> None:
         """
@@ -197,14 +194,12 @@ class CinValidationSession:
 
         self.data_files = data_files
         self.ruleset = ruleset
-        self.issue_id = issue_id
 
         # save independent version of data to be used in report.
         raw_data = copy.deepcopy(self.data_files)
 
         # run
         self.create_issue_report_df(selected_rules)
-        self.select_by_id()
 
         # add child_id to issue location report.
         self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
@@ -338,22 +333,3 @@ class CinValidationSession:
             self.rule_descriptors = pd.concat([child_level_rules, la_level_rules])
         else:
             self.rule_descriptors = child_level_rules
-
-    def select_by_id(self):
-        """
-        Allows users to select reports of individual errors by ERROR_ID. Note:
-        this is individual instances of errors, not rule codes.
-
-        :param str issue_id: The ID of an individual issue, to be matched with an ERROR_ID
-            from validation.
-        :returns: Validation information associated with specific ERROR_ID.
-        :rtype: DataFrame
-        """
-
-        if self.issue_id is not None:
-            self.issue_id = tuple(self.issue_id.split(", "))
-            self.full_issue_df = self.full_issue_df[
-                self.full_issue_df["ERROR_ID"] == self.issue_id
-            ]
-        else:
-            pass
