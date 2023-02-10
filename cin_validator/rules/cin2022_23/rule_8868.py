@@ -52,13 +52,14 @@ def validate(
 
     CINclosure_present = df_cin[df_cin[CINclosureDate].notna()]
 
+    # Children with no s47 module must be excluded to prevent falsely flagging them, done usig inner merge.
     merged_df = CINclosure_present.merge(
         df_47,
         on=[
             LAchildID,
             "CINdetailsID",
         ],
-        how="left",
+        how="inner",
         suffixes=["_cin", "_47"],
     )
 
@@ -183,7 +184,7 @@ def test_validate():
                 "DateOfInitialCPC": pd.NA,
             },
             {
-                "LAchildID": "child3",  # 5 fail. not present in section47 table so none of the values meets the requirements
+                "LAchildID": "child3",  # 5 Pass, not present in section47 table so none of the values meets the requirements
                 "CINclosureDate": "26/05/2003",
                 "CINdetailsID": "cinID3",
                 "DateOfInitialCPC": pd.NA,
@@ -234,7 +235,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -260,13 +261,13 @@ def test_validate():
                 ),
                 "ROW_ID": [4],
             },
-            {
-                "ERROR_ID": (
-                    "child3",  # ChildID
-                    "cinID3",  # CINdetailsID
-                ),
-                "ROW_ID": [5],
-            },
+            # {
+            #     "ERROR_ID": (
+            #         "child3",  # ChildID
+            #         "cinID3",  # CINdetailsID
+            #     ),
+            #     "ROW_ID": [5],
+            # },
         ]
     )
     assert issue_rows.equals(expected_df)
