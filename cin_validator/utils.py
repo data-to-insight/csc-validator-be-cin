@@ -63,9 +63,7 @@ def make_census_period(reference_date):
 
     # the collection start is the 1st of April of the previous year but dates from the day of the previous collection move to the next collection.
     # e.g. in the 22-23 collection, 2022-03-31 is an allowed date according to the test data.
-    collection_start = (
-        make_date(reference_date) - pd.DateOffset(years=1)
-    )
+    collection_start = make_date(reference_date) - pd.DateOffset(years=1)
 
     return collection_start, collection_end
 
