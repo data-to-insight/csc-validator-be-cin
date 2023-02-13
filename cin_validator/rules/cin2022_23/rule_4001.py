@@ -47,7 +47,9 @@ def validate(
     )
 
     #  Get rows where CPPendDate is null and CINPlanEndDate is null
-    condition = df_merged[CPPendDate].isna() & df_merged[CINPlanEndDate].isna()
+    condition = df_merged[CPPendDate].isna() & (
+        df_merged["CINplanStartDate"].notna() & df_merged[CINPlanEndDate].isna()
+    )
     df_merged = df_merged[condition].reset_index()
 
     df_merged["ERROR_ID"] = tuple(zip(df_merged[LAchildID], df_merged[CINdetailsID]))
@@ -114,30 +116,36 @@ def test_validate():
             {
                 "LAchildID": "child1",  # 0 Pass
                 "CINPlanEndDate": "04/04/2000",
+                "CINplanStartDate": "04/04/2000",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child1",  # 1 Pass
                 "CINPlanEndDate": "28/05/2000",
+                "CINplanStartDate": "04/04/2000",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child2",  # 2 Fail
+                "CINplanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID3",
             },
             {
                 "LAchildID": "child2",  # 3 Pass
+                "CINplanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID4",
             },
             {
                 "LAchildID": "child3",  # 4 Pass
+                "CINplanStartDate": "04/04/2000",
                 "CINPlanEndDate": "30/10/2001",
                 "CINdetailsID": "cinID5",
             },
             {
                 "LAchildID": "child4",  # 5 Pass
+                "CINplanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID6",
             },
