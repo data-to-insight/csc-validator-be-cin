@@ -35,7 +35,7 @@ def validate(
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    valid_gender_codes = [1, 2, 0, 9, "1", "2", "0", "9"]
+    valid_gender_codes = ["1", "2", "0", "9"]
 
     # <GenderCurrent> (N00097) must be present and valid
 
