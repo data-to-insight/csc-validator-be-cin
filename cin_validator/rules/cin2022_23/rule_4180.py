@@ -62,7 +62,7 @@ def test_validate():
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issues) == 3
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
