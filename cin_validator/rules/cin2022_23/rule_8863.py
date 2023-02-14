@@ -102,7 +102,7 @@ def validate(
     df_merged = df_merged[
         ass_started_after_start & (ass_started_before_end | ass_started_before_refdate)
     ].reset_index()
-    print(df_merged['LAchildID'])
+    print(df_merged["LAchildID"])
     # create an identifier for each error instance.
     df_merged["ERROR_ID"] = tuple(
         zip(
@@ -199,13 +199,13 @@ def test_validate():
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID1",
-                "AssessmentActualStartDate": "01/03/2000",  
+                "AssessmentActualStartDate": "01/03/2000",
                 "AssessmentAuthorisationDate": "01/04/2000",
-            },  
+            },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID1",
-                "AssessmentActualStartDate": "01/09/2000", 
+                "AssessmentActualStartDate": "01/09/2000",
                 "AssessmentAuthorisationDate": "01/10/2000",
             },
         ]
