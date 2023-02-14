@@ -88,16 +88,16 @@ def validate(
 
     # Determine whether assessment overlaps with another assessment
     ass_started_after_start = (
-        df_merged["AssessmentActualStartDate_ass"]
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts later than 2 starts
         >= df_merged["AssessmentActualStartDate_ass2"]
     )
     ass_started_before_end = (
-        df_merged["AssessmentActualStartDate_ass"]
-        <= df_merged["AssessmentAuthorisationDate_ass"]
-    ) & df_merged["AssessmentAuthorisationDate_ass"].notna()
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts earlier than 2 finishes
+        <= df_merged["AssessmentAuthorisationDate_ass2"]
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].notna()
     ass_started_before_refdate = (
         df_merged["AssessmentActualStartDate_ass"] <= reference_date
-    ) & df_merged["AssessmentAuthorisationDate_ass"].isna()
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].isna()
 
     df_merged = df_merged[
         ass_started_after_start & (ass_started_before_end | ass_started_before_refdate)
