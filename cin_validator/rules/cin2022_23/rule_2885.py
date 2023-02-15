@@ -99,19 +99,48 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
-    print(
-        merged_df[
-            [
-                "LAchildID",
-                "DateOfInitialCPC_47",
-                "DateOfInitialCPC_cin",
-                "CPPstartDate",
-                "CINdetailsID",
-            ]
-        ]
-    )
+    # print(
+    #     merged_df[
+    #         [
+    #             "LAchildID",
+    #             "DateOfInitialCPC_47",
+    #             "DateOfInitialCPC_cin",
+    #             "CPPstartDate",
+    #             "CINdetailsID",
+    #         ]
+    #     ]
+    # )
+
+    #  Filter out rows where there are multiple s47 modules, some with DateOfInitialCPC and some without
+    no_dates = merged_df[
+        merged_df["DateOfInitialCPC_47"].isna()
+        & merged_df["DateOfInitialCPC_cin"].isna()
+    ]["LAchildID"].to_list()
+    at_least_one_date = merged_df[
+        merged_df["DateOfInitialCPC_47"].notna()
+        | merged_df["DateOfInitialCPC_cin"].notna()
+    ]["LAchildID"].to_list()
+    some_and_none = merged_df[
+        merged_df[LAchildID].isin(at_least_one_date)
+        & merged_df[LAchildID].isin(no_dates)
+    ]["LAchildID"].to_list()
+
+    # This filters out children who have some rows with dates and some without in the same CINdetailsID module
+    # It takes out empty rows, but leaves in rows with dates. If the rows with dates pass, the child passes as it should,
+    #  If the rows with dates fail, the child still fails as it should.
+    # This is tested with chidlren 5 and 6 in the samples DFs, and was necessary to account for real world data.
+    merged_df = merged_df[
+        ~(
+            (
+                merged_df["DateOfInitialCPC_47"].isna()
+                & merged_df["DateOfInitialCPC_cin"].isna()
+            )
+            & (merged_df[LAchildID].isin(some_and_none))
+        )
+    ]
 
     # check that the the dates being compared existed in the same CIN event period and belong to the same child.
+    # This checks if there are any modules which fail, even if there's another module that passes which should pass the child
     condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_47"]) & (
         merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_cin"]
     )
@@ -122,17 +151,7 @@ def validate(
 
     # get all the data that fits the failing condition.
     merged_df = merged_df[condition].reset_index()
-    print(
-        merged_df[
-            [
-                "LAchildID",
-                "DateOfInitialCPC_47",
-                "DateOfInitialCPC_cin",
-                "CPPstartDate",
-                "CINdetailsID",
-            ]
-        ]
-    )
+
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
@@ -149,6 +168,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
+
     df_47_issues = (
         df_47.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_47")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -375,7 +395,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -410,7 +430,7 @@ def test_validate():
                     "cinID4",
                     pd.to_datetime("19/07/2021", format="%d/%m/%Y", errors="coerce"),
                 ),
-                "ROW_ID": [8],
+                "ROW_ID": [9],
             },
         ]
     )
@@ -422,5 +442,5 @@ def test_validate():
     assert result.definition.code == 2885
     assert (
         result.definition.message
-        == "Child protection plan shown as starting a different day to the initial child protection conference"
+        == "Child protection plan shown as starting a different day to the initial child protection conference."
     )
