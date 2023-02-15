@@ -99,8 +99,18 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
-    print(merged_df[['LAchildID', "DateOfInitialCPC_47", "DateOfInitialCPC_cin", "CPPstartDate", "CINdetailsID"]])
-    
+    print(
+        merged_df[
+            [
+                "LAchildID",
+                "DateOfInitialCPC_47",
+                "DateOfInitialCPC_cin",
+                "CPPstartDate",
+                "CINdetailsID",
+            ]
+        ]
+    )
+
     # check that the the dates being compared existed in the same CIN event period and belong to the same child.
     condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_47"]) & (
         merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_cin"]
@@ -112,7 +122,17 @@ def validate(
 
     # get all the data that fits the failing condition.
     merged_df = merged_df[condition].reset_index()
-    print(merged_df[['LAchildID', "DateOfInitialCPC_47", "DateOfInitialCPC_cin", "CPPstartDate", "CINdetailsID"]])
+    print(
+        merged_df[
+            [
+                "LAchildID",
+                "DateOfInitialCPC_47",
+                "DateOfInitialCPC_cin",
+                "CPPstartDate",
+                "CINdetailsID",
+            ]
+        ]
+    )
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
