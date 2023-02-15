@@ -30,7 +30,7 @@ ReferenceDate = Header.ReferenceDate
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Child protection plan shown as starting a different day to the initial child protection conference",
+    message="Child protection plan shown as starting a different day to the initial child protection conference.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         CPPstartDate,
@@ -99,6 +99,8 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
+    print(merged_df[['LAchildID', "DateOfInitialCPC_47", "DateOfInitialCPC_cin", "CPPstartDate", "CINdetailsID"]])
+    
     # check that the the dates being compared existed in the same CIN event period and belong to the same child.
     condition = (merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_47"]) & (
         merged_df[CPPstartDate] != merged_df["DateOfInitialCPC_cin"]
@@ -110,7 +112,7 @@ def validate(
 
     # get all the data that fits the failing condition.
     merged_df = merged_df[condition].reset_index()
-
+    print(merged_df[['LAchildID', "DateOfInitialCPC_47", "DateOfInitialCPC_cin", "CPPstartDate", "CINdetailsID"]])
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CINplanDates group (differentiated by CINdetailsID), in each child (differentiated by LAchildID)
     # So, a combination of LAchildID, CINdetailsID and CPPstartDate identifies and error instance.
@@ -158,7 +160,7 @@ def test_validate():
         [
             {  # same as Section47 date, different from cin date
                 "LAchildID": "child1",
-                "CPPstartDate": "26/05/2000",  # 0 pass
+                "CPPstartDate": "26/05/2021",  # 0 pass
                 "CINdetailsID": "cinID1",
             },
             {  # would've failed but ignored. Not in period of census
@@ -168,12 +170,12 @@ def test_validate():
             },
             {  # same as cin_date, different from section47
                 "LAchildID": "child2",
-                "CPPstartDate": "26/05/2000",  # 2 pass [Should fail if other condition is used and section47 is present]
+                "CPPstartDate": "26/05/2021",  # 2 pass [Should fail if other condition is used and section47 is present]
                 "CINdetailsID": "cinID1",
             },
             {  # different from both dates
                 "LAchildID": "child3",
-                "CPPstartDate": "26/05/2000",  # 3 fail
+                "CPPstartDate": "26/05/2021",  # 3 fail
                 "CINdetailsID": "cinID1",
             },
             {  # absent
@@ -183,13 +185,23 @@ def test_validate():
             },
             {  # fail
                 "LAchildID": "child3",
-                "CPPstartDate": "07/02/2001",  # 5 fail. Different from both cin_dates in its cindetails group
+                "CPPstartDate": "07/02/2022",  # 5 fail. Different from both cin_dates in its cindetails group
                 "CINdetailsID": "cinID3",
             },
             {  # section47 date is absent, same as cin date.
                 # If grouping is not done well, this date could cause (LAchildID3, CINdetailsID3) above to pass.
                 "LAchildID": "child3",
-                "CPPstartDate": "14/03/2001",  # 6 pass [Should fail if other condition is used]
+                "CPPstartDate": "14/03/2022",  # 6 pass [Should fail if other condition is used]
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child5",
+                "CPPstartDate": "19/07/2021",
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child6",
+                "CPPstartDate": "19/07/2021",
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -198,36 +210,51 @@ def test_validate():
         [
             {  # 0 pass
                 "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID1",
             },
             {  # 1 ignored
                 "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID2",
             },
             {  # 2 pass
                 "LAchildID": "child2",
-                "DateOfInitialCPC": "30/05/2000",
+                "DateOfInitialCPC": "30/05/2021",
                 "CINdetailsID": "cinID1",
             },
             {  # 3 fail
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "27/05/2000",
+                "DateOfInitialCPC": "27/05/2021",
                 "CINdetailsID": "cinID1",
             },
             {  # 4 absent, ignored
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID2",
             },
             {  # 5 fail
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID3",
             },
             {  # 6 pass
                 "LAchildID": "child3",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child5",
+                "DateOfInitialCPC": "19/07/2021",
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child5",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child6",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
             },
@@ -237,27 +264,27 @@ def test_validate():
         [
             {  # 0 pass
                 "LAchildID": "child1",
-                "DateOfInitialCPC": "26/10/1999",
+                "DateOfInitialCPC": "26/10/2020",
                 "CINdetailsID": "cinID1",
             },
             {  # 1 ignore
                 "LAchildID": "child1",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID2",
             },
             {  # 2 pass
                 "LAchildID": "child2",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID1",
             },
             {  # 3 fail
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "28/05/2000",
+                "DateOfInitialCPC": "28/05/2021",
                 "CINdetailsID": "cinID1",
             },
             {  # 4 ignore
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "26/05/2000",
+                "DateOfInitialCPC": "26/05/2021",
                 "CINdetailsID": "cinID2",
             },
             {  # 5 fail
@@ -267,12 +294,28 @@ def test_validate():
             },
             {  # 6 pass
                 "LAchildID": "child3",
-                "DateOfInitialCPC": "14/03/2001",
+                "DateOfInitialCPC": "14/03/2022",
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child5",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child6",
+                "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
             },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
+    sample_header = pd.DataFrame(
+        [{ReferenceDate: "31/03/2022"}]  # the census start date here will be 01/04/2021
+    )
+    sample_header[ReferenceDate] = pd.to_datetime(
+        sample_header[ReferenceDate], format="%d/%m/%Y", errors="coerce"
+    )
     sample_cpp[CPPstartDate] = pd.to_datetime(
         sample_cpp[CPPstartDate], format="%d/%m/%Y", errors="coerce"
     )
@@ -281,9 +324,6 @@ def test_validate():
     )
     sample_cin_details["DateOfInitialCPC"] = pd.to_datetime(
         sample_cin_details["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
-    )
-    sample_header = pd.DataFrame(
-        [{ReferenceDate: "31/03/2001"}]  # the census start date here will be 01/04/2000
     )
 
     # Run the rule function, passing in our sample data.
@@ -332,7 +372,7 @@ def test_validate():
                     "child3",  # ChildID
                     "cinID1",  # CINdetailsID
                     # corresponding CPPstartDate
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("26/05/2021", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [3],
             },
@@ -340,9 +380,17 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",
                     "cinID3",
-                    pd.to_datetime("07/02/2001", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("07/02/2022", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
+            },
+            {
+                "ERROR_ID": (
+                    "child6",
+                    "cinID4",
+                    pd.to_datetime("19/07/2021", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [8],
             },
         ]
     )
