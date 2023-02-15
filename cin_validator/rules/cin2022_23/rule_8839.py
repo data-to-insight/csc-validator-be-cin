@@ -43,8 +43,10 @@ def validate(
     # DF_CHECK: APPLY GROUPBYs IN A SEPARATE DATAFRAME SO THAT OTHER COLUMNS ARE NOT LOST OR CORRUPTED. THEN, MAP THE RESULTS TO THE INITIAL DATAFRAME.
     df_check = df.copy()
     # get all the locations where ICPCnotRequired is null or not true (1)
+    # The rule originally asks for true, not 1, but an analyst coded it for 1, so their LA may use 1 and 0 instead, as such, it now check for either.
     df_check = df_check[
-        df_check[ICPCnotRequired].isna() | (df_check[ICPCnotRequired] != 1)
+        df_check[ICPCnotRequired].isna()
+        | (~df_check[ICPCnotRequired].isin([1, "true"]))
     ]
     # get all the locations where DateOfInitialCPC is null
     df_check = df_check[df_check[DateOfInitialCPC].isna()]
@@ -131,13 +133,19 @@ def test_validate():
                 LAchildID: "child3",
                 CINdetailsID: "cinID3",
                 DateOfInitialCPC: pd.NA,  # 6 nan but also ICPC not required
-                ICPCnotRequired: 1,
+                ICPCnotRequired: "true",
             },
             {  # pass
                 LAchildID: "child3",
                 CINdetailsID: "cinID3",
                 DateOfInitialCPC: pd.NA,  # 7 not more than one nan authorisation date in group
                 ICPCnotRequired: pd.NA,
+            },
+            {  # pass
+                LAchildID: "child3",
+                CINdetailsID: "cinID3",
+                DateOfInitialCPC: pd.NA,  # 6 nan but also ICPC not required
+                ICPCnotRequired: 1,
             },
         ]
     )
