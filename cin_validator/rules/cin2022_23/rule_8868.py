@@ -261,13 +261,6 @@ def test_validate():
                 ),
                 "ROW_ID": [4],
             },
-            # {
-            #     "ERROR_ID": (
-            #         "child3",  # ChildID
-            #         "cinID3",  # CINdetailsID
-            #     ),
-            #     "ROW_ID": [5],
-            # },
         ]
     )
     assert issue_rows.equals(expected_df)
