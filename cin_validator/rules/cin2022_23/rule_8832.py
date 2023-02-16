@@ -52,10 +52,11 @@ def validate(
     # If a <CINdetails> module has <ReferralNFA> (N00112) = true or 1, then there should be no Child Protection module present
 
     # Excluding rows with false or 0 <ReferralNFA> to fix bug where they were flagged as failing
-    # df_CINdetails = df_CINdetails[
-    #     ~(df_CINdetails[ReferralNFA].str.lower() == "false")
-    #     | ~(df_CINdetails[ReferralNFA].astype(str) == "0")
-    # ]
+    # TODO remove this step when proven to be redundant.
+    df_CINdetails = df_CINdetails[
+        ~(df_CINdetails[ReferralNFA].str.lower() == "false")
+        | ~(df_CINdetails[ReferralNFA].astype(str) == "0")
+    ]
 
     df_CINdetails = df_CINdetails[
         (df_CINdetails[ReferralNFA].str.lower() == "true")
@@ -126,6 +127,10 @@ def test_validate():
                 "LAchildID": "child4",  # ignored
                 "CINdetailsID": "CDID0",
             },
+            {
+                "LAchildID": "child5",  # ignored, ReferralNFA is neither "1" nor "true"
+                "CINdetailsID": "CDID0",
+            },
         ]
     )
     sample_cin = pd.DataFrame(
@@ -149,6 +154,11 @@ def test_validate():
                 "LAchildID": "child4",  # ignored, ReferralNFA is neither "1" nor "true"
                 "CINdetailsID": "CDID0",
                 "ReferralNFA": "false",
+            },
+            {
+                "LAchildID": "child5",  # ignored, ReferralNFA is neither "1" nor "true"
+                "CINdetailsID": "CDID0",
+                "ReferralNFA": 0,
             },
         ]
     )
