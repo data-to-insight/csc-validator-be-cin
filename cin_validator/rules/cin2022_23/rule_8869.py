@@ -15,6 +15,7 @@ from cin_validator.test_engine import run_rule
 Assessments = CINTable.Assessments
 LAchildID = Assessments.LAchildID
 AssessmentFactors = Assessments.AssessmentFactors
+CINdetailsID = Assessments.CINdetailsID
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 
 
@@ -50,13 +51,13 @@ def validate(
     # If <AssessmentFactors> (N00181) = “21”, this must be the only <AssessmentFactors> (N00181) present.
     df_orig = df.copy()
 
-    df = df[(df[AssessmentFactors] == "21") | (df[AssessmentFactors] == 21)]
+    df = df[(df[AssessmentFactors].astype(str) == "21")]
 
     #  Merge tables
     df = df.merge(
         df_orig,
         how="left",
-        on=["LAchildID", "AssessmentAuthorisationDate"],
+        on=[LAchildID, CINdetailsID, AssessmentAuthorisationDate],
         suffixes=["", "_orig"],
     )
 
@@ -73,19 +74,21 @@ def validate(
 def test_validate():
     # 0      #1      #2      #3     #4      #5      #6      #7
     ids = ["1", "1", "2", "3", "3", "4", "4", "5", "6", "6", "6"]
+    cinid = ["1", "1", "2", "3", "3", "4", "4", "5", "6", "6", "6"]
     assessmentfactors = [
         "21",
-        "AIND",
+        "AIND",  # id1, cinid1 fail. same assessment period has factor 21
         "NONE",
         pd.NA,
         "MOTH",
         "21",
-        "AAAA",
+        "AAAA",  # id4, cinid4 fail. same assessment period has factor 21
         "AA",
         "21",
         "14",
         "15",
     ]
+    # non-date placeholders can be used since this rule doesn't require date-object properties.
     assessmentauthorisationdate = [
         "1",
         "1",
@@ -103,6 +106,7 @@ def test_validate():
     fake_df = pd.DataFrame(
         {
             "LAchildID": ids,
+            "CINdetailsID": cinid,
             "AssessmentFactors": assessmentfactors,
             "AssessmentAuthorisationDate": assessmentauthorisationdate,
         }
