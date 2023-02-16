@@ -85,7 +85,7 @@ def test_validate():
         "AAAA",  # id4, cinid4 fail. same assessment period has factor 21
         "AA",
         "21",
-        "14",
+        "14",  # ignored. not the same auth date as preceding.
         "15",
     ]
     # non-date placeholders can be used since this rule doesn't require date-object properties.
