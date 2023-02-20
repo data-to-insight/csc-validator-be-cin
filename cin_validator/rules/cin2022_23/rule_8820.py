@@ -96,13 +96,13 @@ def validate(
     cin_started_before_refdate = (
         (df_merged["CINreferralDate_cin"] < reference_date)
         & df_merged["CINclosureDate_cin2"].isna()
-        & df_merged["ReferralNFA_cin2"].isin(["false", "0", 0, "False"])
+        & df_merged["ReferralNFA_cin2"].str.lower().isin(["false", "0"])
     )
 
     df_merged = df_merged[
         cin_started_after_start & (cin_started_before_end | cin_started_before_refdate)
     ].reset_index()
-    print(df_merged)
+
     # create an identifier for each error instance.
     # In this case, the rule is checked for each CPPstartDate, in each CPplanDates group (differentiated by CP dates), in each child (differentiated by LAchildID)
     df_merged["ERROR_ID"] = tuple(
