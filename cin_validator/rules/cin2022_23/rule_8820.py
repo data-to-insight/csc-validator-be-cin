@@ -87,17 +87,16 @@ def validate(
 
     # Determine overlaps
     cin_started_after_start = (
-        df_merged["CINreferralDate_cin"] >= df_merged["CINreferralDate_cin2"]
+        df_merged["CINreferralDate_cin"] > df_merged["CINreferralDate_cin2"]
     )
     cin_started_before_end = (
-        df_merged["CINreferralDate_cin"] <= df_merged["CINclosureDate_cin2"]
+        df_merged["CINreferralDate_cin"] < df_merged["CINclosureDate_cin2"]
     ) & df_merged["CINclosureDate_cin2"].notna()
 
-    falsezero = ["False", "0"]
     cin_started_before_refdate = (
-        (df_merged["CINreferralDate_cin"] <= reference_date)
+        (df_merged["CINreferralDate_cin"] < reference_date)
         & df_merged["CINclosureDate_cin2"].isna()
-        & df_merged["ReferralNFA_cin2"].isin(falsezero)
+        & df_merged["ReferralNFA_cin2"].str.lower().isin(["false", "0"])
     )
 
     df_merged = df_merged[
@@ -165,14 +164,14 @@ def test_validate():
             # child2
             {
                 "LAchildID": "child2",
-                "CINreferralDate": "26/05/2000",  # 2 alone in cin group: not compared
+                "CINreferralDate": "26/05/2000",  # 2 pass, not between
                 "CINclosureDate": "25/10/2000",
                 "CINdetailsID": "cinID2",
                 "ReferralNFA": "true",
             },
             {
                 "LAchildID": "child2",
-                "CINreferralDate": "26/10/2000",  # 3 alone in cin group: not compared
+                "CINreferralDate": "26/10/2000",  # 3 pass, not between
                 "CINclosureDate": "26/12/2000",
                 "CINdetailsID": "cinID22",
                 "ReferralNFA": "true",
@@ -204,7 +203,23 @@ def test_validate():
                 "LAchildID": "child4",
                 "CINreferralDate": "26/09/2000",  # 7 Pass: not between "26/10/2000" and "31/03/2001"
                 "CINclosureDate": pd.NA,
+                "CINdetailsID": "cinID42",
                 "ReferralNFA": "true",
+            },
+            # child 5
+            {
+                "LAchildID": "child5",
+                "CINreferralDate": "08/07/2000",
+                "CINclosureDate": "23/08/2000",
+                "CINdetailsID": "cinID4",
+                "ReferralNFA": "false",
+            },
+            {
+                "LAchildID": "child5",
+                "CINreferralDate": "05/05/2000",
+                "CINclosureDate": "08/07/2000",
+                "CINdetailsID": "cinID5",
+                "ReferralNFA": "false",
             },
         ]
     )
