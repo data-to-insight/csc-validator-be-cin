@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
 
 ChildIdentifiers = CINTable.ChildIdentifiers
@@ -14,8 +14,9 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 
 
 @rule_definition(
-    code=4009,
+    code="4009Q",
     module=CINTable.ChildIdentifiers,
+    rule_type=RuleType.QUERY,
     message="CIN Plan cannot end after the child’s Date of Death",
     affected_fields=[
         PersonDeathDate,
@@ -189,7 +190,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 4009 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 4009
+    assert result.definition.code == "4009Q"
     assert (
         result.definition.message
         == "CIN Plan cannot end after the child’s Date of Death"
