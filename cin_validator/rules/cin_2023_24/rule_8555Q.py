@@ -10,7 +10,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -24,8 +24,9 @@ LAchildID = CINdetails.LAchildID
 
 
 @rule_definition(
-    code=8555,
+    code="8555Q",
     module=CINTable.CINdetails,
+    rule_type=RuleType.QUERY,
     message="Child cannot be referred after its recorded date of death",
     affected_fields=[
         PersonDeathDate,
@@ -192,7 +193,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8555
+    assert result.definition.code == "8555Q"
     assert (
         result.definition.message
         == "Child cannot be referred after its recorded date of death"
