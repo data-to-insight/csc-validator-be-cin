@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -18,8 +18,9 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    code=8897,
+    code="8897Q",
     module=CINTable.Assessments,
+    rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Parental or child factors at assessment information is missing from a completed assessment",
     # The column names tend to be the words within the < > signs in the github issue description.
@@ -241,7 +242,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8897 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8897
+    assert result.definition.code == "8897Q"
     assert (
         result.definition.message
         == "Parental or child factors at assessment information is missing from a completed assessment"
