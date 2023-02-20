@@ -23,7 +23,7 @@ ReferenceDate = Header.ReferenceDate
 @rule_definition(
     code=8863,
     module=CINTable.Assessments,
-    message="An Assessment is shown as starting when there is another Assessment ongoing",
+    message="An Assessment is shown as starting when there is another Assessment ongoing.",
     affected_fields=[AssessmentActualStartDate, AssessmentAuthorisationDate],
 )
 def validate(
@@ -88,16 +88,16 @@ def validate(
 
     # Determine whether assessment overlaps with another assessment
     ass_started_after_start = (
-        df_merged["AssessmentActualStartDate_ass"]
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts later than 2 starts
         >= df_merged["AssessmentActualStartDate_ass2"]
     )
     ass_started_before_end = (
-        df_merged["AssessmentActualStartDate_ass"]
-        <= df_merged["AssessmentAuthorisationDate_ass"]
-    ) & df_merged["AssessmentAuthorisationDate_ass"].notna()
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts earlier than 2 finishes
+        <= df_merged["AssessmentAuthorisationDate_ass2"]
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].notna()
     ass_started_before_refdate = (
         df_merged["AssessmentActualStartDate_ass"] <= reference_date
-    ) & df_merged["AssessmentAuthorisationDate_ass"].isna()
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].isna()
 
     df_merged = df_merged[
         ass_started_after_start & (ass_started_before_end | ass_started_before_refdate)
@@ -196,6 +196,18 @@ def test_validate():
                 "AssessmentActualStartDate": "26/09/2000",  # 7 Pass: not between "26/10/2000" and "31/03/2001"
                 "AssessmentAuthorisationDate": pd.NA,
             },
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID1",
+                "AssessmentActualStartDate": "01/03/2000",
+                "AssessmentAuthorisationDate": "01/04/2000",
+            },
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID1",
+                "AssessmentActualStartDate": "01/09/2000",
+                "AssessmentAuthorisationDate": "01/10/2000",
+            },
         ]
     )
 
@@ -282,5 +294,5 @@ def test_validate():
     assert result.definition.code == 8863
     assert (
         result.definition.message
-        == "An Assessment is shown as starting when there is another Assessment ongoing"
+        == "An Assessment is shown as starting when there is another Assessment ongoing."
     )
