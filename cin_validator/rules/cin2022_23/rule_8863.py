@@ -102,7 +102,7 @@ def validate(
     df_merged = df_merged[
         ass_started_after_start & (ass_started_before_end | ass_started_before_refdate)
     ].reset_index()
-    
+
     # create an identifier for each error instance.
     df_merged["ERROR_ID"] = tuple(
         zip(
