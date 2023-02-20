@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import england_working_days, make_census_period
 
@@ -18,8 +18,9 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=8569,
+    code="8569Q",
     module=CINTable.CINdetails,
+    rule_type=RuleType.QUERY,
     message="A case with referral date before one working day prior to the collection start date must not be flagged as a no further action case",
     affected_fields=[
         ReferralNFA,
@@ -145,7 +146,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8569
+    assert result.definition.code == "8569Q"
     assert (
         result.definition.message
         == "A case with referral date before one working day prior to the collection start date must not be flagged as a no further action case"
