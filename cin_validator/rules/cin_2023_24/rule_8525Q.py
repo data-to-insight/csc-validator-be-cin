@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.rules.cin2022_23.rule_8535Q import PersonDeathDate
 from cin_validator.test_engine import run_rule
 
@@ -13,8 +13,9 @@ LAchildID = ChildIdentifiers.LAchildID
 
 
 @rule_definition(
-    code=8525,
+    code="8525Q",
     module=CINTable.ChildIdentifiers,
+    rule_type=RuleType.QUERY,
     message="Either Date of Birth or Expected Date of Birth must be provided (but not both)",
     affected_fields=[PersonBirthDate, ExpectedPersonBirthDate],
 )
@@ -133,7 +134,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8525
+    assert result.definition.code == "8525Q"
     assert (
         result.definition.message
         == "Either Date of Birth or Expected Date of Birth must be provided (but not both)"
