@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, rule_definition, RuleType
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -21,10 +21,11 @@ ReasonForClosure = CINdetails.ReasonForClosure
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8873
-    code=8873,
+    code="8873Q",
     # replace Assesments with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.Assessments,
+    rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ must be used.",
     # The column names tend to be the words within the < > signs in the github issue description.
@@ -272,7 +273,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8873 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8873
+    assert result.definition.code == "8873Q"
     assert (
         result.definition.message
         == "When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ must be used."
