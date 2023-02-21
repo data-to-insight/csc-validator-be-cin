@@ -99,17 +99,6 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
-    # print(
-    #     merged_df[
-    #         [
-    #             "LAchildID",
-    #             "DateOfInitialCPC_47",
-    #             "DateOfInitialCPC_cin",
-    #             "CPPstartDate",
-    #             "CINdetailsID",
-    #         ]
-    #     ]
-    # )
 
     #  Filter out rows where there are multiple s47 modules, some with DateOfInitialCPC and some without
     no_dates = merged_df[
