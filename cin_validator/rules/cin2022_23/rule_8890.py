@@ -67,10 +67,10 @@ def validate(
 
     #  Create dataframes which only have rows with s47 modules, and which don't have ICPCnotrequired as true should have one plan per row.
     df_47 = df_47[
-        (df_47[S47ActualStartDate].notna()) & (df_47[ICPCnotRequired] != "true")
+        (df_47[S47ActualStartDate].notna())
     ]
     df_47_2 = df_47_2[
-        (df_47_2[S47ActualStartDate].notna()) & (df_47_2[ICPCnotRequired] != "true")
+        (df_47_2[S47ActualStartDate].notna())
     ]
 
     #  Merge tables to test for overlaps
@@ -94,6 +94,8 @@ def validate(
     duplicate = same_start & same_cpc
     df_merged = df_merged[~duplicate]
 
+    true_or_one = ["1", "true"]
+
     # Determine whether CPP overlaps another CPP
     s47_started_after_start = (
         df_merged["S47ActualStartDate_47"] >= df_merged["S47ActualStartDate_472"]
@@ -104,7 +106,7 @@ def validate(
     s47_started_before_refdate = (
         (df_merged["S47ActualStartDate_47"] <= reference_date)
         & df_merged["DateOfInitialCPC_472"].isna()
-        & (df_merged["ICPCnotRequired_472"] != "1")
+        & (~(df_merged["ICPCnotRequired_472"].str.lower().isin(true_or_one)))
     )
 
     df_merged = df_merged[
@@ -216,14 +218,14 @@ def test_validate():
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID0",
-                "S47ActualStartDate": "26/05/2000",  # 4 Pass: not between "26/08/2000" and "26/10/2000"
+                "S47ActualStartDate": "26/05/2000",  # 8 Pass: not between "26/08/2000" and "26/10/2000"
                 "DateOfInitialCPC": "26/10/2001",
                 "ICPCnotRequired": "true",
             },
             {
                 "LAchildID": "child5",
                 "CINdetailsID": "cinID0",
-                "S47ActualStartDate": "26/08/2000",  # 5 Fail: between "26/05/2000" and "26/10/2001"
+                "S47ActualStartDate": "26/08/2000",  # 9 Fail: between "26/05/2000" and "26/10/2001"
                 "DateOfInitialCPC": "26/10/2000",
                 "ICPCnotRequired": "1",
             },
@@ -267,7 +269,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -295,6 +297,14 @@ def test_validate():
                     pd.to_datetime("26/08/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    "cinID0",
+                    pd.to_datetime("26/08/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [9],
             },
         ]
     )
