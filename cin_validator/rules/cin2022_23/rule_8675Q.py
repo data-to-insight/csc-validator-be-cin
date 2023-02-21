@@ -46,7 +46,7 @@ def validate(
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
     no_cpc = df[DateOfInitialCPC].isna()
     icpc_false = df[ICPCnotReqiured] == "false"
-    before_15b = df[S47ActualStartDate] > (collection_end - england_working_days(15))
+    before_15b = df[S47ActualStartDate] < (collection_end - england_working_days(15))
     condition = (no_cpc & icpc_false) & (before_15b)
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
@@ -84,10 +84,10 @@ def test_validate():
 
     section47 = pd.DataFrame(
         [
-            {  # 0 fail
+            {  # 0 fail, no ICPCnotrequied as true or InitialCPC, and date is more than 15 days before end of census year
                 "LAchildID": "child1",
                 "DateOfInitialCPC": pd.NA,
-                "S47ActualStartDate": "29/03/2022",
+                "S47ActualStartDate": "29/01/2022",
                 "ICPCnotRequired": "false",
             },
             {  # 1 ignore DateOfInitialCPC notna
@@ -99,8 +99,8 @@ def test_validate():
             {  # 2 pass. more than 15 working days before ref date
                 "LAchildID": "child3",
                 "DateOfInitialCPC": pd.NA,
-                "S47ActualStartDate": "25/01/2022",
-                "ICPCnotRequired": "true",
+                "S47ActualStartDate": "25/03/2022",
+                "ICPCnotRequired": "false",
             },
             {  # ignore S47ActualStartDate isna
                 "LAchildID": "child3",
@@ -156,7 +156,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    pd.to_datetime("29/03/2022", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("29/01/2022", format="%d/%m/%Y", errors="coerce"),
                     "false",
                 ),
                 "ROW_ID": [0],
