@@ -308,7 +308,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 2885 with the rule code and put the appropriate message in its place too.
+    # replace 8890 with the rule code and put the appropriate message in its place too.
     assert result.definition.code == 8890
     assert (
         result.definition.message
