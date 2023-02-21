@@ -212,6 +212,21 @@ def test_validate():
                 "DateOfInitialCPC": pd.NA,
                 "ICPCnotRequired": "1",
             },
+            # child5
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID0",
+                "S47ActualStartDate": "26/05/2000",  # 4 Pass: not between "26/08/2000" and "26/10/2000"
+                "DateOfInitialCPC": "26/10/2001",
+                "ICPCnotRequired": "true",
+            },
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID0",
+                "S47ActualStartDate": "26/08/2000",  # 5 Fail: between "26/05/2000" and "26/10/2001"
+                "DateOfInitialCPC": "26/10/2000",
+                "ICPCnotRequired": "1",
+            },
         ]
     )
 
