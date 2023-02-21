@@ -66,12 +66,8 @@ def validate(
     #   that has a missing <DateOfInitialCPC> (N00110) and the <ICPCnotRequired> (N00111) flag is not true
 
     #  Create dataframes which only have rows with s47 modules, and which don't have ICPCnotrequired as true should have one plan per row.
-    df_47 = df_47[
-        (df_47[S47ActualStartDate].notna())
-    ]
-    df_47_2 = df_47_2[
-        (df_47_2[S47ActualStartDate].notna())
-    ]
+    df_47 = df_47[(df_47[S47ActualStartDate].notna())]
+    df_47_2 = df_47_2[(df_47_2[S47ActualStartDate].notna())]
 
     #  Merge tables to test for overlaps
     df_merged = df_47.merge(
