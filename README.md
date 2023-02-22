@@ -10,6 +10,8 @@ If it is cloned locally, use `pre-commit install` to install the pre-commit hook
 ## Run
 - To test that all the rules pass their Pytests and will validate data as expected:  
 `python -m cin_validator test`
+- To select the ruleset that should be tested, include the path. For example, for 2023/24 rules do
+`python -m cin_validator test --ruleset "rules.cin_2023_24"`
 - To list all rules that are present:  
 `python -m cin_validator list`
 - To run rules on a file and generate a table of error locations:  
