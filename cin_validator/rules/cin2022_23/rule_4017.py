@@ -62,7 +62,7 @@ def validate(
 
     # Get rows where CPPstartDate is after CINPlanStartDate
     # and CPPstartDate before CINPlanEndDate (or if null, before/on ReferenceDate)
-    cpp_start_after_cin_start = df_merged[CPPstartDate] >= df_merged[CINPlanStartDate]
+    cpp_start_after_cin_start = df_merged[CPPstartDate] > df_merged[CINPlanStartDate]
     cpp_start_before_cin_end = (
         df_merged[CPPstartDate] < df_merged[CINPlanEndDate]
     ) & df_merged[CINPlanEndDate].notna()

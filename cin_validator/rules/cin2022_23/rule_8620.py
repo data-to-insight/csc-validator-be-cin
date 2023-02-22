@@ -18,6 +18,7 @@ CINclosureDate = CINdetails.CINclosureDate
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     code=8620,
@@ -43,8 +44,8 @@ def validate(
     df = df[df[CINclosureDate].notna()]
     df = df[
         ~(
-            (df[CINclosureDate] > collection_start)
-            & (df[CINclosureDate] < collection_end)
+            (df[CINclosureDate] >= collection_start)
+            & (df[CINclosureDate] <= collection_end)
         )
     ]
     failing_indices = df.index
@@ -68,6 +69,8 @@ def test_validate():
             {
                 CINclosureDate: "01/10/2022"
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
+            {CINclosureDate: "01/04/2021"},  # Pass, first day of census period
+            {CINclosureDate: "31/03/2021"},  # Pass, last day of census period
         ]
     )
 
