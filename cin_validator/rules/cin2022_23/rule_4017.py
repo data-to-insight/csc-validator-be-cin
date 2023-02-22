@@ -198,7 +198,7 @@ def test_validate():
                 "CPPstartDate": "31/03/2001",
             },
             {
-                "LAchildID": "child8",  # 11 Fail - Start on ReferenceDate
+                "LAchildID": "child8",  # 11 Fail - between CinStartDate and CinEndDate
                 "CPPstartDate": "22/06/2000",
             },
         ]
