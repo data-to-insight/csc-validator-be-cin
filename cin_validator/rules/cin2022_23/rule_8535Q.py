@@ -28,12 +28,14 @@ def validate(
 
     # Remove all rows with no deathdate
     df = df[~df[PersonDeathDate].isna()]
+    df = df[~(df["ExpectedPersonBirthDate"] > df[PersonDeathDate])]
 
     # Return rows where DOB is prior to DOD
     condition1 = df[PersonBirthDate] > df[PersonDeathDate]
+    condition2 = df[PersonBirthDate].isna()
 
     # df with all rows meeting the conditions
-    df_issues = df[condition1].reset_index()
+    df_issues = df[condition1 | condition2].reset_index()
 
     link_id = tuple(
         zip(
@@ -75,6 +77,7 @@ def test_validate():
             {
                 "LAchildID": "child4",
                 "PersonDeathDate": "26/05/2000",
+                "ExpectedPersonBirthDate": "27/05/2000",
                 "PersonBirthDate": pd.NA,
                 # 3 pass: no birth date
             },
@@ -96,6 +99,9 @@ def test_validate():
     )
     child_identifiers[PersonBirthDate] = pd.to_datetime(
         child_identifiers[PersonBirthDate], format="%d/%m/%Y", errors="coerce"
+    )
+    child_identifiers["ExpectedPersonBirthDate"] = pd.to_datetime(
+        child_identifiers["ExpectedPersonBirthDate"], format="%d/%m/%Y", errors="coerce"
     )
 
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
