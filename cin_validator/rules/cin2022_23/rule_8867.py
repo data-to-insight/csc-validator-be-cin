@@ -59,7 +59,7 @@ def validate(
         df_ass,
         left_on=["LAchildID", "CINdetailsID"],
         right_on=["LAchildID", "CINdetailsID"],
-        how="left",
+        how="inner",
         suffixes=("_cind", "_ass"),
     )
 
@@ -131,6 +131,11 @@ def test_validate():
                 "LAchildID": "child5",
                 "CINdetailsID": "CDID5",
                 "CINclosureDate": "15/11/2001",  # Fails (no Assessment Authorisation Date entered)
+            },
+            {
+                "LAchildID": "child6",
+                "CINdetailsID": "CDID5",
+                "CINclosureDate": "15/11/2001",  # Passes, no Assessment module
             },
         ]
     )
