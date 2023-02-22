@@ -43,10 +43,9 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildProtectionPlans with the name of the table you need.
-    df_cpp = data_container[ChildProtectionPlans].copy()
-    # TODO Is it necessary to copy? How else can we ensure that the original data is not changed in each rule.?.
-    df_47 = data_container[Section47].copy()
-    df_cin = data_container[CINdetails].copy()
+    df_cpp = data_container[ChildProtectionPlans]
+    df_47 = data_container[Section47]
+    df_cin = data_container[CINdetails]
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_cpp.index.name = "ROW_ID"
@@ -55,7 +54,7 @@ def validate(
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
-    # TODO summarise with a for loop? e.g for df in [df_cpp, df_47, df_cin]
+
     df_cpp.reset_index(inplace=True)
     df_47.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
@@ -81,12 +80,12 @@ def validate(
     # left merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
 
     # get only the section47 rows where cppstartdate exists and is within period.
-    df_cpp_47 = df_cpp.copy().merge(
-        df_47.copy(), on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
+    df_cpp_47 = df_cpp.merge(
+        df_47, on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
     )
     # get only the cindetails rows where cppstartdate exists and is within period.
-    df_cpp_cin = df_cpp.copy().merge(
-        df_cin.copy(),
+    df_cpp_cin = df_cpp.merge(
+        df_cin,
         on=[LAchildID, CINdetailsID],
         how="left",
         suffixes=["_cpp", "_cin"],
