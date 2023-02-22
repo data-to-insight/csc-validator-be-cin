@@ -28,19 +28,19 @@ def validate(
     df = data_container[ChildIdentifiers]
 
     # <FormerUPN> (N00002) where present should be in the correct format, as specified in the data table
+
     # Note, there are multiple types of former UPN, there are Temporary UPNs which end in a letter, and
     # those where a child is assigned a UPN but then another is identified for them having been used previously.
-    # If this was only a check for temporary UPNs, it would check that the last character was a letter.
+    # If this was only a check for temporary UPNs, it would check that the last character was a letter. However, it checks more generally.
 
     #  filter rows of df where the UPN column doesn't have Na/NaN values
     df = df.loc[df[FormerUPN].notna()]
 
-    # Flag locations where
-    # FormerUPN is not 13 characters long
+    # Flag locations where FormerUPN is not 13 characters long
     check_length = df[FormerUPN].str.len() != 13
-    # FormerUPN does not contain a full digit between edges.
+    # Flag locations where FormerUPN's last twelve characters do not form a full digit
     digit_within = ~df[FormerUPN].str[1:].str.isdigit()
-    # FormerUPN's first letter is meant to be a letter
+    # Flag locations where FormerUPN's first character is not a letter
     check_edges = ~df[FormerUPN].str[0].str.isalpha()
 
     failing_indices = df[check_length | digit_within | check_edges].index
