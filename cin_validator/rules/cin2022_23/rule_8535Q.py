@@ -7,6 +7,7 @@ from cin_validator.test_engine import run_rule
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 PersonBirthDate = ChildIdentifiers.PersonBirthDate
+ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
 LAchildID = ChildIdentifiers.LAchildID
 
@@ -28,7 +29,8 @@ def validate(
 
     # Remove all rows with no deathdate
     df = df[~df[PersonDeathDate].isna()]
-    df = df[~(df["ExpectedPersonBirthDate"] > df[PersonDeathDate])]
+    # Remove children who died unborn. They shouldn't flag this rule [DfE tool doesn't].
+    df = df[~(df[ExpectedPersonBirthDate] > df[PersonDeathDate])]
 
     # Return rows where DOB is prior to DOD
     condition1 = df[PersonBirthDate] > df[PersonDeathDate]
@@ -100,8 +102,8 @@ def test_validate():
     child_identifiers[PersonBirthDate] = pd.to_datetime(
         child_identifiers[PersonBirthDate], format="%d/%m/%Y", errors="coerce"
     )
-    child_identifiers["ExpectedPersonBirthDate"] = pd.to_datetime(
-        child_identifiers["ExpectedPersonBirthDate"], format="%d/%m/%Y", errors="coerce"
+    child_identifiers[ExpectedPersonBirthDate] = pd.to_datetime(
+        child_identifiers[ExpectedPersonBirthDate], format="%d/%m/%Y", errors="coerce"
     )
 
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
