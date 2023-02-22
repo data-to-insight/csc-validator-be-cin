@@ -34,7 +34,7 @@ def validate(
 
     # df with all rows meeting the conditions
     df_issues = df[condition1].reset_index()
-    print(df_issues)
+
     link_id = tuple(
         zip(
             df_issues[LAchildID], df_issues[PersonDeathDate], df_issues[PersonBirthDate]
