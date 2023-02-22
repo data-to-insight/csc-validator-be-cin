@@ -50,7 +50,6 @@ def validate(
 
     df_merged = df_merged.reset_index()
 
-
     df_merged["ERROR_ID"] = tuple(
         zip(
             df_merged["LAchildID"],

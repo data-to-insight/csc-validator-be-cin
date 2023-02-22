@@ -17,6 +17,7 @@ AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 LAchildID = Assessments.LAchildID
 CINdetailsAssID = Assessments.CINdetailsID
 
+
 # define characteristics of rule
 @rule_definition(
     code=8867,
