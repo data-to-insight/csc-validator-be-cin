@@ -22,6 +22,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 2885
@@ -84,6 +85,7 @@ def validate(
     df_cpp_47 = df_cpp.copy().merge(
         df_47.copy(), on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
     )
+    print(df_cpp_47)
     # get only the cindetails rows where cppstartdate exists and is within period.
     df_cpp_cin = df_cpp.copy().merge(
         df_cin.copy(),
@@ -99,6 +101,7 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
+    print(merged_df)
 
     #  Filter out rows where there are multiple s47 modules, some with DateOfInitialCPC and some without
     no_dates = merged_df[
@@ -233,6 +236,11 @@ def test_validate():
                 "CPPstartDate": "19/07/2021",
                 "CINdetailsID": "cinID4",
             },
+            {
+                "LAchildID": "child8",
+                "CPPstartDate": "20/10/2021",
+                "CINdetailsID": "cinID1",
+            },
         ]
     )
     sample_section47 = pd.DataFrame(
@@ -287,6 +295,16 @@ def test_validate():
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
             },
+            {
+                "LAchildID": "child8",
+                "DateOfInitialCPC": "21/10/2021",
+                "CINdetailsID": "cinID1",
+            },
+            {
+                "LAchildID": "child8",
+                "DateOfInitialCPC": "22/07/2021",
+                "CINdetailsID": "cinID1",
+            },
         ]
     )
     sample_cin_details = pd.DataFrame(
@@ -335,6 +353,16 @@ def test_validate():
                 "LAchildID": "child6",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
+            },
+            {
+                "LAchildID": "child7",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID1",
+            },
+            {
+                "LAchildID": "child8",
+                "DateOfInitialCPC": pd.NA,
+                "CINdetailsID": "cinID1",
             },
         ]
     )
