@@ -40,15 +40,16 @@ def validate(
         | (df_CINdetails[ReferralNFA] == True)
     ]
 
-    df_merged = df_cpd.merge(
-        df_CINdetails,
+    df_merged = df_CINdetails.merge(
+        df_cpd,
         left_on=["LAchildID", "CINdetailsID"],
         right_on=["LAchildID", "CINdetailsID"],
-        how="left",
-        suffixes=("_cpd", "_cin"),
+        how="inner",
+        suffixes=("_cin", "_cpd"),
     )
 
     df_merged = df_merged.reset_index()
+
 
     df_merged["ERROR_ID"] = tuple(
         zip(
@@ -89,6 +90,10 @@ def test_validate():
                 "LAchildID": "child1",
                 "CINdetailsID": "CDID2",
             },
+            {
+                "LAchildID": "child4",
+                "CINdetailsID": "CDID6",
+            },
         ]
     )
     sample_cin = pd.DataFrame(
@@ -107,6 +112,11 @@ def test_validate():
                 "LAchildID": "child3",  # Pass, no module
                 "CINdetailsID": "CDID6",
                 "ReferralNFA": "1",
+            },
+            {
+                "LAchildID": "child4",  # Pass, referral NFA is false
+                "CINdetailsID": "CDID6",
+                "ReferralNFA": "false",
             },
         ]
     )
