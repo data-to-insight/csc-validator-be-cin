@@ -85,7 +85,7 @@ def validate(
     df_cpp_47 = df_cpp.copy().merge(
         df_47.copy(), on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
     )
-    print(df_cpp_47)
+
     # get only the cindetails rows where cppstartdate exists and is within period.
     df_cpp_cin = df_cpp.copy().merge(
         df_cin.copy(),
@@ -101,7 +101,6 @@ def validate(
         suffixes=["_47", "_cin"],
         # the suffixes apply to all the columns not "merged on". That is, DateOfInitialCPC
     )
-    print(merged_df)
 
     #  Filter out rows where there are multiple s47 modules, some with DateOfInitialCPC and some without
     no_dates = merged_df[
