@@ -23,7 +23,6 @@ UPN = ChildIdentifiers.UPN
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df = data_container[ChildIdentifiers]
 
     """
@@ -41,7 +40,9 @@ def validate(
 
     0  = A;  1  = B;  2  = C;  3  = D;  4  = E;  5 = F;  6 = G;
     7 = H;  8 = J;  9 = K;  10 = L;  11 = M;  12 = N;  13 = P;
-    14 = Q;  15 = R;  16 = T;  17 = U;  18 = V;  19 = W;  20 = X;
+    14 = Q;  15 = R;  16 = T;  17 = U;  18 = V;  19 = W;  20 = X; Y = 21, Z = 22
+
+    Full list avaliable here https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/807381/UPN_Guide_1.2.pdf
     """
 
     df.reset_index(inplace=True)
@@ -64,7 +65,7 @@ def validate(
         df2["SUMMED"] = (df2["SUMMED"] + (df2["UPN"].str[i].astype(int) * (i + 1))) % 23
 
     # enumerate object yields (index_position, element) tuples for each element in the string.
-    check_map = enumerate(list("ABCDEFGHJKLMNPQRTUVWX"))
+    check_map = enumerate(list("ABCDEFGHJKLMNPQRTUVWXYZ"))
     check_map = dict((i, j) for i, j in check_map)
 
     # Deduce the alphabet-letter representation of the calculated value based on rule description.
@@ -78,7 +79,6 @@ def validate(
 
 
 def test_validate():
-
     child_identifiers = pd.DataFrame(
         {
             "UPN": [
@@ -91,6 +91,7 @@ def test_validate():
                 # These should fail
                 "R247962919251",  # 5 Wrong initial char
                 "X428558133462",  # 6 Wrong initial char
+                "X845212818005",
             ]
         }
     )
