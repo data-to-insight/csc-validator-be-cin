@@ -13,6 +13,7 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 
 CINplanDates = CINTable.CINplanDates
 CINPlanEndDate = CINplanDates.CINPlanEndDate
+CINPlanStartDate = CINplanDates.CINPlanStartDate
 
 
 @rule_definition(
@@ -27,8 +28,8 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    df_cpp = data_container[ChildProtectionPlans].copy()
-    df_cin = data_container[CINplanDates].copy()
+    df_cpp = data_container[ChildProtectionPlans]
+    df_cin = data_container[CINplanDates]
 
     df_cpp.index.name = "ROW_ID"
     df_cin.index.name = "ROW_ID"
@@ -47,7 +48,7 @@ def validate(
 
     #  Get rows where CPPendDate is null and CINPlanEndDate is null
     condition = df_merged[CPPendDate].isna() & (
-        df_merged["CINplanStartDate"].notna() & df_merged[CINPlanEndDate].isna()
+        df_merged[CINPlanStartDate].notna() & df_merged[CINPlanEndDate].isna()
     )
     df_merged = df_merged[condition].reset_index()
 
@@ -115,36 +116,36 @@ def test_validate():
             {
                 "LAchildID": "child1",  # 0 Pass
                 "CINPlanEndDate": "04/04/2000",
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child1",  # 1 Pass
                 "CINPlanEndDate": "28/05/2000",
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINdetailsID": "cinID1",
             },
             {
                 "LAchildID": "child2",  # 2 Fail
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID3",
             },
             {
                 "LAchildID": "child2",  # 3 Pass
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID4",
             },
             {
                 "LAchildID": "child3",  # 4 Pass
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINPlanEndDate": "30/10/2001",
                 "CINdetailsID": "cinID5",
             },
             {
                 "LAchildID": "child4",  # 5 Pass
-                "CINplanStartDate": "04/04/2000",
+                "CINPlanStartDate": "04/04/2000",
                 "CINPlanEndDate": pd.NA,
                 "CINdetailsID": "cinID6",
             },
