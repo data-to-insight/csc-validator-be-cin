@@ -59,8 +59,6 @@ def test_validate():
             {FormerUPN: "X98721238"},  # 3 wrong length
             {FormerUPN: "E000215119000"},
             {FormerUPN: "X987654321231"},  # 1 pass
-            {FormerUPN: "X0000y0000007"},  # 2 fail non-alphabet within
-            {FormerUPN: "X98721238"},  # 3 wrong length
             {FormerUPN: "E000215119000"},
         ]
     )
