@@ -29,18 +29,18 @@ def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
     df_cpp = data_container[ChildProtectionPlans]
-    df_cin = data_container[CINplanDates]
+    df_plan = data_container[CINplanDates]
 
     df_cpp.index.name = "ROW_ID"
-    df_cin.index.name = "ROW_ID"
+    df_plan.index.name = "ROW_ID"
 
     df_cpp.reset_index(inplace=True)
-    df_cin.reset_index(inplace=True)
+    df_plan.reset_index(inplace=True)
 
     # If a <CINDetails> module has a <ChildProtectionPlan> module present with no <CPPendDate> (N00115)
     # - then a <CINPlanDates> module with no <CINPlanEndDate> (N00690) must not be present
     df_merged = df_cpp.merge(
-        df_cin,
+        df_plan,
         on=["LAchildID", "CINdetailsID"],
         how="left",
         suffixes=("_cpp", "_cin"),
@@ -61,7 +61,7 @@ def validate(
         .reset_index()
     )
     df_cin_issues = (
-        df_cin.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cin")
+        df_plan.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cin")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
@@ -111,7 +111,7 @@ def test_validate():
             },
         ]
     )
-    sample_cin = pd.DataFrame(
+    sample_plan = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",  # 0 Pass
@@ -160,15 +160,15 @@ def test_validate():
     sample_cpp[CPPendDate] = pd.to_datetime(
         sample_cpp[CPPendDate], format="%d/%m/%Y", errors="coerce"
     )
-    sample_cin[CINPlanEndDate] = pd.to_datetime(
-        sample_cin[CINPlanEndDate], format="%d/%m/%Y", errors="coerce"
+    sample_plan[CINPlanEndDate] = pd.to_datetime(
+        sample_plan[CINPlanEndDate], format="%d/%m/%Y", errors="coerce"
     )
 
     result = run_rule(
         validate,
         {
             ChildProtectionPlans: sample_cpp,
-            CINplanDates: sample_cin,
+            CINplanDates: sample_plan,
         },
     )
     issues_list = result.type2_issues
