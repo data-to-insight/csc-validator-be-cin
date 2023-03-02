@@ -7,6 +7,10 @@ from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import CINTable, RuleContext, registry
 from cin_validator.utils import process_date_columns
 
+pd.options.mode.chained_assignment = None
+# Suppresses false-positive SettingWithCopyError when column types are changes in the include_issue_child function.
+# https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
+
 
 def enum_keys(dict_input):
     """
