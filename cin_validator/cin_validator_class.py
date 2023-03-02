@@ -130,7 +130,6 @@ def create_user_report(issue_df, cin_data):
     no_table = issue_df[issue_df["tables_affected"].isna()]
     reports = []
     for table in issue_df["tables_affected"].dropna().unique():
-
         table_issues = issue_df[issue_df["tables_affected"] == table]
 
         table_reports = []
@@ -153,7 +152,9 @@ def create_user_report(issue_df, cin_data):
     reports.append(no_table)
 
     full_report = pd.concat(reports, ignore_index=True)
-    return full_report[
+
+    # columns of interest are filtered and arranged in the desired order. values unified under str datatype.
+    user_report = full_report[
         [
             "ERROR_ID",
             "LAchildID",
@@ -164,7 +165,21 @@ def create_user_report(issue_df, cin_data):
             "values_flagged",
             "rule_description",
         ]
-    ]
+    ].applymap(str)
+
+    # Related issue locations should be displayed next to each other.
+    user_report.sort_values(
+        [
+            "LAchildID",
+            "ERROR_ID",
+            "tables_affected",
+            "columns_affected",
+        ],
+        inplace=True,
+    )
+
+    # rogue work-around: remove time from datetime objects which are mixed across df's columns.
+    return user_report.applymap(lambda x: x.replace(" 00:00:00", ""))
 
 
 class CinValidationSession:
