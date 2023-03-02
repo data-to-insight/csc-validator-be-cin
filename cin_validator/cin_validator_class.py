@@ -163,6 +163,17 @@ def create_user_report(issue_df, cin_data):
         ]
     ].applymap(str)
 
+    # Related issue locations should be displayed next to each other.
+    user_report.sort_values(
+        [
+            "LAchildID",
+            "ERROR_ID",
+            "tables_affected",
+            "columns_affected",
+        ],
+        inplace=True,
+    )
+
     # rogue work-around: remove time from datetime objects which are mixed across df's columns.
     return user_report.applymap(lambda x: x.replace(" 00:00:00", ""))
 
