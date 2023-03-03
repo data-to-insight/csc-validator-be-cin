@@ -165,7 +165,21 @@ def create_user_report(issue_df, cin_data):
             "values_flagged",
             "rule_description",
         ]
-    ].applymap(str)
+    ]
+
+    def datetime_to_str(element):
+        if isinstance(element, pd.Timestamp):
+            # convert datetime elements to str date values
+            return str(element.strftime("%Y-%m-%d"))
+        elif isinstance(element, tuple):
+            # loop through tuples and convert each element accordingly. mostly in ERROR_ID column.
+            return tuple(map(datetime_to_str, element))
+        else:
+            # ensure all other elements are strings too.
+            return str(element)
+
+    # user_report = user_report.applymap(lambda x:str(x.strftime("%Y-%m-%d")) if isinstance(x, pd.Timestamp) else str(x))
+    user_report = user_report.applymap(datetime_to_str)
 
     # Related issue locations should be displayed next to each other.
     user_report.sort_values(
@@ -176,10 +190,10 @@ def create_user_report(issue_df, cin_data):
             "columns_affected",
         ],
         inplace=True,
+        ignore_index=True,
     )
 
-    # rogue work-around: remove time from datetime objects which are mixed across df's columns.
-    return user_report.applymap(lambda x: x.replace(" 00:00:00", ""))
+    return user_report
 
 
 class CinValidationSession:
