@@ -61,7 +61,7 @@ def validate(
         suffixes=("_cinp", "_cinp2"),
     )
 
-    # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the CINPlanStartDate is the same on both sides to prevent a plan from being compared with itself.
+    # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the ROW_ID is the same on both sides to prevent a plan from being compared with itself.
     df_merged = df_merged[df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]]
 
     # Determine whether CINplanStart overlaps with another CINplan period of the same child.
