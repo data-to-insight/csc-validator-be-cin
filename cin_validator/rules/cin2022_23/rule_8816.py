@@ -146,14 +146,14 @@ def test_validate():
                 "ReferralNFA": "0",
             },
             {
-                "LAchildID": "child4",  
+                "LAchildID": "child4",
                 "CINclosureDate": pd.NA,
                 "CINreferralDate": pd.NA,
                 "CINdetailsID": "cinID3",
                 "ReferralNFA": "0",
             },
             {
-                "LAchildID": "child4",  
+                "LAchildID": "child4",
                 "CINclosureDate": pd.NA,
                 "CINreferralDate": pd.NA,
                 "CINdetailsID": "cinID4",
@@ -166,7 +166,7 @@ def test_validate():
                 "ReferralNFA": "0",
             },
             {
-                "LAchildID": "child5",# 9, Fail, shared CINreferralDate
+                "LAchildID": "child5",  # 9, Fail, shared CINreferralDate
                 "CINdetailsID": "cinID5",
                 "CINreferralDate": "26/10/1999",
                 "ReferralNFA": "0",
