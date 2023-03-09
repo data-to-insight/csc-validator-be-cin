@@ -159,6 +159,17 @@ def test_validate():
                 "CINdetailsID": "cinID4",
                 "ReferralNFA": "0",
             },
+            {
+                "LAchildID": "child5",
+                "CINreferralDate": "26/10/1999",
+                "CINdetailsID": "cinID4",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child5",
+                "CINreferralDate": "26/10/1999",
+                "ReferralNFA": "0",
+            },
         ]
     )
 
