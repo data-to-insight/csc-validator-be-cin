@@ -63,7 +63,7 @@ def validate(
 
     # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the CINPlanStartDate is the same on both sides to prevent a plan from being compared with itself.
     df_merged = df_merged[
-        df_merged["CINPlanStartDate_cinp"] != df_merged["CINPlanStartDate_cinp2"]
+        df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]
     ]
 
     # Determine whether CINplanStart overlaps with another CINplan period of the same child.
@@ -166,6 +166,16 @@ def test_validate():
                 "CINPlanStartDate": "31/03/2001",
                 "CINPlanEndDate": pd.NA,
             },
+            {
+                "LAchildID": "child5",  # 7 Fail
+                "CINPlanStartDate": "31/03/2001",
+                "CINPlanEndDate": "31/04/2001",
+            },
+            {
+                "LAchildID": "child5",  # 7 Fail
+                "CINPlanStartDate": "31/03/2001",
+                "CINPlanEndDate": "31/04/2001",
+            },
         ]
     )
 
@@ -200,7 +210,7 @@ def test_validate():
     assert issue_columns == [CINPlanStartDate]
 
     issue_rows = issues.row_df
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 4
 
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -231,6 +241,14 @@ def test_validate():
                 ),
                 "ROW_ID": [7],
             },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [8, 9],
+            },            
         ]
     )
     assert issue_rows.equals(expected_df)
