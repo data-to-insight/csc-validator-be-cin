@@ -62,9 +62,7 @@ def validate(
     )
 
     # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the CINPlanStartDate is the same on both sides to prevent a plan from being compared with itself.
-    df_merged = df_merged[
-        df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]
-    ]
+    df_merged = df_merged[df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]]
 
     # Determine whether CINplanStart overlaps with another CINplan period of the same child.
     cinp_started_after_start = (
@@ -248,7 +246,7 @@ def test_validate():
                     pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [8, 9],
-            },            
+            },
         ]
     )
     assert issue_rows.equals(expected_df)
