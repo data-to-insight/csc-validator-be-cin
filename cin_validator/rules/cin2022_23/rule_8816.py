@@ -146,7 +146,7 @@ def test_validate():
                 "ReferralNFA": "0",
             },
             {
-                "LAchildID": "child4",  # 6, Fail, shared CINreferralDate
+                "LAchildID": "child4",  
                 "CINclosureDate": pd.NA,
                 "CINreferralDate": pd.NA,
                 "CINdetailsID": "cinID3",
