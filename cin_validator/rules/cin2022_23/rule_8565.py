@@ -58,7 +58,7 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 @rule_definition(
     code=8565,
     module=CINTable.ChildProtectionPlans,
-    message="Activity shown after a case has been closed",
+    message="Activity shown after a case has been closed.",
     affected_fields=[
         CINclosureDate,
         DateOfInitialCPC,
@@ -181,7 +181,7 @@ def validate(
             ],
         )
     )
-
+    print(df)
     # Return those where dates don't align
     condition1 = df[CINclosureDate] < df[DateOfInitialCPC]
     condition2 = df[CINclosureDate] < df[AssessmentActualStartDate]
@@ -333,6 +333,13 @@ def test_validate():
                 "CINclosureDate": "01/01/2022",
                 "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan end date
+            },
+            {
+                "LAchildID": "child10",
+                "CINdetailsID": "cinID1",
+                "CINclosureDate": "01/01/2022",
+                "DateOfInitialCPC": pd.NA
+                # Pass
             },
         ]
     )
@@ -632,7 +639,7 @@ def test_validate():
     ]
 
     issue_rows = issues.row_df
-    print(issue_rows)
+
     assert len(issue_rows) == 7
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -810,8 +817,6 @@ def test_validate():
             },
         ]
     )
-
-    print(expected_df)
 
     assert issue_rows.equals(expected_df)
 
