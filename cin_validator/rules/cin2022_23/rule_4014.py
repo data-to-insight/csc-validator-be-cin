@@ -61,10 +61,8 @@ def validate(
         suffixes=("_cinp", "_cinp2"),
     )
 
-    # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the CINPlanStartDate is the same on both sides to prevent a plan from being compared with itself.
-    df_merged = df_merged[
-        df_merged["CINPlanStartDate_cinp"] != df_merged["CINPlanStartDate_cinp2"]
-    ]
+    # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the ROW_ID is the same on both sides to prevent a plan from being compared with itself.
+    df_merged = df_merged[df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]]
 
     # Determine whether CINplanStart overlaps with another CINplan period of the same child.
     cinp_started_after_start = (
@@ -100,6 +98,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
+
     df_cinp2_issues = (
         df_cinp2.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cinp2")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
@@ -166,6 +165,16 @@ def test_validate():
                 "CINPlanStartDate": "31/03/2001",
                 "CINPlanEndDate": pd.NA,
             },
+            {
+                "LAchildID": "child5",  # 8 Fail
+                "CINPlanStartDate": "31/03/2001",
+                "CINPlanEndDate": "31/04/2001",
+            },
+            {
+                "LAchildID": "child5",  # 9 Fail
+                "CINPlanStartDate": "31/03/2001",
+                "CINPlanEndDate": "31/04/2001",
+            },
         ]
     )
 
@@ -200,7 +209,7 @@ def test_validate():
     assert issue_columns == [CINPlanStartDate]
 
     issue_rows = issues.row_df
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 4
 
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -230,6 +239,14 @@ def test_validate():
                     pd.to_datetime("26/10/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [7],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [8, 9],
             },
         ]
     )
