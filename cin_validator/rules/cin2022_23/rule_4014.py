@@ -61,6 +61,7 @@ def validate(
         suffixes=("_cinp", "_cinp2"),
     )
 
+
     # Use CINPlanStartDate to identify a CIN plan. Exclude rows where the ROW_ID is the same on both sides to prevent a plan from being compared with itself.
     df_merged = df_merged[df_merged["ROW_ID_cinp"] != df_merged["ROW_ID_cinp2"]]
 
@@ -89,7 +90,7 @@ def validate(
             df_merged["CINPlanStartDate_cinp2"],
         )
     )
-
+    
     # The merges were done on copies of cinp_df so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
     df_cinp_issues = (
@@ -98,6 +99,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
+
     df_cinp2_issues = (
         df_cinp2.merge(df_merged, left_on="ROW_ID", right_on="ROW_ID_cinp2")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
