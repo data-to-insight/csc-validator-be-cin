@@ -165,12 +165,12 @@ def test_validate():
                 "CINPlanEndDate": pd.NA,
             },
             {
-                "LAchildID": "child5",  # 7 Fail
+                "LAchildID": "child5",  # 8 Fail
                 "CINPlanStartDate": "31/03/2001",
                 "CINPlanEndDate": "31/04/2001",
             },
             {
-                "LAchildID": "child5",  # 7 Fail
+                "LAchildID": "child5",  # 9 Fail
                 "CINPlanStartDate": "31/03/2001",
                 "CINPlanEndDate": "31/04/2001",
             },
