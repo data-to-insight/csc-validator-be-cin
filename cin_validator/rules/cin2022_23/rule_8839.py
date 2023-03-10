@@ -13,6 +13,7 @@ CINdetailsID = Section47.CINdetailsID
 DateOfInitialCPC = Section47.DateOfInitialCPC
 ICPCnotRequired = Section47.ICPCnotRequired
 
+
 # define characteristics of rule
 @rule_definition(
     code=8839,
@@ -150,7 +151,7 @@ def test_validate():
             {  # pass, 1 as string for issue 373
                 LAchildID: "child3",
                 CINdetailsID: "cinID3",
-                DateOfInitialCPC: pd.NA,  
+                DateOfInitialCPC: pd.NA,
                 ICPCnotRequired: "1",
             },
         ]
