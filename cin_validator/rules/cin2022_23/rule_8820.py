@@ -81,7 +81,7 @@ def validate(
         suffixes=("_cin", "_cin2"),
     )
 
-    # Exclude rows where the ID is the same on both sides
+    # Exclude rows where the ROW_ID is the same on both sides
     df_merged = df_merged[(df_merged["ROW_ID_cin"] != df_merged["ROW_ID_cin2"])]
 
     # Determine overlaps
@@ -220,6 +220,7 @@ def test_validate():
                 "CINdetailsID": "cinID5",
                 "ReferralNFA": "false",
             },
+            #child 6 - to account for duplicated entries as per issue 372
             {
                 "LAchildID": "child6",  # 10, fail, duplicated
                 "CINreferralDate": "05/05/2000",
