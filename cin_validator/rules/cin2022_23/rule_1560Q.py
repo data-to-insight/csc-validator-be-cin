@@ -19,7 +19,7 @@ FormerUPN = ChildIdentifiers.FormerUPN
     code="1560Q",
     module=CINTable.ChildIdentifiers,
     rule_type=RuleType.QUERY,
-    message="Please check: Former UPN wrongly formatted",
+    message="Please check and either amend or provide a reason: Former UPN wrongly formatted",
     affected_fields=[FormerUPN],
 )
 def validate(
@@ -73,4 +73,7 @@ def test_validate():
     ]
 
     assert result.definition.code == "1560Q"
-    assert result.definition.message == "Please check: Former UPN wrongly formatted"
+    assert (
+        result.definition.message
+        == "Please check and either amend or provide a reason: Former UPN wrongly formatted"
+    )

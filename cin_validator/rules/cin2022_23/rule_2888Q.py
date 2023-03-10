@@ -9,12 +9,13 @@ Disabilities = CINTable.Disabilities
 Disability = Disabilities.Disability
 LAchildID = Disabilities.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
     code="2888Q",
     rule_type=RuleType.QUERY,
     module=CINTable.Disabilities,
-    message="Please check: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
+    message="Please check and either amend or provide a reason: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
     affected_fields=[Disability],
 )
 def validate(
@@ -42,7 +43,6 @@ def validate(
 
 
 def test_validate():
-
     sample_disabilities = pd.DataFrame(
         [
             {
@@ -61,5 +61,5 @@ def test_validate():
 
     assert result.la_issues == (
         "2888Q",
-        "Please check: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
+        "Please check and either amend or provide a reason: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
     )
