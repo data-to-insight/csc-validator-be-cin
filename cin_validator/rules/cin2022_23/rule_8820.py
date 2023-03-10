@@ -18,6 +18,7 @@ ReferralNFA = CINdetails.ReferralNFA
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here
@@ -81,13 +82,11 @@ def validate(
     )
 
     # Exclude rows where the ID is the same on both sides
-    df_merged = df_merged[
-        (df_merged["CINdetailsID_cin"] != df_merged["CINdetailsID_cin2"])
-    ]
+    df_merged = df_merged[(df_merged["ROW_ID_cin"] != df_merged["ROW_ID_cin2"])]
 
     # Determine overlaps
     cin_started_after_start = (
-        df_merged["CINreferralDate_cin"] > df_merged["CINreferralDate_cin2"]
+        df_merged["CINreferralDate_cin"] >= df_merged["CINreferralDate_cin2"]
     )
     cin_started_before_end = (
         df_merged["CINreferralDate_cin"] < df_merged["CINclosureDate_cin2"]
@@ -221,6 +220,20 @@ def test_validate():
                 "CINdetailsID": "cinID5",
                 "ReferralNFA": "false",
             },
+            {
+                "LAchildID": "child6",  # 10, fail, duplicated
+                "CINreferralDate": "05/05/2000",
+                "CINclosureDate": "08/07/2000",
+                "CINdetailsID": "cinID5",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child6",  # 11, fail, duplicated
+                "CINreferralDate": "05/05/2000",
+                "CINclosureDate": "08/07/2000",
+                "CINdetailsID": "cinID5",
+                "ReferralNFA": "0",
+            },
         ]
     )
 
@@ -260,7 +273,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -288,6 +301,14 @@ def test_validate():
                     "cinID3",
                 ),
                 "ROW_ID": [5],
+            },
+            {
+                "ERROR_ID": (
+                    "child6",
+                    "cinID5",
+                    "cinID5",
+                ),
+                "ROW_ID": [10, 11],
             },
         ]
     )
