@@ -220,7 +220,7 @@ def test_validate():
                 "CINdetailsID": "cinID5",
                 "ReferralNFA": "false",
             },
-            #child 6 - to account for duplicated entries as per issue 372
+            # child 6 - to account for duplicated entries as per issue 372
             {
                 "LAchildID": "child6",  # 10, fail, duplicated
                 "CINreferralDate": "05/05/2000",
