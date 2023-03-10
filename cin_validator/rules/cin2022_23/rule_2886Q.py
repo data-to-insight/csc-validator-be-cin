@@ -9,12 +9,13 @@ ChildIdentifiers = CINTable.ChildIdentifiers
 GenderCurrent = ChildIdentifiers.GenderCurrent
 ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
 
+
 # define characteristics of rule
 @rule_definition(
     code="2886Q",
     rule_type=RuleType.QUERY,
     module=CINTable.ChildIdentifiers,
-    message="Please check: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
+    message="Please check and either amend or provide a reason: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
     affected_fields=[ExpectedPersonBirthDate, ChildIdentifiers],
 )
 def validate(
@@ -49,7 +50,6 @@ def validate(
 
 
 def test_validate():
-
     sample_child_ids = pd.DataFrame(
         [
             {GenderCurrent: 0, ExpectedPersonBirthDate: pd.NA},
@@ -63,5 +63,5 @@ def test_validate():
 
     assert result.la_issues == (
         "2886Q",
-        "Please check: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
+        "Please check and either amend or provide a reason: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
     )
