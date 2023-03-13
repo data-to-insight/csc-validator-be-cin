@@ -46,9 +46,10 @@ def test_validate():
     sample_disabilities = pd.DataFrame(
         [
             {
-                LAchildID: "child1",
+                LAchildID: "child0",
                 Disability: "NONE",
-            },
+            },  # child0 : disability_count would have been 2 and rule would have not been flagged if NONE was considered.
+            {LAchildID: "child0", Disability: "NONE"},
             {LAchildID: "child1", Disability: "aaaa"},  # child1 : disability_count == 1
             {LAchildID: "child2", Disability: "bbbb"},  # child2 : disability_count == 1
             {LAchildID: "child2", Disability: pd.NA},
