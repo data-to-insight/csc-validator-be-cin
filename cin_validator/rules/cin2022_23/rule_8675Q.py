@@ -46,7 +46,7 @@ def validate(
     # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
     no_cpc = df[DateOfInitialCPC].isna()
-    icpc_false = df[ICPCnotReqiured] == "false"
+    icpc_false = df[ICPCnotReqiured].isin(["false", "0", 0])
     before_15b = df[S47ActualStartDate] < (collection_end - england_working_days(15))
     condition = (no_cpc & icpc_false) & (before_15b)
 
@@ -115,6 +115,12 @@ def test_validate():
                 "S47ActualStartDate": pd.NA,
                 "ICPCnotRequired": "true",
             },
+            {  # 5 fail, no ICPCnotrequied as true or InitialCPC, and date is more than 15 days before end of census year
+                "LAchildID": "child6",
+                "DateOfInitialCPC": pd.NA,
+                "S47ActualStartDate": "29/01/2022",
+                "ICPCnotRequired": "0",
+            },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
@@ -142,7 +148,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 1 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -161,6 +167,14 @@ def test_validate():
                     "false",
                 ),
                 "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child6",
+                    pd.to_datetime("29/01/2022", format="%d/%m/%Y", errors="coerce"),
+                    "0",
+                ),
+                "ROW_ID": [5],
             },
         ]
     )
