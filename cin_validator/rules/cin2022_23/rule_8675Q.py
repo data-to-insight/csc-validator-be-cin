@@ -46,7 +46,7 @@ def validate(
     # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
     no_cpc = df[DateOfInitialCPC].isna()
-    icpc_false = df[ICPCnotReqiured].isin(["false", "0", 0])
+    icpc_false = df[ICPCnotReqiured].astype(str).isin(["false", "0"])
     before_15b = df[S47ActualStartDate] < (collection_end - england_working_days(15))
     condition = (no_cpc & icpc_false) & (before_15b)
 
