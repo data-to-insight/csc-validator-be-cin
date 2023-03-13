@@ -27,8 +27,7 @@ def validate(
     # Validation should be triggered at LA level, not child level, if all children who are recorded as having a disability have only 1 disability code recorded.
 
     # remove "NONE" values
-    disability_none = df[Disability] == "NONE"
-    df = df[disability_none]
+    df = df[df[Disability] != "NONE"]
 
     disability_count = df.groupby(LAchildID)[Disability].count()
     # maximum number of disabilities recorded per child should be > 1
