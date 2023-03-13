@@ -338,6 +338,15 @@ class XMLtoCSV:
                     # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
                     assessment_dict["AssessmentFactors"] = factor.text
                     assessments_list.append(assessment_dict)
+            else:  # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
+                for ass in assessments:
+                    assessment_dict = {
+                        "LAchildID": self.LAchildID,
+                        "CINdetailsID": self.CINdetailsID,
+                    }
+                    assessment_dict = get_values(elements, assessment_dict, assessment)
+                    assessment_dict["AssessmentFactors"] = ass.text
+                    assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
