@@ -50,8 +50,6 @@ def validate(
 
     # Find the reference date - 45 (44 days is used to include the day of the return.)
     latest_date = collection_end - england_working_days(44)
-    print(england_working_days(45))
-    print(latest_date)
     df_issues = df_assessments[
         df_assessments[AssessmentActualStartDate] < latest_date
     ].reset_index()
