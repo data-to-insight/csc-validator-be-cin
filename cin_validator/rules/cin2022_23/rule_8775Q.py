@@ -19,6 +19,7 @@ CINclosureDate = CINdetails.CINclosureDate
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8775Q
@@ -28,7 +29,7 @@ ReferenceDate = Header.ReferenceDate
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Please check: Child is over 25 years old",
+    message="Please check: Child is over 25 years old.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         PersonBirthDate,
@@ -61,15 +62,16 @@ def validate(
     # {<CINClosureDate> (N00102) is after (<PersonBirthDate> plus 25 years) OR <CINClosureDate> is NULL}
     over_25 = df_ci[PersonBirthDate] < (ref_date - pd.DateOffset(years=25))
     df_ci = df_ci[over_25]
-
+    print(df_ci)
     merged_df = df_ci.merge(
         df_cin,
         on=[
             LAchildID,
         ],
+        how="left",
         suffixes=["_ci", "_cin"],
     )
-
+    print(merged_df[[PersonBirthDate, "CINclosureDate"]])
     condition = (
         (
             merged_df["CINclosureDate"]
@@ -80,7 +82,7 @@ def validate(
     )
 
     merged_df = merged_df[condition].reset_index()
-
+    print(merged_df)
     # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(zip(merged_df[LAchildID], merged_df[PersonBirthDate]))
 
@@ -121,6 +123,7 @@ def test_validate():
                 "LAchildID": "child4",
                 "PersonBirthDate": "01/01/1800",
             },  # ignore: CINclosureDate not up to 25years after birthdate
+            {"LAchildID": "child5", "PersonBirthDate": "01/01/1997"},
         ]
     )
     sample_cin_details = pd.DataFrame(
@@ -145,6 +148,10 @@ def test_validate():
                 "LAchildID": "child4",
                 "CINclosureDate": "26/10/1804",
             },
+            {  # 5 fail
+                "LAchildID": "child5",
+                "CINclosureDate": "01/02/2022",
+            },
         ]
     )
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
@@ -158,7 +165,7 @@ def test_validate():
         [
             {
                 ReferenceDate: pd.to_datetime(
-                    "31/03/2001", format="%d/%m/%Y", errors="coerce"
+                    "31/03/2023", format="%d/%m/%Y", errors="coerce"
                 )
             }
         ]  # the census start date here will be 01/04/2000
@@ -190,7 +197,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 2
+    assert len(issue_rows) == 3
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -215,6 +222,13 @@ def test_validate():
                     pd.to_datetime("01/01/1880", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    pd.to_datetime("01/01/1997", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [5],
             },
         ]
     )
