@@ -5,7 +5,7 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 
-Assessments = CINTable.CINdetails
+Assessments = CINTable.Assessments
 Section47 = CINTable.Section47
 
 
@@ -34,11 +34,12 @@ def validate(
     df_ass.reset_index(inplace=True)
     df_47.reset_index(inplace=True)
 
+    #  If <Section47> module is present then <Assessment> module should be present.
     merged_df = df_47.merge(
         df_ass,
         on=[LAchildID, CINdetailsID],
         suffixes=["_47", "_ass"],
-        how="outer",
+        how="left",
         indicator=True,
     )
     merged_df = merged_df[merged_df["_merge"] == "left_only"]
