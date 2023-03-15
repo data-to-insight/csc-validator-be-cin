@@ -40,15 +40,6 @@
                 <CINclosureDate>1971-02-27</CINclosureDate>
                 <ReasonForClosure>RC1</ReasonForClosure>
                 <DateOfInitialCPC>1970-12-06</DateOfInitialCPC>
-                <Assessments>
-                    <AssessmentActualStartDate>1970-06-03</AssessmentActualStartDate>
-                    <AssessmentInternalReviewDate>1970-06-22</AssessmentInternalReviewDate>
-                    <AssessmentAuthorisationDate>1971-07-18</AssessmentAuthorisationDate>
-                    <FactorsIdentifiedAtAssessment>
-                        <AssessmentFactors>2A</AssessmentFactors>
-                        <AssessmentFactors>2B</AssessmentFactors>
-                    </FactorsIdentifiedAtAssessment>
-                </Assessments>
                 <CINPlanDates>
                     <CINPlanStartDate>1971-01-24</CINPlanStartDate>
                     <CINPlanEndDate>1971-01-26</CINPlanEndDate>

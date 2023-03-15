@@ -39,7 +39,7 @@ def validate(
         df_ass,
         on=[LAchildID, CINdetailsID],
         suffixes=["_47", "_ass"],
-        how="left",
+        how="outer",
         indicator=True,
     )
     merged_df = merged_df[merged_df["_merge"] == "left_only"]
@@ -65,11 +65,9 @@ def validate(
     )
 
     rule_context.push_type_2(
-        table=Assessments, columns=[CINdetailsID], row_df=df_ass_issues
+        table=Assessments, columns=[LAchildID], row_df=df_ass_issues
     )
-    rule_context.push_type_2(
-        table=Section47, columns=[CINdetailsID], row_df=df_47_issues
-    )
+    rule_context.push_type_2(table=Section47, columns=[LAchildID], row_df=df_47_issues)
 
 
 def test_validate():
