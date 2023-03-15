@@ -51,7 +51,7 @@ def validate(
         )
     )
     df_ass_issues = (
-        df_ass.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_47")
+        df_ass.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_ass")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
