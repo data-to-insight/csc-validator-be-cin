@@ -319,6 +319,17 @@ class XMLtoCSV:
         :rtype: DataFrame
         """
 
+        def assessment_block_maker(assmnt):
+            assessment_dict = {
+                "LAchildID": self.LAchildID,
+                "CINdetailsID": self.CINdetailsID,
+            }
+            assessment_dict = get_values(elements, assessment_dict, assessment)
+            # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
+            assessment_dict["AssessmentFactors"] = assmnt.text
+            assessments_list.append(assessment_dict)
+            return assessment_dict
+
         assessments_list = []
         columns = self.Assessments.columns
         elements = list(set(columns).difference(set(self.id_cols)))
@@ -330,23 +341,11 @@ class XMLtoCSV:
             if assessment_factors:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
-                    assessment_dict = {
-                        "LAchildID": self.LAchildID,
-                        "CINdetailsID": self.CINdetailsID,
-                    }
-                    assessment_dict = get_values(elements, assessment_dict, assessment)
-                    # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
-                    assessment_dict["AssessmentFactors"] = factor.text
-                    assessments_list.append(assessment_dict)
-            else:  # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
-                for ass in assessments:
-                    assessment_dict = {
-                        "LAchildID": self.LAchildID,
-                        "CINdetailsID": self.CINdetailsID,
-                    }
-                    assessment_dict = get_values(elements, assessment_dict, assessment)
-                    assessment_dict["AssessmentFactors"] = ass.text
-                    assessments_list.append(assessment_dict)
+                    assessment_block_maker(factor)
+            # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
+            else:
+                for assessment in assessments:
+                    assessment_block_maker(assessment)
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
