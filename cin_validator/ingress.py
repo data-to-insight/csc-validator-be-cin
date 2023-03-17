@@ -342,6 +342,7 @@ class XMLtoCSV:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
                     assessment_block_maker(factor)
+
             # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
             else:
                 for assessment in assessments:
