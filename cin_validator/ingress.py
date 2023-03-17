@@ -443,7 +443,7 @@ class XMLtoCSV:
         columns = self.Reviews.columns
         elements = list(set(columns).difference(set(self.id_cols)))
 
-        reviews = plan.findall("Reviews")
+        reviews = plan.findall("Reviews[CPPreviewDate]")
         for review in reviews:
             review_dict = {
                 "LAchildID": self.LAchildID,
