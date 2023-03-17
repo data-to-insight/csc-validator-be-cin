@@ -258,7 +258,7 @@ class XMLtoCSV:
         elements = list(set(columns).difference(set(self.id_cols)))
         # get the Disabilities block
         disabilities = characteristics.find("Disabilities")
-        if len(disabilities) > 0:
+        if disabilities is not None:
             # Only run this if a "Disabilities" xml block has been found
             for disability in disabilities:
                 disability_dict = {
@@ -338,7 +338,7 @@ class XMLtoCSV:
         for assessment in assessments:
             # all the assessment descriptors repeat to create a row for each assessment factor.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
-            if len(assessment_factors) > 0:
+            if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
                     assessment_block_maker(factor)
