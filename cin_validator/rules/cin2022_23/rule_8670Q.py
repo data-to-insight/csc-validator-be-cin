@@ -48,8 +48,7 @@ def validate(
     # Filter to only those with no authorisation date
     df_assessments = df_assessments[df_assessments[AssessmentAuthorisationDate].isna()]
 
-    # Find the reference date - 45 (44 days is used to include the day of the return.)
-    latest_date = collection_end - england_working_days(44)
+    latest_date = collection_end - england_working_days(45)
     df_issues = df_assessments[
         df_assessments[AssessmentActualStartDate] < latest_date
     ].reset_index()
