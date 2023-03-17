@@ -136,4 +136,6 @@ def england_working_days(num_days):
     """
 
     holiday_calendar = create_holidays_array()
-    return pd.offsets.CustomBusinessDay(n=num_days, calendar=holiday_calendar)
+
+    # pd.offsets.CustomBusinessDay doesn't seem to include the end date so offset by 1 so that it does.
+    return pd.offsets.CustomBusinessDay(n=num_days - 1, calendar=holiday_calendar)
