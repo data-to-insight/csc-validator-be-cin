@@ -16,11 +16,12 @@ LAchildID = ChildProtectionPlans.LAchildID
 CINdetailsID = ChildProtectionPlans.CINdetailsID
 DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
+
 # define characteristics of rule
 @rule_definition(
     code=2990,
     module=CINTable.CINdetails,
-    message="Activity is recorded against a case marked as ‘Case closed after assessment, no further action’.",
+    message="Activity is recorded against a case marked as ‘Case closed after assessment, no further action’ or 'case closed after assessment, referred to early help'.",
     affected_fields=[
         ReasonForClosure,
     ],
@@ -48,7 +49,7 @@ def validate(
     # <ChildProtectionPlan> module
     # <DateofInitialCPC> (N00110) within the <CINDetails> module
     # <CINPlanDates> module
-    df_cin = df_cin[df_cin[ReasonForClosure] == "RC8"]
+    df_cin = df_cin[df_cin[ReasonForClosure].isin(["RC8", "RC9"])]
 
     df_cin_cpp = df_cin.merge(
         df_cpp, on=["LAchildID", "CINdetailsID"], how="left", suffixes=["_cin", "_cpp"]
@@ -254,7 +255,7 @@ def test_validate():
                 "LAchildID": "child2",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID2",  # 1 fail: found in Section47 table
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC9",
             },
             {
                 "LAchildID": "child3",
@@ -272,25 +273,25 @@ def test_validate():
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2000",
                 "CINdetailsID": "cinID2",
-                "ReasonForClosure": "RC9",  # 4 ignore: reason != RC8
+                "ReasonForClosure": "RC10",  # 4 ignore: reason != RC8
             },
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2003",
                 "CINdetailsID": "cinID8",
-                "ReasonForClosure": "RC9",  # 5 ignore: reason != RC8
+                "ReasonForClosure": "RC10",  # 5 ignore: reason != RC8
             },
             {
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "14/03/2001",
                 "CINdetailsID": "cinID4",
-                "ReasonForClosure": "RC9",  # 6 ignore: reason != RC8
+                "ReasonForClosure": "RC10",  # 6 ignore: reason != RC8
             },
             {
                 "LAchildID": "child7",
                 "DateOfInitialCPC": pd.NA,
                 "CINdetailsID": "cinID4",
-                "ReasonForClosure": "RC9",  # 7 pass
+                "ReasonForClosure": "RC10",  # 7 pass
             },
         ]
     )
@@ -384,5 +385,5 @@ def test_validate():
     assert result.definition.code == 2990
     assert (
         result.definition.message
-        == "Activity is recorded against a case marked as ‘Case closed after assessment, no further action’."
+        == "Activity is recorded against a case marked as ‘Case closed after assessment, no further action’ or 'case closed after assessment, referred to early help'."
     )
