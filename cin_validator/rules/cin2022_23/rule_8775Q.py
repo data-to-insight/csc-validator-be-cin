@@ -62,7 +62,7 @@ def validate(
     # {<CINClosureDate> (N00102) is after (<PersonBirthDate> plus 25 years) OR <CINClosureDate> is NULL}
     over_25 = df_ci[PersonBirthDate] < (ref_date - pd.DateOffset(years=25))
     df_ci = df_ci[over_25]
-    
+
     merged_df = df_ci.merge(
         df_cin,
         on=[
@@ -82,7 +82,7 @@ def validate(
     )
 
     merged_df = merged_df[condition].reset_index()
-    
+
     # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(zip(merged_df[LAchildID], merged_df[PersonBirthDate]))
 
