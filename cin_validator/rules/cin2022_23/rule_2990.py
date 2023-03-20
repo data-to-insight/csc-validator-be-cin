@@ -44,7 +44,7 @@ def validate(
     df_cin.reset_index(inplace=True)
     df_cin_pd.reset_index(inplace=True)
 
-    # If a <CINDetails> module has <ReasonForClosure> (N00103) = RC8, then it cannot have any of the following modules:
+    # If a <CINDetails> module has <ReasonForClosure> (N00103) = RC8 or RC9, then it cannot have any of the following modules:
     # <Section47> module
     # <ChildProtectionPlan> module
     # <DateofInitialCPC> (N00110) within the <CINDetails> module
