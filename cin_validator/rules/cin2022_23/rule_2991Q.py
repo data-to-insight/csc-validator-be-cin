@@ -166,7 +166,7 @@ def test_validate():
     assert issue_table == Section47
 
     issue_columns = issues.columns
-    assert issue_columns == [CINdetailsID]
+    assert issue_columns == [LAchildID]
 
     issue_rows = issues.row_df
     assert len(issue_rows) == 3
