@@ -21,7 +21,7 @@ LAchildID = CINplanDates.LAchildID
     code="4012Q",
     rule_type=RuleType.QUERY,
     module=CINTable.CINplanDates,
-    message="CIN Plan shown as starting and ending on the same day - please check",
+    message="Please check and either amend or provide a reason: CIN Plan shown as starting and ending on the same day",
     affected_fields=[CINPlanStartDate, CINPlanEndDate],
 )
 def validate(
@@ -142,5 +142,5 @@ def test_validate():
     assert result.definition.code == "4012Q"
     assert (
         result.definition.message
-        == "CIN Plan shown as starting and ending on the same day - please check"
+        == "Please check and either amend or provide a reason: CIN Plan shown as starting and ending on the same day"
     )

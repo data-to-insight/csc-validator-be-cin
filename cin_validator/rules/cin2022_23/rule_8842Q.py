@@ -16,12 +16,13 @@ from cin_validator.test_engine import run_rule
 Reviews = CINTable.Reviews
 CPPreviewDate = Reviews.CPPreviewDate
 
+
 # define characteristics of rule
 @rule_definition(
     code="8842Q",
     module=CINTable.Reviews,
     rule_type=RuleType.QUERY,
-    message="Please check: Review Record has a missing date",
+    message="Please check and either amend or provide a reason: Review Record has a missing date",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[CPPreviewDate],
 )
@@ -72,4 +73,7 @@ def test_validate():
 
     # replace 8842Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8842Q"
-    assert result.definition.message == "Please check: Review Record has a missing date"
+    assert (
+        result.definition.message
+        == "Please check and either amend or provide a reason: Review Record has a missing date"
+    )

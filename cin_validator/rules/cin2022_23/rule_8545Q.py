@@ -22,7 +22,7 @@ ReferenceDate = Header.ReferenceDate
     code="8545Q",
     module=CINTable.ChildIdentifiers,
     rule_type=RuleType.QUERY,
-    message="Please check: Child's date of death should be within the census year",
+    message="Please check and either amend data or provide a reason: Child's date of death should be within the census year",
     affected_fields=[PersonDeathDate],
 )
 def validate(
@@ -57,7 +57,6 @@ def validate(
 
 
 def test_validate():
-
     p_death = pd.to_datetime(
         [
             "2022-04-25",
@@ -92,5 +91,5 @@ def test_validate():
     assert result.definition.code == "8545Q"
     assert (
         result.definition.message
-        == "Please check: Child's date of death should be within the census year"
+        == "Please check and either amend data or provide a reason: Child's date of death should be within the census year"
     )

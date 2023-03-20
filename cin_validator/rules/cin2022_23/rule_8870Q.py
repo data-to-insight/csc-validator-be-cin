@@ -24,12 +24,13 @@ from cin_validator.test_engine import run_rule
 Section47 = CINTable.Section47
 InitialCPCtarget = Section47.InitialCPCtarget
 
+
 # define characteristics of rule
 @rule_definition(
     code="8870Q",
     module=CINTable.Section47,
     rule_type=RuleType.QUERY,
-    message="Please check: The Target Date for Initial Child Protection Conference should not be a weekend",
+    message="Please check and either amend or provide a reason: The Target Date for Initial Child Protection Conference should not be a weekend",
     affected_fields=[InitialCPCtarget],
 )
 def validate(
@@ -76,5 +77,5 @@ def test_validate():
     assert result.definition.code == "8870Q"
     assert (
         result.definition.message
-        == "Please check: The Target Date for Initial Child Protection Conference should not be a weekend"
+        == "Please check and either amend or provide a reason: The Target Date for Initial Child Protection Conference should not be a weekend"
     )
