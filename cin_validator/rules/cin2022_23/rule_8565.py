@@ -348,6 +348,13 @@ def test_validate():
                 "DateOfInitialCPC": pd.NA
                 # Fail on s47 DOICPC
             },
+            {
+                "LAchildID": "child11",
+                "CINdetailsID": "cinID1",
+                "CINclosureDate": "01/09/2021",
+                "DateOfInitialCPC": pd.NA
+                # Needed to check children don't fail for having a null DOICPC
+            },
         ]
     )
 
@@ -417,7 +424,7 @@ def test_validate():
                 # Fails on CIN plan end date
             },
             {
-                "LAchildID": "child10",
+                "LAchildID": "child11",
                 "CINdetailsID": "cinID1",
                 "AssessmentActualStartDate": "01/07/2021",
                 "AssessmentAuthorisationDate": "01/09/2021",
@@ -500,6 +507,13 @@ def test_validate():
                 "S47ActualStartDate": "01/07/2021",
                 "DateOfInitialCPC": "01/10/2022",
                 # Fails on CIN plan end date
+            },
+            {
+                "LAchildID": "child11",
+                "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "01/07/2021",
+                "DateOfInitialCPC": pd.NA,
+                # CHecks children don't fail with
             },
         ]
     )
@@ -679,9 +693,9 @@ def test_validate():
                     # Initial CPC date
                     pd.NaT,
                     # Assessment start date
-                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    pd.NaT,
                     # Assessment authorisation date
-                    pd.to_datetime("01/09/2021", format="%d/%m/%Y", errors="coerce"),
+                    pd.NaT,
                     # S47 start date
                     pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
                     # CPP start date
