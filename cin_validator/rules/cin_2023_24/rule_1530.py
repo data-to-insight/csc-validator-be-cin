@@ -100,7 +100,6 @@ def validate(
 
 
 def test_validate():
-
     child_identifiers = pd.DataFrame(
         {
             "UPN": [
@@ -113,7 +112,7 @@ def test_validate():
                 "R421962919251",  # 4 Not in LA list
                 "X817558133462",  # 5 Not in LA list
                 "ASFFAGSVSV123",  # 6 Not in LA list, not numeric.
-                "A94300178301", # 942/3 added in 23/24 ruleset, data added to check correct addition to rule
+                "A94300178301",  # 942/3 added in 23/24 ruleset, data added to check correct addition to rule
             ]
         }
     )
