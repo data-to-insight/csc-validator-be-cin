@@ -351,7 +351,7 @@ def test_validate():
             {
                 "LAchildID": "child11",
                 "CINdetailsID": "cinID1",
-                "CINclosureDate": "01/09/2021",
+                "CINclosureDate": "01/07/2021",
                 "DateOfInitialCPC": pd.NA
                 # Needed to check children don't fail for having a null DOICPC
             },
@@ -677,7 +677,7 @@ def test_validate():
 
     issue_rows = issues.row_df
 
-    assert len(issue_rows) == 8
+    assert len(issue_rows) == 9
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
@@ -708,6 +708,32 @@ def test_validate():
                     pd.to_datetime("01/10/2022", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [8],
+            },
+            {
+                "ERROR_ID": (
+                    "child11",  # ChildID
+                    # CIN ID
+                    "cinID1",
+                    # CIN closure date
+                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    # Initial CPC date
+                    pd.NaT,
+                    # Assessment start date
+                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    # Assessment authorisation date
+                    pd.to_datetime("01/09/2021", format="%d/%m/%Y", errors="coerce"),
+                    # S47 start date
+                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    # CPP start date
+                    pd.NaT,
+                    # CIN start date
+                    pd.NaT,
+                    # CIN end date
+                    pd.NaT,
+                    # S47 DateOfInitialCPC
+                    pd.NaT,
+                ),
+                "ROW_ID": [9],
             },
             {
                 "ERROR_ID": (
