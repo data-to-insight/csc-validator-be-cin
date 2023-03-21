@@ -229,7 +229,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    
+
     df_assessments_isses = (
         df_assessments.merge(df, left_on="ROW_ID", right_on="ROW_ID_assessments")
         .groupby("ERROR_ID")["ROW_ID"]
