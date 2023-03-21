@@ -185,7 +185,9 @@ def validate(
     # Return those where dates don't align
     # From the merges, DateOfInitialCPC IS DateOfInitialCPC_CIN, we end up with two of the same column, one with a suffix and one without because CIN
     # Merges with tables both with and without DateOfInitalCPC fields. This condition is set to check DateOfInitialCPC_CIN for clarity in what it's doing.
-    condition1 = df[CINclosureDate] < df["DateOfInitialCPC_CIN"]
+    condition1 = (df[CINclosureDate] < df["DateOfInitialCPC_CIN"]) & (
+        df["DateOfInitialCPC_CIN"].notna()
+    )
     condition2 = df[CINclosureDate] < df[AssessmentActualStartDate]
     condition3 = df[CINclosureDate] < df[AssessmentAuthorisationDate]
     condition4 = df[CINclosureDate] < df[S47ActualStartDate]
