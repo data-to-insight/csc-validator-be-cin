@@ -193,6 +193,8 @@ def create_user_report(issue_df, cin_data):
         ignore_index=True,
     )
 
+    user_report.drop_duplicates(["LAchildID", "rule_code", "columns_affected", "ROW_ID"], inplace=True)
+    
     return user_report
 
 
