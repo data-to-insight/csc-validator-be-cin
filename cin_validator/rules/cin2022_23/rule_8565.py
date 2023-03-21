@@ -58,7 +58,7 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 @rule_definition(
     code=8565,
     module=CINTable.ChildProtectionPlans,
-    message="Activity shown after a case has been closed.",
+    message="Activity shown after a case has been closed",
     affected_fields=[
         CINclosureDate,
         DateOfInitialCPC,
@@ -181,16 +181,20 @@ def validate(
             ],
         )
     )
-    print(df)
+
     # Return those where dates don't align
-    condition1 = df[CINclosureDate] < df[DateOfInitialCPC]
+    # From the merges, DateOfInitialCPC IS DateOfInitialCPC_CIN, we end up with two of the same column, one with a suffix and one without because CIN
+    # Merges with tables both with and without DateOfInitalCPC fields. This condition is set to check DateOfInitialCPC_CIN for clarity in what it's doing.
+    condition1 = df[CINclosureDate] < df["DateOfInitialCPC_CIN"]
     condition2 = df[CINclosureDate] < df[AssessmentActualStartDate]
     condition3 = df[CINclosureDate] < df[AssessmentAuthorisationDate]
     condition4 = df[CINclosureDate] < df[S47ActualStartDate]
     condition5 = df[CINclosureDate] < df[CPPendDate]
     condition6 = df[CINclosureDate] < df[CINPlanStartDate]
     condition7 = df[CINclosureDate] < df[CINPlanEndDate]
-    condition8 = df[CINclosureDate] < df["DateOfInitialCPC_CIN"]
+    condition8 = (
+        df[CINclosureDate] < df["DateOfInitialCPC_S47"]
+    )  # & (df["DateOfInitialCPC_CIN"].notna())
 
     df = df[
         condition1
@@ -208,13 +212,14 @@ def validate(
             df[LAchildID],
             df[CINdetailsID],
             df[CINclosureDate],
-            df[DateOfInitialCPC],
+            df["DateOfInitialCPC_CIN"],
             df[AssessmentActualStartDate],
             df[AssessmentAuthorisationDate],
             df[S47ActualStartDate],
             df[CPPendDate],
             df[CINPlanStartDate],
             df[CINPlanEndDate],
+            df["DateOfInitialCPC_S47"],
         )
     )
 
@@ -224,7 +229,7 @@ def validate(
         .apply(list)
         .reset_index()
     )
-
+    
     df_assessments_isses = (
         df_assessments.merge(df, left_on="ROW_ID", right_on="ROW_ID_assessments")
         .groupby("ERROR_ID")["ROW_ID"]
@@ -263,7 +268,9 @@ def validate(
         row_df=df_assessments_isses,
     )
     rule_context.push_type_2(
-        table=Section47, columns=[S47ActualStartDate], row_df=df_S47_issues
+        table=Section47,
+        columns=[S47ActualStartDate, DateOfInitialCPC],
+        row_df=df_S47_issues,
     )
     rule_context.push_type_2(
         table=ChildProtectionPlans, columns=[CPPendDate], row_df=df_CPP_issues
@@ -337,9 +344,9 @@ def test_validate():
             {
                 "LAchildID": "child10",
                 "CINdetailsID": "cinID1",
-                "CINclosureDate": "01/01/2022",
+                "CINclosureDate": "01/09/2021",
                 "DateOfInitialCPC": pd.NA
-                # Pass
+                # Fail on s47 DOICPC
             },
         ]
     )
@@ -408,6 +415,12 @@ def test_validate():
                 "AssessmentActualStartDate": "01/01/2021",
                 "AssessmentAuthorisationDate": "30/05/2020"
                 # Fails on CIN plan end date
+            },
+            {
+                "LAchildID": "child10",
+                "CINdetailsID": "cinID1",
+                "AssessmentActualStartDate": "01/07/2021",
+                "AssessmentAuthorisationDate": "01/09/2021",
             },
         ]
     )
@@ -481,11 +494,21 @@ def test_validate():
                 "DateOfInitialCPC": "30/12/2020"
                 # Fails on CIN plan end date
             },
+            {
+                "LAchildID": "child10",
+                "CINdetailsID": "cinID1",
+                "S47ActualStartDate": "01/07/2021",
+                "DateOfInitialCPC": "01/10/2022",
+                # Fails on CIN plan end date
+            },
         ]
     )
 
     sample_S47["S47ActualStartDate"] = pd.to_datetime(
         sample_S47["S47ActualStartDate"], format="%d/%m/%Y", errors="coerce"
+    )
+    sample_S47["DateOfInitialCPC"] = pd.to_datetime(
+        sample_S47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
 
     sample_CPP = pd.DataFrame(
@@ -640,12 +663,38 @@ def test_validate():
 
     issue_rows = issues.row_df
 
-    assert len(issue_rows) == 7
+    assert len(issue_rows) == 8
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
     expected_df = pd.DataFrame(
         [
+            {
+                "ERROR_ID": (
+                    "child10",  # ChildID
+                    # CIN ID
+                    "cinID1",
+                    # CIN closure date
+                    pd.to_datetime("01/09/2021", format="%d/%m/%Y", errors="coerce"),
+                    # Initial CPC date
+                    pd.NaT,
+                    # Assessment start date
+                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    # Assessment authorisation date
+                    pd.to_datetime("01/09/2021", format="%d/%m/%Y", errors="coerce"),
+                    # S47 start date
+                    pd.to_datetime("01/07/2021", format="%d/%m/%Y", errors="coerce"),
+                    # CPP start date
+                    pd.NaT,
+                    # CIN start date
+                    pd.NaT,
+                    # CIN end date
+                    pd.NaT,
+                    # S47 DateOfInitialCPC
+                    pd.to_datetime("01/10/2022", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [8],
+            },
             {
                 "ERROR_ID": (
                     # ChildID
@@ -667,6 +716,8 @@ def test_validate():
                     # CIN start date
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [1],
@@ -692,6 +743,8 @@ def test_validate():
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [2],
             },
@@ -715,6 +768,8 @@ def test_validate():
                     # CIN start date
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [3],
@@ -740,6 +795,8 @@ def test_validate():
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [4],
             },
@@ -763,6 +820,8 @@ def test_validate():
                     # CIN start date
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [5],
@@ -788,6 +847,8 @@ def test_validate():
                     pd.to_datetime("01/06/2022", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
                     pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [6],
             },
@@ -812,6 +873,8 @@ def test_validate():
                     pd.to_datetime("01/01/2020", format="%d/%m/%Y", errors="coerce"),
                     # CIN end date
                     pd.to_datetime("30/12/2022", format="%d/%m/%Y", errors="coerce"),
+                    # S47 DateOfInitialCPC
+                    pd.to_datetime("30/12/2020", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [7],
             },
