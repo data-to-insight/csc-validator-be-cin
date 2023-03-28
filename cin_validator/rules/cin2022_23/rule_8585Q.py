@@ -27,7 +27,7 @@ PersonDeathDate = ChildIdentifiers.PersonDeathDate
     code="8585Q",
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
-    message="Please check: CIN episode shows Died as the Closure Reason, however child has no recorded Date of Death",
+    message="Please check and either amend or provide a reason: CIN episode shows Died as the Closure Reason, however child has no recorded Date of Death",
     affected_fields=[
         ReasonForClosure,
         PersonDeathDate,
@@ -166,5 +166,5 @@ def test_validate():
     assert result.definition.code == "8585Q"
     assert (
         result.definition.message
-        == "Please check: CIN episode shows Died as the Closure Reason, however child has no recorded Date of Death"
+        == "Please check and either amend or provide a reason: CIN episode shows Died as the Closure Reason, however child has no recorded Date of Death"
     )

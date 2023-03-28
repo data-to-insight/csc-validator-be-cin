@@ -7,6 +7,10 @@ from cin_validator.ingress import XMLtoCSV
 from cin_validator.rule_engine import CINTable, RuleContext, registry
 from cin_validator.utils import process_date_columns
 
+pd.options.mode.chained_assignment = None
+# Suppresses false-positive SettingWithCopyError when column types are changes in the include_issue_child function.
+# https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
+
 
 def enum_keys(dict_input):
     """
@@ -126,7 +130,6 @@ def create_user_report(issue_df, cin_data):
     no_table = issue_df[issue_df["tables_affected"].isna()]
     reports = []
     for table in issue_df["tables_affected"].dropna().unique():
-
         table_issues = issue_df[issue_df["tables_affected"] == table]
 
         table_reports = []
@@ -149,7 +152,9 @@ def create_user_report(issue_df, cin_data):
     reports.append(no_table)
 
     full_report = pd.concat(reports, ignore_index=True)
-    return full_report[
+
+    # columns of interest are filtered and arranged in the desired order. values unified under str datatype.
+    user_report = full_report[
         [
             "ERROR_ID",
             "LAchildID",
@@ -161,6 +166,38 @@ def create_user_report(issue_df, cin_data):
             "rule_description",
         ]
     ]
+
+    def datetime_to_str(element):
+        if isinstance(element, pd.Timestamp):
+            # convert datetime elements to str date values
+            return str(element.strftime("%Y-%m-%d"))
+        elif isinstance(element, tuple):
+            # loop through tuples and convert each element accordingly. mostly in ERROR_ID column.
+            return tuple(map(datetime_to_str, element))
+        else:
+            # ensure all other elements are strings too.
+            return str(element)
+
+    # user_report = user_report.applymap(lambda x:str(x.strftime("%Y-%m-%d")) if isinstance(x, pd.Timestamp) else str(x))
+    user_report = user_report.applymap(datetime_to_str)
+
+    # Related issue locations should be displayed next to each other.
+    user_report.sort_values(
+        [
+            "LAchildID",
+            "ERROR_ID",
+            "tables_affected",
+            "columns_affected",
+        ],
+        inplace=True,
+        ignore_index=True,
+    )
+
+    user_report.drop_duplicates(
+        ["LAchildID", "rule_code", "columns_affected", "ROW_ID"], inplace=True
+    )
+
+    return user_report
 
 
 class CinValidationSession:
