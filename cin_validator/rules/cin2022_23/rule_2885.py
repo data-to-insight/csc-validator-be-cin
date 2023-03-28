@@ -127,7 +127,7 @@ def validate(
     # CIN table: if CPPstartDate matches any DateOfInitialCPC within its CIN module, all DateOfInitialCPCs should pass in that CIN module.
 
     df_cpp_cin = df_cpp.merge(
-        df_cin, on=[LAchildID, CINdetailsID], suffixes=["_cpp", "_cin"]
+        df_cin, on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_cin"]
     )
     df_cpp_cin_pass = df_cpp_cin[
         df_cpp_cin[CPPstartDate] == df_cpp_cin[DateOfInitialCPC]
