@@ -311,381 +311,145 @@ def validate(
 
 
 def test_validate():
-    sample_cin = pd.DataFrame(
+    df_cin = pd.DataFrame(
         [
+            # Same CINclosureDate value is maintained throughout table for simplicity when cross-checking with other tables.
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "cinID1",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Pass
+                "CINdetailsID": "CINID1",
+                "CINclosureDate": "26/05/2022",
+                "DateOfInitialCPC": "26/05/2022",  # pass
             },
             {
-                "LAchildID": "child2",
-                "CINdetailsID": "cinID2",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2022"  # Initial CPC after CIN closure date
-                # Fail
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID2",
+                "CINclosureDate": "26/05/2022",
+                "DateOfInitialCPC": pd.NA,  # ignore. date is absent
             },
             {
-                "LAchildID": "child3",
-                "CINdetailsID": "cinID3",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on assessment start date
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID3",
+                "CINclosureDate": "26/05/2022",
+                "DateOfInitialCPC": "27/05/2022",  # fail 27/05/2022 is after CINclosureDate
             },
             {
-                "LAchildID": "child4",
-                "CINdetailsID": "cinID4",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on assessment authorisation date
-            },
-            {
-                "LAchildID": "child5",
-                "CINdetailsID": "cinID5",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on S47 date
-            },
-            {
-                "LAchildID": "child6",
-                "CINdetailsID": "cinID6",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CPP start date
-            },
-            {
-                "LAchildID": "child7",
-                "CINdetailsID": "cinID7",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CIN plan start date
-            },
-            {
-                "LAchildID": "child8",
-                "CINdetailsID": "cinID8",
-                "CINclosureDate": "01/01/2022",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CIN plan end date
-            },
-            {
-                "LAchildID": "child10",
-                "CINdetailsID": "cinID1",
-                "CINclosureDate": "01/09/2021",
-                "DateOfInitialCPC": pd.NA
-                # Fail on s47 DOICPC
-            },
-            {
-                "LAchildID": "child11",
-                "CINdetailsID": "cinID1",
-                "CINclosureDate": "01/07/2021",
-                "DateOfInitialCPC": pd.NA
-                # Needed to check children don't fail for having a null DOICPC
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID4",
+                "CINclosureDate": "26/05/2022",
+                "DateOfInitialCPC": "26/05/2022",  # pass
             },
         ]
     )
 
-    sample_cin["CINclosureDate"] = pd.to_datetime(
-        sample_cin["CINclosureDate"], format="%d/%m/%Y", errors="coerce"
-    )
-    sample_cin["DateOfInitialCPC"] = pd.to_datetime(
-        sample_cin["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
-    )
-
-    sample_assessments = pd.DataFrame(
+    df_ass = pd.DataFrame(
         [
+            # multiple assessments in the same CIN. some pass, some fail.
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "cinID1",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/12/2020"
-                # Pass
+                "CINdetailsID": "CINID1",
+                "AssessmentActualStartDate": "27/05/2022",  # fail
+                "AssessmentAuthorisationDate": "26/05/2022",  # pass
             },
             {
-                "LAchildID": "child2",
-                "CINdetailsID": "cinID2",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fails on initial CPC date
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID1",
+                "AssessmentActualStartDate": "26/05/2022",  # pass
+                "AssessmentAuthorisationDate": "26/05/2022",  # pass
+            },
+            # assessments across multiple CIN modules. some pass, some fail.
+            {
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID2",
+                "AssessmentActualStartDate": "27/05/2022",  # fail
+                "AssessmentAuthorisationDate": "26/05/2022",  # pass
             },
             {
-                "LAchildID": "child3",
-                "CINdetailsID": "cinID3",
-                "AssessmentActualStartDate": "31/01/2022",  # Fail, assessment start after CIN closure
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fail
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID3",
+                "AssessmentActualStartDate": "26/05/2022",  # pass
+                "AssessmentAuthorisationDate": "26/05/2022",  # pass
             },
             {
-                "LAchildID": "child4",
-                "CINdetailsID": "cinID4",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2022"  # Fail, assesment authorised after CIN closure
-                # Fail
-            },
-            {
-                "LAchildID": "child5",
-                "CINdetailsID": "cinID5",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fails on S47 date
-            },
-            {
-                "LAchildID": "child6",
-                "CINdetailsID": "cinID6",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fails on CPP start date
-            },
-            {
-                "LAchildID": "child7",
-                "CINdetailsID": "cinID7",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fails on CIN plan start date
-            },
-            {
-                "LAchildID": "child8",
-                "CINdetailsID": "cinID8",
-                "AssessmentActualStartDate": "01/01/2021",
-                "AssessmentAuthorisationDate": "30/05/2020"
-                # Fails on CIN plan end date
-            },
-            {
-                "LAchildID": "child11",
-                "CINdetailsID": "cinID1",
-                "AssessmentActualStartDate": "01/07/2021",
-                "AssessmentAuthorisationDate": "01/09/2021",
+                "LAchildID": "child1",
+                "CINdetailsID": "CINID4",
+                "AssessmentActualStartDate": pd.NA,  # ignore. date is absent
+                "AssessmentAuthorisationDate": pd.NA,  # ignore. date is absent
             },
         ]
     )
 
-    sample_assessments["AssessmentActualStartDate"] = pd.to_datetime(
-        sample_assessments["AssessmentActualStartDate"],
-        format="%d/%m/%Y",
-        errors="coerce",
-    )
-    sample_assessments["AssessmentAuthorisationDate"] = pd.to_datetime(
-        sample_assessments["AssessmentAuthorisationDate"],
-        format="%d/%m/%Y",
-        errors="coerce",
-    )
-
-    sample_47 = pd.DataFrame(
+    df_47 = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "cinID1",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Pass
-            },
-            {
-                "LAchildID": "child2",
-                "CINdetailsID": "cinID2",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on initial CPC date
-            },
-            {
-                "LAchildID": "child3",
-                "CINdetailsID": "cinID3",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on assessment start date
-            },
-            {
-                "LAchildID": "child4",
-                "CINdetailsID": "cinID4",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on assessment authorisation date
-            },
-            {
-                "LAchildID": "child5",
-                "CINdetailsID": "cinID5",
-                "S47ActualStartDate": "31/07/2022",
-                "DateOfInitialCPC": "30/12/2020"  # Fails S47 starts after CIN closure
-                # Fail
-            },
-            {
-                "LAchildID": "child6",
-                "CINdetailsID": "cinID6",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CPP start date
-            },
-            {
-                "LAchildID": "child7",
-                "CINdetailsID": "cinID7",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CIN plan start date
-            },
-            {
-                "LAchildID": "child8",
-                "CINdetailsID": "cinID8",
-                "S47ActualStartDate": "01/01/2021",
-                "DateOfInitialCPC": "30/12/2020"
-                # Fails on CIN plan end date
-            },
-            {
-                "LAchildID": "child10",
-                "CINdetailsID": "cinID1",
-                "S47ActualStartDate": "01/07/2021",
-                "DateOfInitialCPC": "01/10/2022",
-                # Fails on CIN plan end date
-            },
-            {
-                "LAchildID": "child11",
-                "CINdetailsID": "cinID1",
-                "S47ActualStartDate": "01/07/2021",
-                "DateOfInitialCPC": pd.NA,
-                # CHecks children don't fail with
-            },
+                "CINdetailsID": "CINID1",
+                "S47ActualStartDate": "27/05/2022",  # fail. after CINclosureDate.
+                "DateOfInitialCPC": "26/05/2022",
+            }
         ]
     )
 
-    sample_47["S47ActualStartDate"] = pd.to_datetime(
-        sample_47["S47ActualStartDate"], format="%d/%m/%Y", errors="coerce"
-    )
-    sample_47["DateOfInitialCPC"] = pd.to_datetime(
-        sample_47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
-    )
-
-    sample_cpp = pd.DataFrame(
+    df_cpp = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "cinID1",
-                "CPPendDate": "30/12/2020"
-                # Pass
-            },
-            {
-                "LAchildID": "child2",
-                "CINdetailsID": "cinID2",
-                "CPPendDate": "30/12/2020"
-                # Fails on initial CPC date
-            },
-            {
-                "LAchildID": "child3",
-                "CINdetailsID": "cinID3",
-                "CPPendDate": "30/12/2020"
-                # Fails on assessment start date
-            },
-            {
-                "LAchildID": "child4",
-                "CINdetailsID": "cinID4",
-                "CPPendDate": "30/12/2020"
-                # Fails on assessment authorisation date
-            },
-            {
-                "LAchildID": "child5",
-                "CINdetailsID": "cinID5",
-                "CPPendDate": "30/12/2020"
-                # Fails on S47 date
-            },
-            {
-                "LAchildID": "child6",
-                "CINdetailsID": "cinID6",
-                "CPPendDate": "30/12/2022"  # Fail, CPP start date after CIN closure
-                # Fail
-            },
-            {
-                "LAchildID": "child7",
-                "CINdetailsID": "cinID7",
-                "CPPendDate": "30/12/2020"
-                # Fails on CIN plan start date
-            },
-            {
-                "LAchildID": "child8",
-                "CINdetailsID": "cinID8",
-                "CPPendDate": "30/12/2020"
-                # Fails on CIN plan end date
-            },
+                "CINdetailsID": "CINID1",
+                "CPPendDate": "27/05/2022",  # fail
+            }
         ]
     )
 
-    sample_cpp["CPPendDate"] = pd.to_datetime(
-        sample_cpp["CPPendDate"], format="%d/%m/%Y", errors="coerce"
-    )
-
-    sample_cinplan = pd.DataFrame(
+    df_plan = pd.DataFrame(
         [
             {
                 "LAchildID": "child1",
-                "CINdetailsID": "cinID1",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Pass
-            },
-            {
-                "LAchildID": "child2",
-                "CINdetailsID": "cinID2",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Fails on initial CPC date
-            },
-            {
-                "LAchildID": "child3",
-                "CINdetailsID": "cinID3",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Fails on assessment start date
-            },
-            {
-                "LAchildID": "child4",
-                "CINdetailsID": "cinID4",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Fails on assessment authorisation date
-            },
-            {
-                "LAchildID": "child5",
-                "CINdetailsID": "cinID5",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Fails on S47 date
-            },
-            {
-                "LAchildID": "child6",
-                "CINdetailsID": "cinID6",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2020"
-                # Fails on CPP start date
-            },
-            {
-                "LAchildID": "child7",
-                "CINdetailsID": "cinID7",
-                "CINPlanStartDate": "01/06/2022",  # Fail, CIN plan starts after CIN closure
-                "CINPlanEndDate": "30/12/2020"
-                # Fail
-            },
-            {
-                "LAchildID": "child8",
-                "CINdetailsID": "cinID8",
-                "CINPlanStartDate": "01/01/2020",
-                "CINPlanEndDate": "30/12/2022"  # Fail, CIN plan ends after CIN closure
-                # Fail
-            },
+                "CINdetailsID": "CINID1",
+                "CINPlanStartDate": "27/05/2022",  # fail
+                "CINPlanEndDate": "26/05/2022",  # pass
+            }
         ]
     )
 
-    sample_cinplan["CINPlanStartDate"] = pd.to_datetime(
-        sample_cinplan["CINPlanStartDate"], format="%d/%m/%Y", errors="coerce"
+    df_plan["CINPlanStartDate"] = pd.to_datetime(
+        df_plan["CINPlanStartDate"], format="%d/%m/%Y", errors="coerce"
     )
-    sample_cinplan["CINPlanEndDate"] = pd.to_datetime(
-        sample_cinplan["CINPlanEndDate"], format="%d/%m/%Y", errors="coerce"
+    df_plan["CINPlanEndDate"] = pd.to_datetime(
+        df_plan["CINPlanEndDate"], format="%d/%m/%Y", errors="coerce"
+    )
+
+    df_cpp["CPPendDate"] = pd.to_datetime(
+        df_cpp["CPPendDate"], format="%d/%m/%Y", errors="coerce"
+    )
+
+    df_47["S47ActualStartDate"] = pd.to_datetime(
+        df_47["S47ActualStartDate"], format="%d/%m/%Y", errors="coerce"
+    )
+    df_47["DateOfInitialCPC"] = pd.to_datetime(
+        df_47["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
+    )
+
+    df_ass["AssessmentActualStartDate"] = pd.to_datetime(
+        df_ass["AssessmentActualStartDate"], format="%d/%m/%Y", errors="coerce"
+    )
+    df_ass["AssessmentAuthorisationDate"] = pd.to_datetime(
+        df_ass["AssessmentAuthorisationDate"], format="%d/%m/%Y", errors="coerce"
+    )
+
+    df_cin["CINclosureDate"] = pd.to_datetime(
+        df_cin["CINclosureDate"], format="%d/%m/%Y", errors="coerce"
+    )
+    df_cin["DateOfInitialCPC"] = pd.to_datetime(
+        df_cin["DateOfInitialCPC"], format="%d/%m/%Y", errors="coerce"
     )
 
     result = run_rule(
         validate,
         {
-            CINdetails: sample_cin,
-            Assessments: sample_assessments,
-            Section47: sample_47,
-            ChildProtectionPlans: sample_cpp,
-            CINplanDates: sample_cinplan,
+            CINdetails: df_cin,
+            Assessments: df_ass,
+            Section47: df_47,
+            ChildProtectionPlans: df_cpp,
+            CINplanDates: df_plan,
         },
     )
 
@@ -705,9 +469,38 @@ def test_validate():
 
     issue_rows = issues.row_df
 
-    assert len(issue_rows) == 8
+    assert len(issue_rows) == 3
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
+
+    expected_df = pd.DataFrame(
+        [
+            {
+                "ERROR_ID": (
+                    "child1",
+                    "CINID1",
+                    pd.to_datetime("26/05/2022", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child1",
+                    "CINID2",
+                    pd.to_datetime("26/05/2022", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [1],
+            },
+            {
+                "ERROR_ID": (
+                    "child1",
+                    "CINID3",
+                    pd.to_datetime("26/05/2022", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [2],
+            },
+        ]
+    )
 
     assert result.definition.code == 8565
     assert result.definition.message == "Activity shown after a case has been closed"
