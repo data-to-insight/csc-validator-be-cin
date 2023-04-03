@@ -24,7 +24,7 @@ ReasonForClosure = CINdetails.ReasonForClosure
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Please check and either amend or provide a reason: Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode.",
+    message="Please check and either amend data or provide a reason: Reason for Closure code RC8 (case closed after assessment) or RC9 (case closed after assessment, referred to early help) has been returned but there is no assessment present for the episode.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         ReasonForClosure,
@@ -48,11 +48,11 @@ def validate(
     df_cin.reset_index(inplace=True)
 
     # lOGIC
-    # If <ReasonforClosure> (N00103) = RC8 then at least one <Assessments> module must be present
+    # If <ReasonforClosure> (N00103) = RC8 or RC9 then at least one <Assessments> module must be present
 
     df_cin_check = df_cin.copy()
 
-    df_cin_check = df_cin_check[df_cin_check[ReasonForClosure] == "RC8"]
+    df_cin_check = df_cin_check[df_cin_check[ReasonForClosure].isin(["RC8", "RC9"])]
 
     merged_df = df_cin_check.merge(
         df_ass,
@@ -147,7 +147,7 @@ def test_validate():
             },
             {  # 5 pass
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC8",  # 5 pass. present in assessment table
+                "ReasonForClosure": "RC9",  # 5 pass. present in assessment table
                 "CINdetailsID": "cinID3",
             },
             {  # 6 fail
@@ -214,5 +214,5 @@ def test_validate():
     assert result.definition.code == "8825Q"
     assert (
         result.definition.message
-        == "Please check and either amend or provide a reason: Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode."
+        == "Please check and either amend data or provide a reason: Reason for Closure code RC8 (case closed after assessment) or RC9 (case closed after assessment, referred to early help) has been returned but there is no assessment present for the episode."
     )
