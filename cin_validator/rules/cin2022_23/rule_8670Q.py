@@ -30,7 +30,7 @@ ReferenceDate = Header.ReferenceDate
     code="8670Q",
     module=CINTable.Assessments,
     rule_type=RuleType.QUERY,
-    message="Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date.",
+    message="Please check and either amend data or provide a reason: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date.",
     affected_fields=[AssessmentActualStartDate],
 )
 def validate(
@@ -166,5 +166,5 @@ def test_validate():
     assert result.definition.code == "8670Q"
     assert (
         result.definition.message
-        == "Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date."
+        == "Please check and either amend data or provide a reason: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date."
     )

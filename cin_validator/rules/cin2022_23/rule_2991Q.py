@@ -17,7 +17,7 @@ CINdetailsID = Assessments.CINdetailsID
     code="2991Q",
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
-    message="Please check: A Section 47 module is recorded and there is no assessment on the episode",
+    message="Please check and either amend data or provide a reason: A Section 47 module is recorded and there is no assessment on the episode",
     affected_fields=[
         CINdetailsID,
     ],
@@ -203,5 +203,5 @@ def test_validate():
     assert result.definition.code == "2991Q"
     assert (
         result.definition.message
-        == "Please check: A Section 47 module is recorded and there is no assessment on the episode"
+        == "Please check and either amend data or provide a reason: A Section 47 module is recorded and there is no assessment on the episode"
     )

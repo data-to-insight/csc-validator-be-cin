@@ -16,7 +16,7 @@ LAchildID = ChildIdentifiers.LAchildID
     code="8535Q",
     module=CINTable.ChildIdentifiers,
     rule_type=RuleType.QUERY,
-    message="Child’s date of death should not be prior to the date of birth",
+    message="Please check and either amend data or provide a reason: Child’s date of death should not be prior to the date of birth",
     affected_fields=[PersonDeathDate, PersonBirthDate],
 )
 def validate(
@@ -146,5 +146,5 @@ def test_validate():
     assert result.definition.code == "8535Q"
     assert (
         result.definition.message
-        == "Child’s date of death should not be prior to the date of birth"
+        == "Please check and either amend data or provide a reason: Child’s date of death should not be prior to the date of birth"
     )
