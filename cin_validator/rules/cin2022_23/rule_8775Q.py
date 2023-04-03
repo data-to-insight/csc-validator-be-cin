@@ -19,6 +19,7 @@ CINclosureDate = CINdetails.CINclosureDate
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8775Q
@@ -224,4 +225,7 @@ def test_validate():
 
     # replace 8775Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8775Q"
-    assert result.definition.message == "Please check and either amend data or provide a reason: Child is over 25 years old"
+    assert (
+        result.definition.message
+        == "Please check and either amend data or provide a reason: Child is over 25 years old"
+    )
