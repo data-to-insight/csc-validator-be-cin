@@ -4,7 +4,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -19,10 +19,12 @@ CINdetailsID = Assessments.CINdetailsID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8863,
+    code="8863Q",
     module=CINTable.Assessments,
+    rule_type=RuleType.QUERY,
     message="An Assessment is shown as starting when there is another Assessment ongoing.",
     affected_fields=[AssessmentActualStartDate, AssessmentAuthorisationDate],
 )
@@ -290,8 +292,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8863 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8863
+    # replace 8863Q with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8863Q"
     assert (
         result.definition.message
         == "An Assessment is shown as starting when there is another Assessment ongoing."
