@@ -24,7 +24,7 @@ ReasonForClosure = CINdetails.ReasonForClosure
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode.",
+    message="Please check and either amend or provide a reason: Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         ReasonForClosure,
@@ -214,5 +214,5 @@ def test_validate():
     assert result.definition.code == "8825Q"
     assert (
         result.definition.message
-        == "Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode."
+        == "Please check and either amend or provide a reason: Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode."
     )

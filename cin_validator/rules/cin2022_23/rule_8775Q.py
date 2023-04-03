@@ -28,7 +28,7 @@ ReferenceDate = Header.ReferenceDate
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Please check: Child is over 25 years old",
+    message="Please check and either amend data or provide a reason: Child is over 25 years old",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         PersonBirthDate,
@@ -224,4 +224,4 @@ def test_validate():
 
     # replace 8775Q with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "8775Q"
-    assert result.definition.message == "Please check: Child is over 25 years old"
+    assert result.definition.message == "Please check and either amend data or provide a reason: Child is over 25 years old"
