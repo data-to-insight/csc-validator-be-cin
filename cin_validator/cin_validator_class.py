@@ -125,9 +125,15 @@ def create_user_report(issue_df, cin_data):
 
     :param pd.DataFrame issue_df: in which child IDs have been added.
     :param dict cin_data: dataframes of user's input data.
+    :return user_report: dataframe containing issue locations and specific values that fail in those locations.
 
     """
-    no_table = issue_df[issue_df["tables_affected"].isna()]
+    try:
+        no_table = issue_df[issue_df["tables_affected"].isna()]
+    except:
+        # in the case where issue_df is empty, return an empty user report.
+        return pd.DataFrame()
+
     reports = []
     for table in issue_df["tables_affected"].dropna().unique():
         table_issues = issue_df[issue_df["tables_affected"] == table]
@@ -178,7 +184,6 @@ def create_user_report(issue_df, cin_data):
             # ensure all other elements are strings too.
             return str(element)
 
-    # user_report = user_report.applymap(lambda x:str(x.strftime("%Y-%m-%d")) if isinstance(x, pd.Timestamp) else str(x))
     user_report = user_report.applymap(datetime_to_str)
 
     # Related issue locations should be displayed next to each other.
