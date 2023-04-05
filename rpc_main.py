@@ -61,14 +61,14 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
     )
 
     # make return data json-serialisable
-    issue_report = validator.full_issue_df.to_json(
+
+    # what the frontend will display
+    issue_report = validator.full_issue_df.drop(columns=["ERROR_ID"]).to_json(
         orient="records"
-    )  # what the frontend will display
-    rule_defs = validator.rule_descriptors.to_json(
-        orient="records"
-    )  # what the frontend will display
-    user_report = validator.user_report.to_json(
-        orient="records"
-    )  # what the user will download
+    )
+    rule_defs = validator.rule_descriptors.to_json(orient="records")
+
+    # what the user will download
+    user_report = validator.user_report.to_json(orient="records")
 
     return issue_report, rule_defs, json_data_files, user_report
