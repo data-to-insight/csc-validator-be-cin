@@ -247,8 +247,12 @@ class CinValidationSession:
         self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
         self.user_report = create_user_report(self.full_issue_df, raw_data)
 
-        # regularise column names
+        # regularise full_issue_df
         self.full_issue_df.rename(columns={"ROW_ID": "row_id"}, inplace=True)
+        self.full_issue_df.drop(columns=["ERROR_ID"])
+        self.full_issue_df.drop_duplicates(
+            ["LAchildID", "rule_code", "columns_affected", "row_id"], inplace=True
+        )
 
     def get_rules_to_run(self, registry, selected_rules):
         """
