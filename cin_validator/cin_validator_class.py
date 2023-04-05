@@ -247,6 +247,9 @@ class CinValidationSession:
         self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
         self.user_report = create_user_report(self.full_issue_df, raw_data)
 
+        # regularise column names
+        self.full_issue_df.rename(columns={"ROW_ID": "row_id"}, inplace=True)
+
     def get_rules_to_run(self, registry, selected_rules):
         """
         Filters rules to be run based on user's selection in the frontend.
@@ -357,7 +360,6 @@ class CinValidationSession:
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
-            # data_files = self.data_files.__deepcopy__({})
             data_files = copy.deepcopy(enum_data_files)
             ctx = RuleContext(rule)
             try:
