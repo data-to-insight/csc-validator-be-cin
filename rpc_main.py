@@ -1,10 +1,33 @@
+import importlib
 import xml.etree.ElementTree as ET
 
+import pandas as pd
 from prpc_python import RpcApp
 
 from cin_validator import cin_validator_class as cin_class
 
 app = RpcApp("validate_cin")
+
+
+@app.call
+def get_rules(ruleset="rules.cin2022_23"):
+    """
+    :param str ruleset: validation ruleset according to year published.
+    :return rules_df: available rule codes and definitions according to chosen ruleset.
+    """
+    from cin_validator.rule_engine import registry
+
+    importlib.import_module(f"cin_validator.{ruleset}")
+
+    rules = []
+    for rule in registry:
+        rules.append({"code": str(rule.code), "description": rule.message})
+
+    # dataframe of rule_definitions
+    rules_df = pd.DataFrame(rules)
+
+    json_rules_df = rules_df.to_json(orient="records")
+    return json_rules_df
 
 
 @app.call
