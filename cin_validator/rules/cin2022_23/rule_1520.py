@@ -29,6 +29,8 @@ def validate(
     df.index.name = "ROW_ID"
 
     # Each pupil <UPN> (N00001) must be unique across all pupils in the extract
+
+    df = df[df[UPN].notna()]
     df_issues = df[df.duplicated(subset=[UPN], keep=False)].reset_index()
 
     link_id = tuple(
@@ -63,6 +65,14 @@ def test_validate():
             {
                 "LAchildID": "child3",
                 "UPN": "12345",
+            },
+            {
+                "LAchildID": "child4",
+                "UPN": pd.NA,
+            },
+            {
+                "LAchildID": "child4",
+                "UPN": pd.NA,
             },
         ]
     )
