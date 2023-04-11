@@ -14,7 +14,6 @@ from cin_validator.test_engine import run_rule
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 UPN = ChildIdentifiers.UPN
-LAchildID = ChildIdentifiers.LAchildID
 
 
 @rule_definition(
@@ -31,11 +30,7 @@ def validate(
 
     # Each pupil <UPN> (N00001) must be unique across all pupils in the extract
 
-    # absent UPNs should not be flagged as duplicates.
     df = df[df[UPN].notna()]
-    # If it's a record of the same child, the UPN should not be marked as duplicate.
-    df.drop_duplicates(subset=[LAchildID, UPN], inplace=True)
-
     df_issues = df[df.duplicated(subset=[UPN], keep=False)].reset_index()
 
     link_id = tuple(
@@ -60,32 +55,24 @@ def test_validate():
     child_identifiers = pd.DataFrame(
         [
             {
-                "LAchildID": "child1",  # fail: UPN is same as in another child
+                "LAchildID": "child1",
                 "UPN": "1234",
             },
             {
-                "LAchildID": "child2",  # fail: UPN is same as in another child
+                "LAchildID": "child2",
                 "UPN": "1234",
             },
             {
-                "LAchildID": "child3",  # pass: UPN is unique
+                "LAchildID": "child3",
                 "UPN": "12345",
             },
             {
-                "LAchildID": "child4",  # ignore: UPN is absent
+                "LAchildID": "child4",
                 "UPN": pd.NA,
             },
             {
-                "LAchildID": "child5",  # ignore: UPN is absent
+                "LAchildID": "child4",
                 "UPN": pd.NA,
-            },
-            {
-                "LAchildID": "child6",  # pass: UPN is unique for child
-                "UPN": "12",
-            },
-            {
-                "LAchildID": "child6",  # pass: UPN is unique for child
-                "UPN": "12",
             },
         ]
     )
