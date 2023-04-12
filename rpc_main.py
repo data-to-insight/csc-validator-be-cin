@@ -21,7 +21,12 @@ def get_rules(ruleset="rules.cin2022_23"):
 
     rules = []
     for rule in registry:
-        rules.append({"code": str(rule.code), "description": rule.message})
+        rules.append(
+            {
+                "code": str(rule.code),
+                "description": str(rule.code) + " - " + str(rule.message),
+            }
+        )
 
     # dataframe of rule_definitions
     rules_df = pd.DataFrame(rules)
