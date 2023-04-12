@@ -116,6 +116,10 @@ def test_validate():
                 "LAchildID": "child3",
                 "CINdetailsID": "cinID4",
             },
+            {
+                "LAchildID": "child4",
+                "CINdetailsID": "cinID1",
+            },
         ]
     )
     sample_cin_details = pd.DataFrame(
