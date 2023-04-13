@@ -80,7 +80,7 @@ def validate(
 
     # get only the section47 rows where cppstartdate exists and is within period.
     df_cpp_47 = df_cpp.merge(
-        df_47, on=[LAchildID, CINdetailsID], how="left", suffixes=["_cpp", "_47"]
+        df_47, on=[LAchildID, CINdetailsID], how="inner", suffixes=["_cpp", "_47"]
     )
 
     # FIND LOCATIONS THAT FAIL THE RULE
