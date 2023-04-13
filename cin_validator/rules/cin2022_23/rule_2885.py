@@ -290,6 +290,12 @@ def test_validate():
                 "CINdetailsID": "cinID1",
                 "CPPstartDate": "20/10/2021",  # passes in section_47
             },
+            # child 9: present in cin, absent in section47
+            {
+                "LAchildID": "child9",
+                "CINdetailsID": "cinID1",
+                "CPPstartDate": "20/10/2021",  # passes in cin
+            },
         ]
     )
     sample_section47 = pd.DataFrame(
@@ -407,6 +413,11 @@ def test_validate():
                 "LAchildID": "child8",
                 "DateOfInitialCPC": pd.NA,  # passes in section47
                 "CINdetailsID": "cinID1",
+            },
+            {
+                "LAchildID": "child9",
+                "CINdetailsID": "cinID1",
+                "DateOfInitialCPC": "20/10/2021",  # passes in cin
             },
         ]
     )
