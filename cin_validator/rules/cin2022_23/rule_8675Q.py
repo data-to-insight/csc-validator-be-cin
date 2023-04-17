@@ -25,7 +25,7 @@ ReferenceDate = Header.ReferenceDate
     rule_type=RuleType.QUERY,
     module=CINTable.Section47,
     message="Please check and either amend data or provide a reason: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference.",
-    affected_fields=[DateOfInitialCPC, S47ActualStartDate],
+    affected_fields=[DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
