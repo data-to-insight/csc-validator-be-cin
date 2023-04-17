@@ -25,7 +25,7 @@ ReferenceDate = Header.ReferenceDate
     rule_type=RuleType.QUERY,
     module=CINTable.Section47,
     message="Please check and either amend data or provide a reason: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference.",
-    affected_fields=[DateOfInitialCPC, S47ActualStartDate],
+    affected_fields=[DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -72,7 +72,7 @@ def validate(
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=Section47,
-        columns=[DateOfInitialCPC, S47ActualStartDate],
+        columns=[DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured],
         row_df=df_issues,
     )
 
@@ -143,7 +143,7 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [DateOfInitialCPC, S47ActualStartDate]
+    assert issue_columns == [DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
