@@ -360,7 +360,7 @@ class CinValidationSession:
         self.rule_messages = []
         self.la_rules_broken = []
 
-        importlib.import_module(f"cin_validator.{self.ruleset}")
+        importlib.import_module(f"cin_validator.rules.{self.ruleset}")
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
