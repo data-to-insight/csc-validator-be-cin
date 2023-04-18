@@ -2,9 +2,9 @@ import json
 
 import pandas as pd
 
-import cin_validator.rules.cin2022_23
-from cin_validator.rule_engine import registry
+from cin_validator.ruleset import create_registry
 
+registry = create_registry(ruleset="cin2022_23")
 all_rules = []
 for rule in registry:
     all_rules.append(
