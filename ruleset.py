@@ -22,5 +22,4 @@ for tup in ruleset_updates[1:]:
     # incorporate rule updates and new rules.
     combined_ruleset = combined_ruleset | tup[1]
 
-print(f"after_reset: {len(registry)}")
-print(len(combined_ruleset))
+registry.add_ruleset(combined_ruleset)
