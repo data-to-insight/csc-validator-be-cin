@@ -15,10 +15,12 @@ ruleset_updates.append(([], cin23_24))
 registry.reset()
 
 combined_ruleset = ruleset_updates[0][1]
-for tup in ruleset_updates:
-    # delete rules
-
-    combined_ruleset
+for tup in ruleset_updates[1:]:
+    # delete specified rules as specified by their rules codes.
+    for deleted_rule in tup[0]:
+        del combined_ruleset[deleted_rule]
+    # incorporate rule updates and new rules.
+    combined_ruleset = combined_ruleset | tup[1]
 
 print(f"after_reset: {len(registry)}")
-print(len(cin23_24))
+print(len(combined_ruleset))
