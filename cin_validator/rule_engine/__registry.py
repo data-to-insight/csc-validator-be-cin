@@ -24,10 +24,10 @@ class __Registry:
         :rtype: RuleDefinition object dictionary entry.
         """
 
-        if rd.code in self._registry:
+        if str(rd.code) in self._registry:
             # prevent duplicate rules from being created
             raise ValueError(f"Rule with code {rd.code} already exists")
-        self._registry[rd.code] = rd
+        self._registry[str(rd.code)] = rd
 
     def add_ruleset(self, ruleset_dict):
         """
