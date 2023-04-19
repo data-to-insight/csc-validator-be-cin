@@ -42,6 +42,8 @@ This is the default feature. File input is converted into tabular-format (datafr
 
 The `cin_validate` function receives three arguments: a reference to the xml file that needs to be validated, an optional choice of rules, and an optional choice of which rule pack to run. The third parameter (ruleset) will only need to be changed if the user choses to validate their data based on the rules of a year different from the one they're in.
 
+When the `ruleset` is not specified, the internal `create_registry` function will run the latest ruleset in the repo. For now, the frontend (rpc_main) and cli (cin_validator.main) handlers have been hardcoded to default to the "cin2022_23" ruleset. As such, the behaviour is predictable. This hardcoding needs to be updated each year when there is a new default ruleset (e.g in the year 2024/2025, the ruleset default argument should be updated to "cin2024_24")
+
 The `selected_rules` parameter works with a single string or an array (list/tuple) of strings where each value is a rule code that the user chose to run in the frontend.
 
 The validation process returns an issue report, rule definitions of only the rules that triggered issues, and a tabular format of the CIN data it received.

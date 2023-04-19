@@ -8,7 +8,7 @@ import click
 import pytest
 
 from cin_validator import cin_validator_class as cin_class
-from cin_validator.rule_engine import registry
+from cin_validator.ruleset import create_registry
 
 
 @click.group()
@@ -20,8 +20,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
 def list_cmd(ruleset):
     """
@@ -34,8 +34,7 @@ def list_cmd(ruleset):
     :returns: A list of validation rules in the given ruleset.
     :rtype: list
     """
-
-    importlib.import_module(f"cin_validator.{ruleset}")
+    registry = create_registry(ruleset=ruleset)
     for rule in registry:
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
@@ -45,8 +44,8 @@ def list_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
 @click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
@@ -77,7 +76,7 @@ def run_all(filename: str, ruleset, select, output):
     data_files = cin_class.process_data(raw_data)
 
     validator = cin_class.CinValidationSession(
-        data_files, ruleset, selected_rules=select
+        ruleset, data_files, selected_rules=select
     )
 
     issue_instances = validator.issue_instances
@@ -111,8 +110,8 @@ def run_all(filename: str, ruleset, select, output):
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
 def test_cmd(rule, ruleset):
     """
@@ -132,12 +131,12 @@ def test_cmd(rule, ruleset):
 
     :param str rule: Used to specify an individual rule to test.
     :param str ruleset: Use to give the name of a set of validation rules to test
-        (defaults to rules.cin2022_23).
+        (defaults to cin2022_23).
     :returns: Pytest output in terminal of rules passing and failing.
     :rtype: Pytest output in terminal.
     """
 
-    module = importlib.import_module(f"cin_validator.{ruleset}")
+    module = importlib.import_module(f"cin_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
 
     if rule:

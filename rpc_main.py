@@ -5,19 +5,19 @@ import pandas as pd
 from prpc_python import RpcApp
 
 from cin_validator import cin_validator_class as cin_class
+from cin_validator.ruleset import create_registry
 
 app = RpcApp("validate_cin")
 
 
 @app.call
-def get_rules(ruleset="rules.cin2022_23"):
+def get_rules(ruleset="cin2022_23"):
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
     """
-    from cin_validator.rule_engine import registry
 
-    importlib.import_module(f"cin_validator.{ruleset}")
+    registry = create_registry(ruleset)
 
     rules = []
     for rule in registry:
@@ -56,7 +56,7 @@ def generate_tables(cin_data):
 
 
 @app.call
-def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
+def cin_validate(cin_data, selected_rules=None, ruleset="cin2022_23"):
     """
     :param file-ref cin_data: file reference to a CIN XML file
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
@@ -85,7 +85,7 @@ def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
 
     # run validation
     validator = cin_class.CinValidationSession(
-        data_files, ruleset, selected_rules=selected_rules
+        ruleset, data_files, selected_rules=selected_rules
     )
 
     # make return data json-serialisable
