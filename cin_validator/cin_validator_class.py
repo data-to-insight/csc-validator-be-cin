@@ -4,7 +4,8 @@ import importlib
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import CINTable, RuleContext, registry
+from cin_validator.rule_engine import CINTable, RuleContext
+from cin_validator.ruleset import create_registry
 from cin_validator.utils import process_date_columns
 
 pd.options.mode.chained_assignment = None
@@ -217,7 +218,7 @@ class CinValidationSession:
     def __init__(
         self,
         data_files=None,
-        ruleset="rules.cin2022_23",
+        ruleset="cin2022_23",
         selected_rules=None,
     ) -> None:
         """
@@ -249,7 +250,7 @@ class CinValidationSession:
 
         # regularise full_issue_df
         self.full_issue_df.rename(columns={"ROW_ID": "row_id"}, inplace=True)
-        self.full_issue_df.drop(columns=["ERROR_ID"])
+        self.full_issue_df.drop(columns=["ERROR_ID"], inplace=True, errors="ignore")
         self.full_issue_df.drop_duplicates(
             ["LAchildID", "rule_code", "columns_affected", "row_id"], inplace=True
         )
@@ -360,8 +361,7 @@ class CinValidationSession:
         self.rule_messages = []
         self.la_rules_broken = []
 
-        importlib.import_module(f"cin_validator.rules.{self.ruleset}")
-
+        registry = create_registry(self.ruleset)
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
             data_files = copy.deepcopy(enum_data_files)

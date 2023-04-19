@@ -56,7 +56,7 @@ def generate_tables(cin_data):
 
 
 @app.call
-def cin_validate(cin_data, selected_rules=None, ruleset="rules.cin2022_23"):
+def cin_validate(cin_data, selected_rules=None, ruleset="cin2022_23"):
     """
     :param file-ref cin_data: file reference to a CIN XML file
     :param list selected_rules: array of rules the user has chosen. consists of rule codes as strings.
