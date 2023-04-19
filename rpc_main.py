@@ -85,7 +85,7 @@ def cin_validate(cin_data, selected_rules=None, ruleset="cin2022_23"):
 
     # run validation
     validator = cin_class.CinValidationSession(
-        data_files, ruleset, selected_rules=selected_rules
+        ruleset, data_files, selected_rules=selected_rules
     )
 
     # make return data json-serialisable

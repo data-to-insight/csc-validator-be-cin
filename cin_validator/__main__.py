@@ -76,7 +76,7 @@ def run_all(filename: str, ruleset, select, output):
     data_files = cin_class.process_data(raw_data)
 
     validator = cin_class.CinValidationSession(
-        data_files, ruleset, selected_rules=select
+        ruleset, data_files, selected_rules=select
     )
 
     issue_instances = validator.issue_instances

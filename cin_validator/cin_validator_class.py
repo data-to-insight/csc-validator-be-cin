@@ -217,8 +217,8 @@ class CinValidationSession:
 
     def __init__(
         self,
+        ruleset,
         data_files=None,
-        ruleset="cin2022_23",
         selected_rules=None,
     ) -> None:
         """
@@ -226,9 +226,9 @@ class CinValidationSession:
 
         Creates DataFrame containing error report, and allows selection of individual instances of error using ERROR_ID
 
-        :param any data_files: The data extracted from input XML (or CSV) for validation.
         :param list ruleset: The list of rules used in an individual validation session.
             Refers to rules in particular subdirectories of the rules directory.
+        :param any data_files: The data extracted from input XML (or CSV) for validation.
         :param str issue_id: Can be used to choose a particular instance of an error using ERROR_ID.
         :param list selected_rules: array of rule codes (as strings) selected by the user. Determines what rules should be run.
         :returns: DataFrame of error report which could be a filtered version if issue_id is input.
@@ -362,6 +362,7 @@ class CinValidationSession:
         self.la_rules_broken = []
 
         registry = create_registry(self.ruleset)
+
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
             data_files = copy.deepcopy(enum_data_files)
