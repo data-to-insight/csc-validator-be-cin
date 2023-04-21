@@ -101,7 +101,7 @@ def run_all(filename: str, ruleset, select, output):
 
     # print(issue_instances)
     print(full_issue_df)
-    # print(validator.rule_descriptors)
+    print(validator.la_rule_issues)
     # print(validator.user_report)
 
 

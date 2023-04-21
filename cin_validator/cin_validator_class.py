@@ -318,8 +318,9 @@ class CinValidationSession:
         if error_df_lengths.max() == 0:
             # if the rule didn't push to any of the issue accumulators, then it didn't find any issues in the file.
             self.rules_passed.append(rule.code)
-        elif error_df_lengths.max() == 4:
-            # this is a return level validation rule. It has no locations attached so it is only displayed in the rule descriptions.
+        elif error_df_lengths.idxmax() == 4:
+            # If the maximum value is in position 4, this is a return level validation rule.
+            # It has no locations attached so it is only displayed in the rule descriptions.
             self.la_rules_broken.append(issue_dfs_per_rule[4])
         else:
             # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
@@ -414,8 +415,5 @@ class CinValidationSession:
         child_level_rules = pd.DataFrame(
             {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
         )
-        la_level_rules = pd.DataFrame(self.la_rules_broken)
-        if not la_level_rules.empty:
-            self.rule_descriptors = pd.concat([child_level_rules, la_level_rules])
-        else:
-            self.rule_descriptors = child_level_rules
+        # self.la_rules_broken is a list of issue_dfs, one per la-level rule that failed.
+        self.la_rule_issues = pd.concat(self.la_rules_broken)
