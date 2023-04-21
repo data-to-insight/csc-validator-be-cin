@@ -156,7 +156,12 @@ def create_user_report(issue_df, cin_data):
             column_values.index.name = "ROW_ID"
             values_df = column_values.reset_index()
             values_df = values_df.assign(ROW_ID=values_df["ROW_ID"].astype("object"))
+
+            # work around: ensure that columns from both sources (user data and rule output) have the same type to prevent merge error
+            only_column["ROW_ID"] = only_column["ROW_ID"].astype("int64")
+            values_df["ROW_ID"] = values_df["ROW_ID"].astype("int64")
             report_df = only_column.merge(values_df, on="ROW_ID")
+
             table_reports.append(report_df)
 
         reports.extend(table_reports)
