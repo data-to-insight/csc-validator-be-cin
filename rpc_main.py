@@ -92,9 +92,9 @@ def cin_validate(cin_data, selected_rules=None, ruleset="cin2022_23"):
 
     # what the frontend will display
     issue_report = validator.full_issue_df.to_json(orient="records")
-    rule_defs = validator.rule_descriptors.to_json(orient="records")
+    la_rule_issues = validator.la_rule_issues.to_json(orient="records")
 
     # what the user will download
     user_report = validator.user_report.to_json(orient="records")
 
-    return issue_report, rule_defs, json_data_files, user_report
+    return issue_report, la_rule_issues, json_data_files, user_report
