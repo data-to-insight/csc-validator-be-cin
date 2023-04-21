@@ -106,6 +106,11 @@ def include_issue_child(issue_df, cin_data):
         # work around: ensure that columns from both sources have the same type to prevent merge error
         table_df["ROW_ID"] = table_df["ROW_ID"].astype("int64")
         linker_df["ROW_ID"] = linker_df["ROW_ID"].astype("int64")
+
+        if not linker_df.empty:
+            # if failing locations have been found, remove the dummy LAchildID column to make way for the real one.
+            table_df.drop(columns="LAchildID", inplace=True)
+
         # map the child ids back to issue_df
         table_df = table_df.merge(linker_df, on=["ROW_ID"], how="left")
 
