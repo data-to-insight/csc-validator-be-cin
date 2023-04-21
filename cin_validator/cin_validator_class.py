@@ -354,7 +354,19 @@ class CinValidationSession:
 
         enum_data_files = enum_keys(self.data_files)
         self.issue_instances = pd.DataFrame()
-        self.full_issue_df = pd.DataFrame()
+        self.full_issue_df = pd.DataFrame(
+            columns=[
+                "tables_affected",
+                "columns_affected",
+                "ROW_ID",
+                "ERROR_ID",
+                "rule_code",
+                "rule_description",
+                "rule_type",
+                "la_level",
+                "LAchildID",
+            ]
+        )
         self.rules_passed = []
 
         self.rules_broken = []
