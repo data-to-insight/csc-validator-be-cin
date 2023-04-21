@@ -147,7 +147,7 @@ def create_user_report(issue_df, cin_data):
             column_data = cin_data[table][column]
             # fancy indexing. get all the values for a sequence of row positions in a column.
             column_values = column_data[column_rows]
-            column_values.rename("values_flagged", inplace=True)
+            column_values.rename("value_flagged", inplace=True)
             column_values.index.name = "ROW_ID"
             values_df = column_values.reset_index()
             values_df = values_df.assign(ROW_ID=values_df["ROW_ID"].astype("object"))
@@ -157,6 +157,21 @@ def create_user_report(issue_df, cin_data):
         reports.extend(table_reports)
     # add in the la-level locations
     reports.append(no_table)
+
+    # ensure that all required column names will be present in the result.
+    full_report_cols_df = pd.DataFrame(
+        columns=[
+            "ERROR_ID",
+            "LAchildID",
+            "rule_code",
+            "tables_affected",
+            "columns_affected",
+            "ROW_ID",
+            "value_flagged",
+            "rule_description",
+        ]
+    )
+    reports.append(full_report_cols_df)
 
     full_report = pd.concat(reports, ignore_index=True)
 
@@ -169,7 +184,7 @@ def create_user_report(issue_df, cin_data):
             "tables_affected",
             "columns_affected",
             "ROW_ID",
-            "values_flagged",
+            "value_flagged",
             "rule_description",
         ]
     ]
