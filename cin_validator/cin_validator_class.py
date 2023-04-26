@@ -416,4 +416,8 @@ class CinValidationSession:
             {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
         )
         # self.la_rules_broken is a list of issue_dfs, one per la-level rule that failed.
-        self.la_rule_issues = pd.concat(self.la_rules_broken)
+        try:
+            self.la_rule_issues = pd.concat(self.la_rules_broken)
+        except:
+            # if la_rules_broken is still an empty list
+            self.la_rule_issues = pd.DataFrame()
