@@ -138,7 +138,7 @@ def test_cmd(rule, ruleset):
 
     module = importlib.import_module(f"cin_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
-
+    registry = create_registry(ruleset=ruleset)
     if rule:
         rule_def = registry.get(rule)
         if not rule_def:
