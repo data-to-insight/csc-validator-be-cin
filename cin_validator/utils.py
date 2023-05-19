@@ -1,8 +1,7 @@
-from copy import deepcopy
-
 import numpy as np
 import pandas as pd
-from govuk_bank_holidays.bank_holidays import BankHolidays
+
+from england_holidates import england_holidates
 
 
 def get_values(xml_elements, table_dict, xml_block):
@@ -121,10 +120,6 @@ def create_holidays_array():
     """
     :return numpy-object _: business day calendar object that considers the bank holiday calendar of England and Wales
     """
-
-    uk_holidays = BankHolidays()
-    england_holidays = uk_holidays.get_holidays(division="england-and-wales")
-    england_holidates = [day["date"] for day in england_holidays]
     return np.busdaycalendar(holidays=england_holidates)
 
 
