@@ -20,3 +20,6 @@ If it is cloned locally, use `pre-commit install` to install the pre-commit hook
 `python -m cin_validator run-all <path to test data> -e "<ERROR_ID as string>"`
 - To convert a CIN XML file to it's respective CSV tables:  
 `python -m cin_validator xmltocsv <path to test data>`
+
+## Yearly tool updates
+- Run `python get_uk_holidays.py` so that the latest values of bank holidays are drawn into `england_holidates.py` (don't edit this file directly) for the rules that need them.
