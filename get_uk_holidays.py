@@ -23,5 +23,5 @@ england_holidays = data["england-and-wales"]
 england_holidates = [
     day["date"] for day in england_holidays if day["date"].year >= 2022
 ]
-with open("england_holidates.py", "w") as f:
+with open("cin_validator\england_holidates.py", "w") as f:
     f.write("import datetime \nengland_holidates = " + str(england_holidates))
