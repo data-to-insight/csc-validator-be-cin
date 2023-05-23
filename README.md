@@ -22,4 +22,4 @@ If it is cloned locally, use `pre-commit install` to install the pre-commit hook
 `python -m cin_validator xmltocsv <path to test data>`
 
 ## Yearly tool updates
-- Run `python get_uk_holidays.py` so that the latest values of bank holidays are drawn into `england_holidates.py` (don't edit this file directly) for the rules that need them.
+- Run ` python get_uk_holidays.py` in the command line. This fetches the latest values of bank holidays into `cin_validator\england_holidates.py` (don't edit this file directly) for the rules that need them. Remember to convert \ to / if you are using a unix operating system.

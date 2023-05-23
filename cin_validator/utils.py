@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from england_holidates import england_holidates
+from cin_validator.england_holidates import england_holidates
 
 
 def get_values(xml_elements, table_dict, xml_block):
