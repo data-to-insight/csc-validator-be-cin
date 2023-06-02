@@ -3,7 +3,8 @@ from cin_validator.rule_engine import registry
 ruleset_updates = {}
 ruleset_years = []
 
-# get rulesets for each year as a dictionary. Chronological order should be maintained.
+# get rulesets for each year as a dictionary.
+# Chronological order must be maintained when adding rulesets to this file.
 
 # 2022_23
 import cin_validator.rules.cin2022_23
@@ -21,10 +22,11 @@ ruleset_updates["cin2023_24"] = {"deleted": [], "ruleset": cin23_24}
 ruleset_years.append("cin2023_24")
 registry.reset()
 
+# 2024_25
+# create a duplicate of the code block above and edit the year values to suit this year.
+
 
 # Create customised registry object based on year specified.
-
-
 def create_registry(ruleset=ruleset_years[-1]):
     """
     :param str ruleset: year whose version of rules should be run. e.g cin2022_23.
