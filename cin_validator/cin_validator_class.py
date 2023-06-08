@@ -231,7 +231,7 @@ def create_user_report(issue_df, cin_data):
     return user_report
 
 
-class CinValidationSession:
+class CinValidator:
     """
     A class to contain the process of CIN validation. Generates error reports as dataframes.
 
@@ -247,7 +247,7 @@ class CinValidationSession:
         selected_rules=None,
     ) -> None:
         """
-        Initialises CinValidationSession class.
+        Initialises CinValidator class.
 
         Creates DataFrame containing error report, and allows selection of individual instances of error using ERROR_ID
 
@@ -275,9 +275,10 @@ class CinValidationSession:
 
         # regularise full_issue_df
         self.full_issue_df.rename(columns={"ROW_ID": "row_id"}, inplace=True)
+        self.full_issue_df.rename(columns={"LAchildID": "child_id"}, inplace=True)
         self.full_issue_df.drop(columns=["ERROR_ID"], inplace=True, errors="ignore")
         self.full_issue_df.drop_duplicates(
-            ["LAchildID", "rule_code", "columns_affected", "row_id"], inplace=True
+            ["child_id", "rule_code", "columns_affected", "row_id"], inplace=True
         )
 
     def get_rules_to_run(self, registry, selected_rules):

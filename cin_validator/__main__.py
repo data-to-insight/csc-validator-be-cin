@@ -39,7 +39,7 @@ def list_cmd(ruleset):
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
 
-@cli.command()
+@cli.command(name="run")
 @click.argument("filename", type=click.File("rt"), required=True)
 @click.option(
     "--ruleset",
@@ -54,7 +54,7 @@ def run_all(filename: str, ruleset, select, output):
     Used to run all of a set of validation rules on input data.
 
     CLI command:
-    python -m cin_validator run-all <filepath_to_data>
+    python -m cin_validator run <filepath_to_data>
 
     Can be used to validate data via the data for a given rule set.
     Runs with the cin2022_23 ruleset as standard.
@@ -75,9 +75,7 @@ def run_all(filename: str, ruleset, select, output):
     raw_data = cin_class.convert_data(root)
     data_files = cin_class.process_data(raw_data)
 
-    validator = cin_class.CinValidationSession(
-        ruleset, data_files, selected_rules=select
-    )
+    validator = cin_class.CinValidator(ruleset, data_files, selected_rules=select)
 
     issue_instances = validator.issue_instances
     full_issue_df = validator.full_issue_df
@@ -186,7 +184,7 @@ def cli_converter(filename: str):
 @click.argument("filepath", type=str, required=True)
 def timer(filepath):
     st = datetime.datetime.now()
-    os.system(f"python -m cin_validator run-all {filepath}")
+    os.system(f"python -m cin_validator run {filepath}")
     et = datetime.datetime.now()
     time_elapsed = et - st
     print(f"Time to run: {time_elapsed}")
