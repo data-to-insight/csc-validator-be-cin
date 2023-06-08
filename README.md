@@ -13,11 +13,11 @@ If it is cloned locally, use `pre-commit install` to install the pre-commit hook
 - To list all rules that are present:  
 `python -m cin_validator list`
 - To run rules on a file and generate a table of error locations:  
-`python -m cin_validator run-all <path to test data>`
+`python -m cin_validator run <path to test data>`
 -To run rules on the sample data and explore the output of the CLI:
-`python -m cin_validator run-all path/to/your/cin/validator/CIN-validator/fake_data/fake_CIN_data.xml`
+`python -m cin_validator run path/to/your/cin/validator/CIN-validator/fake_data/fake_CIN_data.xml`
 - To run rules on a file and select an instance of an error based on its ID:  
-`python -m cin_validator run-all <path to test data> -e "<ERROR_ID as string>"`
+`python -m cin_validator run <path to test data> -e "<ERROR_ID as string>"`
 - To convert a CIN XML file to it's respective CSV tables:  
 `python -m cin_validator xmltocsv <path to test data>`
 
