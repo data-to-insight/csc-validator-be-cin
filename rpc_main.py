@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import xml.etree.ElementTree as ET
 from typing import Optional
@@ -40,7 +41,7 @@ def get_rules(ruleset: str = "cin2022_23") -> list[dict]:
             }
         )
 
-    return rules
+    return json.dumps(rules)
 
 
 @app.call
@@ -58,7 +59,7 @@ def generate_tables(cin_data: dict) -> dict[str, dict]:
 
     # make data json-serialisable
     cin_data_tables = {
-        table_name: table_df.to_dict(orient="records")
+        table_name: table_df.to_json(orient="records")
         for table_name, table_df in data_files.items()
     }
 
@@ -90,7 +91,7 @@ def cin_validate(
 
     # Send string-format data to the frontend.
     cin_data_tables = {
-        table_name: table_df.to_dict(orient="records")
+        table_name: table_df.to_json(orient="records")
         for table_name, table_df in raw_data.items()
     }
 
@@ -105,8 +106,8 @@ def cin_validate(
     # make return data json-serialisable
 
     # what the frontend will display
-    issue_report = validator.full_issue_df.to_dict(orient="records")
-    la_rule_issues = validator.la_rule_issues.to_dict(orient="records")
+    issue_report = validator.full_issue_df.to_json(orient="records")
+    la_rule_issues = validator.la_rule_issues.to_json(orient="records")
 
     # what the user will download
     user_report = validator.user_report.to_json(orient="records")
