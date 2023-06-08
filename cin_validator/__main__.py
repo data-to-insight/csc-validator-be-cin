@@ -39,7 +39,7 @@ def list_cmd(ruleset):
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
 
-@cli.command()
+@cli.command(name="run")
 @click.argument("filename", type=click.File("rt"), required=True)
 @click.option(
     "--ruleset",
@@ -75,9 +75,7 @@ def run_all(filename: str, ruleset, select, output):
     raw_data = cin_class.convert_data(root)
     data_files = cin_class.process_data(raw_data)
 
-    validator = cin_class.CinValidationSession(
-        ruleset, data_files, selected_rules=select
-    )
+    validator = cin_class.CinValidator(ruleset, data_files, selected_rules=select)
 
     issue_instances = validator.issue_instances
     full_issue_df = validator.full_issue_df

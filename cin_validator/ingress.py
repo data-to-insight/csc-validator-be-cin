@@ -1,9 +1,3 @@
-# TODO Possible tests for this file
-# - Check that no generated table has more columns than expected.
-# - Check that all generated tables have the required IDs.
-# - Check that Header, ChildIdentifiers, and ChildCharacteristics tags do not repeat and have no duplicate subelements.
-# - Check that all expected columns are created for every appropriate xml block found.
-
 import pandas as pd
 
 from .utils import get_values
