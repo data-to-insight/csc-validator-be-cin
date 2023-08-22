@@ -7,7 +7,7 @@ from pathlib import Path
 import click
 import pytest
 
-from cin_validator import cin_validator_class as cin_class
+from cin_validator import cin_validator
 from cin_validator.ruleset import create_registry
 
 
@@ -72,10 +72,10 @@ def run_all(filename: str, ruleset, select, output):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
 
-    raw_data = cin_class.convert_data(root)
-    data_files = cin_class.process_data(raw_data)
+    raw_data = cin_validator.convert_data(root)
+    data_files = cin_validator.process_data(raw_data)
 
-    validator = cin_class.CinValidator(ruleset, data_files, selected_rules=select)
+    validator = cin_validator.CinValidator(ruleset, data_files, selected_rules=select)
 
     issue_instances = validator.issue_instances
     full_issue_df = validator.full_issue_df
@@ -170,7 +170,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.convert_data(root)
+        cin_tables_dict = cin_validator.convert_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")
