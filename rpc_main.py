@@ -6,12 +6,10 @@ from typing import Optional
 
 from prpc_python import RpcApp
 
-from cin_validator import cin_validator_class as cin_class
+from cin_validator import cin_validator
 from cin_validator.ruleset import create_registry
 
 app = RpcApp("validate_cin")
-
-# TODO add logging to the rest of the files
 
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler(
@@ -24,7 +22,7 @@ logger.addHandler(handler)
 
 
 @app.call
-def get_rules(ruleset: str = "cin2022_23") -> list[dict]:
+def get_rules(ruleset: str = "cin2022_23") -> str:
     """
     :param str ruleset: validation ruleset according to year published.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
@@ -55,7 +53,7 @@ def generate_tables(cin_data: dict) -> dict[str, dict]:
     filetext = cin_data_file.read().decode("utf-8")
     root = ET.fromstring(filetext)
 
-    data_files = cin_class.convert_data(root)
+    data_files = cin_validator.convert_data(root)
 
     # make data json-serialisable
     cin_data_tables = {
@@ -80,14 +78,14 @@ def cin_validate(
     :return issue_report: issue locations in the data.
     :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
     """
-
-    filetext = cin_data.read().decode("utf-8")
+    cin_data_file = cin_data["This year"][0]
+    filetext = cin_data_file.read().decode("utf-8")
     root = ET.fromstring(filetext)
 
     # fulltree = ET.parse("fake_data\\fake_CIN_data.xml")
     # root = fulltree.getroot()
 
-    raw_data = cin_class.convert_data(root)
+    raw_data = cin_validator.convert_data(root)
 
     # Send string-format data to the frontend.
     cin_data_tables = {
@@ -96,10 +94,10 @@ def cin_validate(
     }
 
     # Convert date columns to datetime format to enable comparison in rules.
-    data_files = cin_class.process_data(raw_data)
+    data_files = cin_validator.process_data(raw_data)
 
     # run validation
-    validator = cin_class.CinValidator(
+    validator = cin_validator.CinValidator(
         ruleset, data_files, selected_rules=selected_rules
     )
 
