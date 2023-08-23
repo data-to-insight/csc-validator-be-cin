@@ -60,11 +60,11 @@ class RuleContext:
 
         self.__definition = definition
 
-        self.__issues = []
-        self.__type1_issues = []
-        self.__type2_issues = []
-        self.__type3_issues = []
-        self.__la_issues = []
+        self.__issues: list = []
+        self.__type1_issues: list = []
+        self.__type2_issues: list = []
+        self.__type3_issues: list = []
+        self.__la_issues: list = []
 
     @property
     def definition(self):
