@@ -7,6 +7,7 @@ from cin_validator.test_engine import run_rule
 
 ChildIdentifiers = CINTable.ChildIdentifiers
 PersonBirthDate = ChildIdentifiers.PersonBirthDate
+ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
 LAchildID = ChildIdentifiers.LAchildID
 
@@ -15,7 +16,7 @@ LAchildID = ChildIdentifiers.LAchildID
     code="8535Q",
     module=CINTable.ChildIdentifiers,
     rule_type=RuleType.QUERY,
-    message="Child’s date of death should not be prior to the date of birth",
+    message="Please check and either amend data or provide a reason: Child’s date of death should not be prior to the date of birth",
     affected_fields=[PersonDeathDate, PersonBirthDate],
 )
 def validate(
@@ -28,10 +29,11 @@ def validate(
 
     # Remove all rows with no deathdate
     df = df[~df[PersonDeathDate].isna()]
+    # Remove children who died unborn. They shouldn't flag this rule [DfE tool doesn't].
+    df = df[~(df[ExpectedPersonBirthDate] > df[PersonDeathDate])]
 
     # Return rows where DOB is prior to DOD
     condition1 = df[PersonBirthDate] > df[PersonDeathDate]
-    # Return rows with no DOB
     condition2 = df[PersonBirthDate].isna()
 
     # df with all rows meeting the conditions
@@ -57,7 +59,6 @@ def validate(
 
 
 def test_validate():
-
     child_identifiers = pd.DataFrame(
         [
             {
@@ -78,8 +79,9 @@ def test_validate():
             {
                 "LAchildID": "child4",
                 "PersonDeathDate": "26/05/2000",
+                "ExpectedPersonBirthDate": "27/05/2000",
                 "PersonBirthDate": pd.NA,
-                # 3 error: no birth date
+                # 3 pass: no birth date
             },
             {
                 "LAchildID": "child5",
@@ -100,6 +102,9 @@ def test_validate():
     child_identifiers[PersonBirthDate] = pd.to_datetime(
         child_identifiers[PersonBirthDate], format="%d/%m/%Y", errors="coerce"
     )
+    child_identifiers[ExpectedPersonBirthDate] = pd.to_datetime(
+        child_identifiers[ExpectedPersonBirthDate], format="%d/%m/%Y", errors="coerce"
+    )
 
     result = run_rule(validate, {ChildIdentifiers: child_identifiers})
 
@@ -112,7 +117,7 @@ def test_validate():
     assert issue_columns == [PersonDeathDate, PersonBirthDate]
 
     issue_rows = issues.row_df
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 2
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
@@ -125,14 +130,6 @@ def test_validate():
                     pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [2],
-            },
-            {
-                "ERROR_ID": (
-                    "child4",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
-                    pd.to_datetime(pd.NA, format="%d/%m/%Y", errors="coerce"),
-                ),
-                "ROW_ID": [3],
             },
             {
                 "ERROR_ID": (
@@ -149,5 +146,5 @@ def test_validate():
     assert result.definition.code == "8535Q"
     assert (
         result.definition.message
-        == "Child’s date of death should not be prior to the date of birth"
+        == "Please check and either amend data or provide a reason: Child’s date of death should not be prior to the date of birth"
     )

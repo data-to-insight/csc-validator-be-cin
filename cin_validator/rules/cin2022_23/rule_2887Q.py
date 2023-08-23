@@ -9,12 +9,13 @@ Disabilities = CINTable.Disabilities
 Disability = Disabilities.Disability
 LAchildID = Disabilities.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
     code="2887Q",
     rule_type=RuleType.QUERY,
     module=CINTable.Disabilities,
-    message="Please check: Less than 8 disability codes have been used in your return",
+    message="Please check and either amend or provide a reason: Less than 8 disability codes have been used in your return",
     affected_fields=[Disability],
 )
 def validate(
@@ -41,7 +42,6 @@ def validate(
 
 
 def test_validate():
-
     sample_disabilities = pd.DataFrame(
         [
             {
@@ -65,5 +65,5 @@ def test_validate():
 
     assert result.la_issues == (
         "2887Q",
-        "Please check: Less than 8 disability codes have been used in your return",
+        "Please check and either amend or provide a reason: Less than 8 disability codes have been used in your return",
     )

@@ -17,14 +17,15 @@ LAchildID = Section47.LAchildID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8675Q
     code="8675Q",
     rule_type=RuleType.QUERY,
     module=CINTable.Section47,
-    message="Please check: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference.",
-    affected_fields=[DateOfInitialCPC, S47ActualStartDate],
+    message="Please check and either amend data or provide a reason: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference.",
+    affected_fields=[DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
@@ -45,8 +46,8 @@ def validate(
     # If <DateOfInitialCPC> (N00110) not present and <ICPCnotReqiured> (N00111) equals false
     # then <S47ActualStartDate> (N00148) should not be before the <ReferenceDate> (N00603) minus 15 working days
     no_cpc = df[DateOfInitialCPC].isna()
-    icpc_false = df[ICPCnotReqiured] == "false"
-    before_15b = df[S47ActualStartDate] > (collection_end - england_working_days(15))
+    icpc_false = df[ICPCnotReqiured].astype(str).isin(["false", "0"])
+    before_15b = df[S47ActualStartDate] < (collection_end - england_working_days(15))
     condition = (no_cpc & icpc_false) & (before_15b)
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
@@ -71,7 +72,7 @@ def validate(
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_1(
         table=Section47,
-        columns=[DateOfInitialCPC, S47ActualStartDate],
+        columns=[DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured],
         row_df=df_issues,
     )
 
@@ -84,10 +85,10 @@ def test_validate():
 
     section47 = pd.DataFrame(
         [
-            {  # 0 fail
+            {  # 0 fail, no ICPCnotrequied as true or InitialCPC, and date is more than 15 days before end of census year
                 "LAchildID": "child1",
                 "DateOfInitialCPC": pd.NA,
-                "S47ActualStartDate": "29/03/2022",
+                "S47ActualStartDate": "29/01/2022",
                 "ICPCnotRequired": "false",
             },
             {  # 1 ignore DateOfInitialCPC notna
@@ -99,8 +100,8 @@ def test_validate():
             {  # 2 pass. more than 15 working days before ref date
                 "LAchildID": "child3",
                 "DateOfInitialCPC": pd.NA,
-                "S47ActualStartDate": "25/01/2022",
-                "ICPCnotRequired": "true",
+                "S47ActualStartDate": "25/03/2022",
+                "ICPCnotRequired": "false",
             },
             {  # ignore S47ActualStartDate isna
                 "LAchildID": "child3",
@@ -113,6 +114,12 @@ def test_validate():
                 "DateOfInitialCPC": pd.NA,
                 "S47ActualStartDate": pd.NA,
                 "ICPCnotRequired": "true",
+            },
+            {  # 5 fail, no ICPCnotrequied as true or InitialCPC, and date is more than 15 days before end of census year
+                "LAchildID": "child6",
+                "DateOfInitialCPC": pd.NA,
+                "S47ActualStartDate": "29/01/2022",
+                "ICPCnotRequired": "0",
             },
         ]
     )
@@ -136,12 +143,12 @@ def test_validate():
 
     # check that the right columns were returned. Replace CPPstartDate and CPPendDate with a list of your columns.
     issue_columns = issues.columns
-    assert issue_columns == [DateOfInitialCPC, S47ActualStartDate]
+    assert issue_columns == [DateOfInitialCPC, S47ActualStartDate, ICPCnotReqiured]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 1 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -156,10 +163,18 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    pd.to_datetime("29/03/2022", format="%d/%m/%Y", errors="coerce"),
+                    pd.to_datetime("29/01/2022", format="%d/%m/%Y", errors="coerce"),
                     "false",
                 ),
                 "ROW_ID": [0],
+            },
+            {
+                "ERROR_ID": (
+                    "child6",
+                    pd.to_datetime("29/01/2022", format="%d/%m/%Y", errors="coerce"),
+                    "0",
+                ),
+                "ROW_ID": [5],
             },
         ]
     )
@@ -171,5 +186,5 @@ def test_validate():
     assert result.definition.code == "8675Q"
     assert (
         result.definition.message
-        == "Please check: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference."
+        == "Please check and either amend data or provide a reason: S47 Enquiry started more than 15 working days before the end of the census year. However, there is no date of Initial Child Protection Conference."
     )

@@ -67,3 +67,8 @@ multiple tables
 
 # Notes
 Since the Asssessments table has no ID to distinguish groups from each other, the AssessmentAuthorisationDate is used as a differentiator.
+
+## Collection period
+The collection period across child census datasets tends to be from the 1st of April in one year to the 31st of March in the next year. 
+However, during preliminary testing, it was seen that the DfE tool includes the 31st of March of the previous year so this tool has adjusted it's calculations accordingly. 
+Now this tool calculates the collection start by substracting 1 year from the reference date in the uploaded data. As such the collection period starts and ends on the 31st of March from one year to the other. This decision is reversible.

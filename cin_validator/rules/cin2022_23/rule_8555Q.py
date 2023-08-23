@@ -1,5 +1,5 @@
 """
-Rule number: 8555
+Rule number: 8555Q
 Module: CIN details
 Rule details: If <PersonDeathDate> (N00108) is present, then the <CINreferralDate> (N00100) must be on or before the <PersonDeathDate> (N00108)
 Rule message: Child cannot be referred after its recorded date of death
@@ -10,7 +10,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -24,8 +24,9 @@ LAchildID = CINdetails.LAchildID
 
 
 @rule_definition(
-    code=8555,
+    code="8555Q",
     module=CINTable.CINdetails,
+    rule_type=RuleType.QUERY,
     message="Child cannot be referred after its recorded date of death",
     affected_fields=[
         PersonDeathDate,
@@ -35,7 +36,6 @@ LAchildID = CINdetails.LAchildID
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df_CINDetails = data_container[CINdetails].copy()
     df_ChildIdentifiers = data_container[ChildIdentifiers].copy()
 
@@ -192,7 +192,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8555
+    assert result.definition.code == "8555Q"
     assert (
         result.definition.message
         == "Child cannot be referred after its recorded date of death"

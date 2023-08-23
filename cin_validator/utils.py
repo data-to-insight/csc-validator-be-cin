@@ -1,8 +1,7 @@
-from copy import deepcopy
-
 import numpy as np
 import pandas as pd
-from govuk_bank_holidays.bank_holidays import BankHolidays
+
+from cin_validator.england_holidates import england_holidates
 
 
 def get_values(xml_elements, table_dict, xml_block):
@@ -61,10 +60,9 @@ def make_census_period(reference_date):
     # the ReferenceDate value is always the collection_end date
     collection_end = make_date(reference_date)
 
-    # the collection start is the 1st of April of the previous year.
-    collection_start = (
-        make_date(reference_date) - pd.DateOffset(years=1) + pd.DateOffset(days=1)
-    )
+    # the collection start is the 1st of April of the previous year but dates from the day of the previous collection move to the next collection.
+    # e.g. in the 22-23 collection, 2022-03-31 is an allowed date according to the test data.
+    collection_start = make_date(reference_date) - pd.DateOffset(years=1)
 
     return collection_start, collection_end
 
@@ -122,10 +120,6 @@ def create_holidays_array():
     """
     :return numpy-object _: business day calendar object that considers the bank holiday calendar of England and Wales
     """
-
-    uk_holidays = BankHolidays()
-    england_holidays = uk_holidays.get_holidays(division="england-and-wales")
-    england_holidates = [day["date"] for day in england_holidays]
     return np.busdaycalendar(holidays=england_holidates)
 
 
@@ -137,4 +131,6 @@ def england_working_days(num_days):
     """
 
     holiday_calendar = create_holidays_array()
-    return pd.offsets.CustomBusinessDay(n=num_days, calendar=holiday_calendar)
+
+    # pd.offsets.CustomBusinessDay doesn't seem to include the end date so offset by 1 so that it does.
+    return pd.offsets.CustomBusinessDay(n=num_days - 1, calendar=holiday_calendar)

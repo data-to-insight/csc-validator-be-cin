@@ -2,7 +2,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
@@ -18,15 +18,17 @@ LAchildID = CINdetails.LAchildID
 CINdetailsID_cin = CINdetails.CINdetailsID
 ReasonForClosure = CINdetails.ReasonForClosure
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8873
-    code=8873,
+    # write the rule code here, in place of 8873Q
+    code="8873Q",
     # replace Assesments with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.Assessments,
+    rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ must be used.",
+    message="Please check and either amend data or provide a reason: When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ or 'RC9' should be used.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[ReasonForClosure, AssessmentFactors],
 )
@@ -48,7 +50,7 @@ def validate(
     df_cin.reset_index(inplace=True)
 
     # lOGIC
-    # Within a <CINDetails> group, if there is only one <Assessment> group present and <AssessmentFactors> (N00181) = “21”, <ReasonForClosure> (N00103) must = RC8.
+    # Within a <CINDetails> group, if there is only one <Assessment> group present and <AssessmentFactors> (N00181) = “21”, <ReasonForClosure> (N00103) must should = RC8 or RC9.
 
     # Eliminates rows with more than 1 assessment per CINdetails group by determining if there's more than 1 AssessmentActualStartDate per CINdetailsID per child
     df_ass_merged = df_ass.merge(df_ass, on=["LAchildID", "CINdetailsID"])
@@ -78,8 +80,8 @@ def validate(
         suffixes=["_ass", "_cin"],
     )
 
-    # Fails rows where reason for closure is not RC8.
-    condition = merged_df["ReasonForClosure"] != "RC8"
+    # Fails rows where reason for closure is not RC8 or RC9.
+    condition = ~merged_df["ReasonForClosure"].isin(["RC8", "RC9"])
 
     # get all the data that fits the failing condition.
     merged_df = merged_df[condition].reset_index()
@@ -186,12 +188,12 @@ def test_validate():
             },
             {  # 3 fail
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC9",
+                "ReasonForClosure": "RC10",
                 "CINdetailsID": "cinID1",
             },
             {  # 4, ignored
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC8",
+                "ReasonForClosure": "RC9",
                 "CINdetailsID": "cinID2",
             },
             {  # 5 fail
@@ -201,7 +203,7 @@ def test_validate():
             },
             {  # 6 pass
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC9",
+                "ReasonForClosure": "RC10",
                 "CINdetailsID": "cinID4",
             },
         ]
@@ -253,7 +255,7 @@ def test_validate():
                     "child3",  # ChildID
                     "cinID1",  # CINdetailsID
                     # corresponding CPPstartDate
-                    "RC9",
+                    "RC10",
                 ),
                 "ROW_ID": [3],
             },
@@ -271,9 +273,9 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8873 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8873
+    # replace 8873Q with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8873Q"
     assert (
         result.definition.message
-        == "When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ must be used."
+        == "Please check and either amend data or provide a reason: When there is only one assessment on the episode and the factors code “21 No factors identified” has been used for the completed assessment, the reason for closure ‘RC8’ or 'RC9' should be used."
     )

@@ -24,12 +24,13 @@ LAchildID = Assessments.LAchildID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     code="8670Q",
     module=CINTable.Assessments,
     rule_type=RuleType.QUERY,
-    message="Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date. ",
+    message="Please check and either amend data or provide a reason: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date.",
     affected_fields=[AssessmentActualStartDate],
 )
 def validate(
@@ -47,9 +48,7 @@ def validate(
     # Filter to only those with no authorisation date
     df_assessments = df_assessments[df_assessments[AssessmentAuthorisationDate].isna()]
 
-    # Find the reference date - 45
     latest_date = collection_end - england_working_days(45)
-
     df_issues = df_assessments[
         df_assessments[AssessmentActualStartDate] < latest_date
     ].reset_index()
@@ -91,6 +90,12 @@ def test_validate():
                 "AssessmentActualStartDate": "15/03/2023",
                 # Pass, start date is withing 45wd of reference date
             },
+            {
+                "LAchildID": "ID4",
+                "AssessmentAuthorisationDate": pd.NA,
+                "AssessmentActualStartDate": "29/01/2023",
+                # Fail, start date is outside of 45wd of reference date
+            },
         ]
     )
 
@@ -130,7 +135,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 1 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 1
+    assert len(issue_rows) == 2
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
@@ -145,6 +150,13 @@ def test_validate():
                 ),
                 "ROW_ID": [1],
             },
+            {
+                "ERROR_ID": (
+                    "ID4",
+                    pd.to_datetime("29/01/2023", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [3],
+            },
         ]
     )
 
@@ -154,5 +166,5 @@ def test_validate():
     assert result.definition.code == "8670Q"
     assert (
         result.definition.message
-        == "Please check: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date. "
+        == "Please check and either amend data or provide a reason: Assessment started more than 45 working days before the end of the census year. However, there is no Assessment end date."
     )

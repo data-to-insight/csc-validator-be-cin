@@ -29,7 +29,7 @@ ReferenceDate = Header.ReferenceDate
     code="8530Q",
     module=CINTable.ChildIdentifiers,
     rule_type=RuleType.QUERY,
-    message="Please check: Expected Date of Birth is outside the expected range for this census (March to December of the Census Year end)",
+    message="Please check and either amend data or provide a reason: Expected Date of Birth is outside the expected range for this census (March to December of the Census Year end)",
     affected_fields=[ExpectedPersonBirthDate],
 )
 def validate(
@@ -156,5 +156,5 @@ def test_validate():
     assert result.definition.code == "8530Q"
     assert (
         result.definition.message
-        == "Please check: Expected Date of Birth is outside the expected range for this census (March to December of the Census Year end)"
+        == "Please check and either amend data or provide a reason: Expected Date of Birth is outside the expected range for this census (March to December of the Census Year end)"
     )

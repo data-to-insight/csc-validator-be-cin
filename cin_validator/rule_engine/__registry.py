@@ -24,10 +24,19 @@ class __Registry:
         :rtype: RuleDefinition object dictionary entry.
         """
 
-        if rd.code in self._registry:
+        if str(rd.code) in self._registry:
             # prevent duplicate rules from being created
             raise ValueError(f"Rule with code {rd.code} already exists")
-        self._registry[rd.code] = rd
+        self._registry[str(rd.code)] = rd
+
+    def add_ruleset(self, ruleset_dict):
+        """
+        to merge two rulesets, registry might be converted into a dict.
+        this method brings dicts back into registry format so that they can be run on user data.
+
+        :param dict ruleset_dict: keys are rule codes and values are rule definition objects.
+        """
+        self._registry = ruleset_dict
 
     def get(self, code: int):
         """
@@ -70,6 +79,19 @@ class __Registry:
         """
 
         return iter(self._registry.values())
+
+    def to_dict(self):
+        """
+        return: list of rule codes present in registry.
+        """
+
+        return self._registry
+
+    def reset(self):
+        """
+        delete all rules imported into registry.
+        """
+        self._registry = {}
 
 
 registry = __Registry()

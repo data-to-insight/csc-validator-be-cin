@@ -9,12 +9,13 @@ Disabilities = CINTable.Disabilities
 Disability = Disabilities.Disability
 LAchildID = Disabilities.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
     code="2888Q",
     rule_type=RuleType.QUERY,
     module=CINTable.Disabilities,
-    message="Please check: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
+    message="Please check and either amend or provide a reason: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
     affected_fields=[Disability],
 )
 def validate(
@@ -27,8 +28,7 @@ def validate(
     # Validation should be triggered at LA level, not child level, if all children who are recorded as having a disability have only 1 disability code recorded.
 
     # remove "NONE" values
-    disability_none = df[Disability] == "NONE"
-    df = df[disability_none]
+    df = df[df[Disability] != "NONE"]
 
     disability_count = df.groupby(LAchildID)[Disability].count()
     # maximum number of disabilities recorded per child should be > 1
@@ -42,13 +42,13 @@ def validate(
 
 
 def test_validate():
-
     sample_disabilities = pd.DataFrame(
         [
             {
-                LAchildID: "child1",
+                LAchildID: "child0",
                 Disability: "NONE",
-            },
+            },  # child0 : disability_count would have been 2 and rule would have not been flagged if NONE was considered.
+            {LAchildID: "child0", Disability: "NONE"},
             {LAchildID: "child1", Disability: "aaaa"},  # child1 : disability_count == 1
             {LAchildID: "child2", Disability: "bbbb"},  # child2 : disability_count == 1
             {LAchildID: "child2", Disability: pd.NA},
@@ -61,5 +61,5 @@ def test_validate():
 
     assert result.la_issues == (
         "2888Q",
-        "Please check: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
+        "Please check and either amend or provide a reason: Only one disability code is recorded per child and multiple disabilities should be recorded where possible.",
     )

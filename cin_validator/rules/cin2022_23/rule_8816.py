@@ -60,12 +60,12 @@ def validate(
     df_cin.reset_index(inplace=True)
 
     # filter the rows of interest
-    falseorzero = ["false", "0"]
+
     df_cin = df_cin[
-        (df_cin[CINclosureDate].isna()) & (df_cin[ReferralNFA].isin(falseorzero))
+        (df_cin[CINclosureDate].isna()) & (df_cin[ReferralNFA].isin(["false", "0"]))
     ]
     # check those that do not meet the requirements
-    condition = df_cin[CINreferralDate] != df_cin["latest_referral"]
+    condition = df_cin["ROW_ID"] != df_cin["latest_referral_ind"]
     df_cin = df_cin[condition]
 
     df_cin["ERROR_ID"] = tuple(
@@ -159,6 +159,18 @@ def test_validate():
                 "CINdetailsID": "cinID4",
                 "ReferralNFA": "0",
             },
+            {
+                "LAchildID": "child5",
+                "CINreferralDate": "26/10/1999",
+                "CINdetailsID": "cinID4",
+                "ReferralNFA": "0",
+            },
+            {
+                "LAchildID": "child5",  # 9, Fail, shared CINreferralDate
+                "CINdetailsID": "cinID5",
+                "CINreferralDate": "26/10/1999",
+                "ReferralNFA": "0",
+            },
         ]
     )
 
@@ -194,7 +206,7 @@ def test_validate():
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
     # replace 3 with the number of failing points you expect from the sample data.
-    assert len(issue_rows) == 3
+    assert len(issue_rows) == 4
 
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
@@ -230,6 +242,14 @@ def test_validate():
                     pd.to_datetime("26/10/1990", format="%d/%m/%Y"),
                 ),
                 "ROW_ID": [5],
+            },
+            {
+                "ERROR_ID": (
+                    "child5",
+                    "cinID5",
+                    pd.to_datetime("26/10/1999", format="%d/%m/%Y"),
+                ),
+                "ROW_ID": [9],
             },
         ]
     )

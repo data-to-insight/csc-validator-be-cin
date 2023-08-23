@@ -1,15 +1,14 @@
+import datetime
 import importlib
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import click
 import pytest
 
-import datetime
-import os
-
-from cin_validator import cin_validator_class as cin_class
-from cin_validator.rule_engine import registry
+from cin_validator import cin_validator
+from cin_validator.ruleset import create_registry
 
 
 @click.group()
@@ -21,8 +20,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
 def list_cmd(ruleset):
     """
@@ -35,37 +34,34 @@ def list_cmd(ruleset):
     :returns: A list of validation rules in the given ruleset.
     :rtype: list
     """
-
-    importlib.import_module(f"cin_validator.{ruleset}")
+    registry = create_registry(ruleset=ruleset)
     for rule in registry:
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
 
-@cli.command()
+@cli.command(name="run")
 @click.argument("filename", type=click.File("rt"), required=True)
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
-@click.option("--issue_id", "-e", default=None)
 @click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
-def run_all(filename: str, ruleset, issue_id, select, output):
+def run_all(filename: str, ruleset, select, output):
     """
     Used to run all of a set of validation rules on input data.
 
     CLI command:
-    python -m cin_validator run-all <filepath_to_data>
+    python -m cin_validator run <filepath_to_data>
 
     Can be used to validate data via the data for a given rule set.
     Runs with the cin2022_23 ruleset as standard.
 
     :param str filename: Refers to the filepath of data to be validated.
     :param str ruleset: The ruleset of validation rules to run input data against.
-    :param str issue_id: Can be used to select an individual instance of an
-        error, using indivdual ERROR_ID
+    :param select: specify the rules that should be run. CLI works with a single string only.
     :param bool output: If true, produces JSON error report output, if False (default)
         does not.
     :returns: DataFrame report of errors using selected validation rules, also output as
@@ -76,12 +72,10 @@ def run_all(filename: str, ruleset, issue_id, select, output):
     fulltree = ET.parse(filename)
     root = fulltree.getroot()
 
-    raw_data = cin_class.convert_data(root)
-    data_files = cin_class.process_data(raw_data)
+    raw_data = cin_validator.convert_data(root)
+    data_files = cin_validator.process_data(raw_data)
 
-    validator = cin_class.CinValidationSession(
-        data_files, ruleset, issue_id, selected_rules=select
-    )
+    validator = cin_validator.CinValidator(ruleset, data_files, selected_rules=select)
 
     issue_instances = validator.issue_instances
     full_issue_df = validator.full_issue_df
@@ -104,8 +98,8 @@ def run_all(filename: str, ruleset, issue_id, select, output):
             json.dump(issue_report, f)
 
     # print(issue_instances)
-    # print(all_rules_issue_locs)
-    # print(validator.rule_descriptors)
+    print(full_issue_df)
+    print(validator.la_rule_issues)
     # print(validator.user_report)
 
 
@@ -114,8 +108,8 @@ def run_all(filename: str, ruleset, issue_id, select, output):
 @click.option(
     "--ruleset",
     "-r",
-    default="rules.cin2022_23",
-    help="Which ruleset to use, e.g. rules.cin2022_23",
+    default="cin2022_23",
+    help="Which ruleset to use, e.g. cin2022_23",
 )
 def test_cmd(rule, ruleset):
     """
@@ -135,14 +129,14 @@ def test_cmd(rule, ruleset):
 
     :param str rule: Used to specify an individual rule to test.
     :param str ruleset: Use to give the name of a set of validation rules to test
-        (defaults to rules.cin2022_23).
+        (defaults to cin2022_23).
     :returns: Pytest output in terminal of rules passing and failing.
     :rtype: Pytest output in terminal.
     """
 
-    module = importlib.import_module(f"cin_validator.{ruleset}")
+    module = importlib.import_module(f"cin_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
-
+    registry = create_registry(ruleset=ruleset)
     if rule:
         rule_def = registry.get(rule)
         if not rule_def:
@@ -176,7 +170,7 @@ def cli_converter(filename: str):
         fulltree = ET.parse(filename)
         root = fulltree.getroot()
 
-        cin_tables_dict = cin_class.convert_data(root)
+        cin_tables_dict = cin_validator.convert_data(root)
         for k, v in cin_tables_dict.items():
             #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")
@@ -190,7 +184,7 @@ def cli_converter(filename: str):
 @click.argument("filepath", type=str, required=True)
 def timer(filepath):
     st = datetime.datetime.now()
-    os.system(f"python -m cin_validator run-all {filepath}")
+    os.system(f"python -m cin_validator run {filepath}")
     et = datetime.datetime.now()
     time_elapsed = et - st
     print(f"Time to run: {time_elapsed}")

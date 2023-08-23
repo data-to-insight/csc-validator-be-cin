@@ -4,7 +4,7 @@ from typing import Mapping
 
 import pandas as pd
 
-from cin_validator.rule_engine import CINTable, RuleContext, rule_definition
+from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 from cin_validator.utils import make_census_period
 
@@ -19,11 +19,13 @@ CINdetailsID = Assessments.CINdetailsID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8863,
+    code="8863Q",
     module=CINTable.Assessments,
-    message="An Assessment is shown as starting when there is another Assessment ongoing",
+    rule_type=RuleType.QUERY,
+    message="An Assessment is shown as starting when there is another Assessment ongoing.",
     affected_fields=[AssessmentActualStartDate, AssessmentAuthorisationDate],
 )
 def validate(
@@ -88,16 +90,16 @@ def validate(
 
     # Determine whether assessment overlaps with another assessment
     ass_started_after_start = (
-        df_merged["AssessmentActualStartDate_ass"]
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts later than 2 starts
         >= df_merged["AssessmentActualStartDate_ass2"]
     )
     ass_started_before_end = (
-        df_merged["AssessmentActualStartDate_ass"]
-        <= df_merged["AssessmentAuthorisationDate_ass"]
-    ) & df_merged["AssessmentAuthorisationDate_ass"].notna()
+        df_merged["AssessmentActualStartDate_ass"]  # 1 starts earlier than 2 finishes
+        <= df_merged["AssessmentAuthorisationDate_ass2"]
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].notna()
     ass_started_before_refdate = (
         df_merged["AssessmentActualStartDate_ass"] <= reference_date
-    ) & df_merged["AssessmentAuthorisationDate_ass"].isna()
+    ) & df_merged["AssessmentAuthorisationDate_ass2"].isna()
 
     df_merged = df_merged[
         ass_started_after_start & (ass_started_before_end | ass_started_before_refdate)
@@ -196,6 +198,18 @@ def test_validate():
                 "AssessmentActualStartDate": "26/09/2000",  # 7 Pass: not between "26/10/2000" and "31/03/2001"
                 "AssessmentAuthorisationDate": pd.NA,
             },
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID1",
+                "AssessmentActualStartDate": "01/03/2000",
+                "AssessmentAuthorisationDate": "01/04/2000",
+            },
+            {
+                "LAchildID": "child5",
+                "CINdetailsID": "cinID1",
+                "AssessmentActualStartDate": "01/09/2000",
+                "AssessmentAuthorisationDate": "01/10/2000",
+            },
         ]
     )
 
@@ -278,9 +292,9 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8863 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8863
+    # replace 8863Q with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8863Q"
     assert (
         result.definition.message
-        == "An Assessment is shown as starting when there is another Assessment ongoing"
+        == "An Assessment is shown as starting when there is another Assessment ongoing."
     )

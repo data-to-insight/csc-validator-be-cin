@@ -5,7 +5,7 @@ import pandas as pd
 from cin_validator.rule_engine import CINTable, RuleContext, RuleType, rule_definition
 from cin_validator.test_engine import run_rule
 
-Assessments = CINTable.CINdetails
+Assessments = CINTable.Assessments
 Section47 = CINTable.Section47
 
 
@@ -17,7 +17,7 @@ CINdetailsID = Assessments.CINdetailsID
     code="2991Q",
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
-    message="Please check: A Section 47 module is recorded and there is no assessment on the episode",
+    message="Please check and either amend data or provide a reason: A Section 47 module is recorded and there is no assessment on the episode",
     affected_fields=[
         CINdetailsID,
     ],
@@ -34,6 +34,7 @@ def validate(
     df_ass.reset_index(inplace=True)
     df_47.reset_index(inplace=True)
 
+    #  If <Section47> module is present then <Assessment> module should be present.
     merged_df = df_47.merge(
         df_ass,
         on=[LAchildID, CINdetailsID],
@@ -50,7 +51,7 @@ def validate(
         )
     )
     df_ass_issues = (
-        df_ass.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_47")
+        df_ass.merge(merged_df, left_on="ROW_ID", right_on="ROW_ID_ass")
         .groupby("ERROR_ID", group_keys=False)["ROW_ID"]
         .apply(list)
         .reset_index()
@@ -64,11 +65,9 @@ def validate(
     )
 
     rule_context.push_type_2(
-        table=Assessments, columns=[CINdetailsID], row_df=df_ass_issues
+        table=Assessments, columns=[LAchildID], row_df=df_ass_issues
     )
-    rule_context.push_type_2(
-        table=Section47, columns=[CINdetailsID], row_df=df_47_issues
-    )
+    rule_context.push_type_2(table=Section47, columns=[LAchildID], row_df=df_47_issues)
 
 
 def test_validate():
@@ -167,7 +166,7 @@ def test_validate():
     assert issue_table == Section47
 
     issue_columns = issues.columns
-    assert issue_columns == [CINdetailsID]
+    assert issue_columns == [LAchildID]
 
     issue_rows = issues.row_df
     assert len(issue_rows) == 3
@@ -204,5 +203,5 @@ def test_validate():
     assert result.definition.code == "2991Q"
     assert (
         result.definition.message
-        == "Please check: A Section 47 module is recorded and there is no assessment on the episode"
+        == "Please check and either amend data or provide a reason: A Section 47 module is recorded and there is no assessment on the episode"
     )

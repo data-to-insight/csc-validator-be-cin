@@ -35,11 +35,13 @@ def validate(
 
     # implement rule logic as described by the Github issue. Put the description as a comment above the implementation as shown.
 
-    valid_gender_codes = [1, 2, 0, 9]
+    valid_gender_codes = ["1", "2", "0", "9"]
 
     # <GenderCurrent> (N00097) must be present and valid
+
     failing_indices = df[
-        df[GenderCurrent].isna() | (~df[GenderCurrent].isin(valid_gender_codes))
+        df[GenderCurrent].isna()
+        | (~df[GenderCurrent].astype("str").isin(valid_gender_codes))
     ].index
 
     # Replace ChildIdentifiers and GenderCurrent with the table and column name concerned in your rule, respectively.
@@ -52,7 +54,7 @@ def validate(
 def test_validate():
     # Create some sample data such that some values pass the validation and some fail.
     child_identifiers = pd.DataFrame(
-        [[1], [pd.NA], [7], ["Male"]], columns=[GenderCurrent]
+        [1, pd.NA, 7, "Male", 2, 0, 9, "9"], columns=[GenderCurrent]
     )
 
     # Run rule function passing in our sample data
@@ -60,7 +62,7 @@ def test_validate():
 
     # The result contains a list of issues encountered
     issues = list(result.issues)
-    # replace 2 with the number of failing points you expect from the sample data.
+    # replace 3 with the number of failing points you expect from the sample data.
     assert len(issues) == 3
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.

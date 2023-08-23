@@ -139,6 +139,16 @@ def test_validate():
                 "CINPlanStartDate": "26/05/2000",
                 "CINPlanEndDate": pd.NA,
             },
+            {
+                "LAchildID": "child8",
+                "CINPlanStartDate": "15/09/2000",
+                "CINPlanEndDate": pd.NA,
+            },
+            {
+                "LAchildID": "child8",
+                "CINPlanStartDate": "09/06/2000",
+                "CINPlanEndDate": "20/07/2000",
+            },
         ]
     )
     sample_cpp = pd.DataFrame(
@@ -187,6 +197,10 @@ def test_validate():
                 "LAchildID": "child5",  # 10 Fail - Start on ReferenceDate
                 "CPPstartDate": "31/03/2001",
             },
+            {
+                "LAchildID": "child8",  # 11 Fail - between CinStartDate and CinEndDate
+                "CPPstartDate": "22/06/2000",
+            },
         ]
     )
 
@@ -223,7 +237,7 @@ def test_validate():
     assert issue_columns == [CPPstartDate]
 
     issue_rows = issues.row_df
-    assert len(issue_rows) == 6
+    assert len(issue_rows) == 7
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
 
@@ -270,6 +284,13 @@ def test_validate():
                     pd.to_datetime("31/03/2001", format="%d/%m/%Y", errors="coerce"),
                 ),
                 "ROW_ID": [10],
+            },
+            {
+                "ERROR_ID": (
+                    "child8",
+                    pd.to_datetime("22/06/2000", format="%d/%m/%Y", errors="coerce"),
+                ),
+                "ROW_ID": [11],
             },
         ]
     )

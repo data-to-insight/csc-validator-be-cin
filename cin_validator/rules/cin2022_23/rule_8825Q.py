@@ -24,7 +24,7 @@ ReasonForClosure = CINdetails.ReasonForClosure
     module=CINTable.CINdetails,
     rule_type=RuleType.QUERY,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode.",
+    message="Please check and either amend data or provide a reason: Reason for Closure code RC8 (case closed after assessment) or RC9 (case closed after assessment, referred to early help) has been returned but there is no assessment present for the episode.",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[
         ReasonForClosure,
@@ -35,8 +35,8 @@ def validate(
 ):
     # PREPARING DATA
 
-    df_ass = data_container[Assessments].copy()
-    df_cin = data_container[CINdetails].copy()
+    df_ass = data_container[Assessments]
+    df_cin = data_container[CINdetails]
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_ass.index.name = "ROW_ID"
@@ -48,25 +48,25 @@ def validate(
     df_cin.reset_index(inplace=True)
 
     # lOGIC
-    # If <ReasonforClosure> (N00103) = RC8 then at least one <Assessments> module must be present
+    # If <ReasonforClosure> (N00103) = RC8 or RC9 then at least one <Assessments> module must be present
 
     df_cin_check = df_cin.copy()
 
-    df_cin_check = df_cin_check[df_cin_check[ReasonForClosure] == "RC8"]
+    df_cin_check = df_cin_check[df_cin_check[ReasonForClosure].isin(["RC8", "RC9"])]
 
     merged_df = df_cin_check.merge(
         df_ass,
-        on=[LAchildID],
+        on=[LAchildID, CINdetailsID],
         suffixes=["_cin", "_ass"],
         how="left",
+        indicator=True,
     )
-    condition = merged_df["CINdetailsID_ass"].isna()
+    # get modules whose ReasonForClosure is RC8/RC9 but are not found in the assessment table.
+    condition = merged_df["_merge"] == "left_only"
     merged_df = merged_df[condition].reset_index()
 
     # create an identifier for each error instance.
-    merged_df["ERROR_ID"] = tuple(
-        zip(merged_df[LAchildID], merged_df["CINdetailsID_cin"])
-    )
+    merged_df["ERROR_ID"] = tuple(zip(merged_df[LAchildID], merged_df[CINdetailsID]))
 
     # The merges were done on copies of df_ass and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
     # we can now map the suffixes columns to their corresponding source tables such that the failing ROW_IDs and ERROR_IDs exist per table.
@@ -116,6 +116,10 @@ def test_validate():
                 "LAchildID": "child3",
                 "CINdetailsID": "cinID4",
             },
+            {
+                "LAchildID": "child4",
+                "CINdetailsID": "cinID1",
+            },
         ]
     )
     sample_cin_details = pd.DataFrame(
@@ -147,7 +151,7 @@ def test_validate():
             },
             {  # 5 pass
                 "LAchildID": "child3",
-                "ReasonForClosure": "RC8",  # 5 pass. present in assessment table
+                "ReasonForClosure": "RC9",  # 5 pass. present in assessment table
                 "CINdetailsID": "cinID3",
             },
             {  # 6 fail
@@ -214,5 +218,5 @@ def test_validate():
     assert result.definition.code == "8825Q"
     assert (
         result.definition.message
-        == "Reason for Closure code RC8 (case closed after assessment) has been returned but there is no assessment present for the episode."
+        == "Please check and either amend data or provide a reason: Reason for Closure code RC8 (case closed after assessment) or RC9 (case closed after assessment, referred to early help) has been returned but there is no assessment present for the episode."
     )

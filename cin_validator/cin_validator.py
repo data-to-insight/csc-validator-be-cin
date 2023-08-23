@@ -4,8 +4,13 @@ import importlib
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import CINTable, RuleContext, registry
+from cin_validator.rule_engine import CINTable, RuleContext
+from cin_validator.ruleset import create_registry
 from cin_validator.utils import process_date_columns
+
+pd.options.mode.chained_assignment = None
+# Suppresses false-positive SettingWithCopyError when column types are changes in the include_issue_child function.
+# https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
 
 
 def enum_keys(dict_input):
@@ -101,6 +106,11 @@ def include_issue_child(issue_df, cin_data):
         # work around: ensure that columns from both sources have the same type to prevent merge error
         table_df["ROW_ID"] = table_df["ROW_ID"].astype("int64")
         linker_df["ROW_ID"] = linker_df["ROW_ID"].astype("int64")
+
+        if not linker_df.empty:
+            # if failing locations have been found, remove the dummy LAchildID column to make way for the real one.
+            table_df.drop(columns="LAchildID", inplace=True)
+
         # map the child ids back to issue_df
         table_df = table_df.merge(linker_df, on=["ROW_ID"], how="left")
 
@@ -121,12 +131,17 @@ def create_user_report(issue_df, cin_data):
 
     :param pd.DataFrame issue_df: in which child IDs have been added.
     :param dict cin_data: dataframes of user's input data.
+    :return user_report: dataframe containing issue locations and specific values that fail in those locations.
 
     """
-    no_table = issue_df[issue_df["tables_affected"].isna()]
+    try:
+        no_table = issue_df[issue_df["tables_affected"].isna()]
+    except:
+        # in the case where issue_df is empty, return an empty user report.
+        return pd.DataFrame()
+
     reports = []
     for table in issue_df["tables_affected"].dropna().unique():
-
         table_issues = issue_df[issue_df["tables_affected"] == table]
 
         table_reports = []
@@ -137,19 +152,41 @@ def create_user_report(issue_df, cin_data):
             column_data = cin_data[table][column]
             # fancy indexing. get all the values for a sequence of row positions in a column.
             column_values = column_data[column_rows]
-            column_values.rename("values_flagged", inplace=True)
+            column_values.rename("value_flagged", inplace=True)
             column_values.index.name = "ROW_ID"
             values_df = column_values.reset_index()
             values_df = values_df.assign(ROW_ID=values_df["ROW_ID"].astype("object"))
+
+            # work around: ensure that columns from both sources (user data and rule output) have the same type to prevent merge error
+            only_column["ROW_ID"] = only_column["ROW_ID"].astype("int64")
+            values_df["ROW_ID"] = values_df["ROW_ID"].astype("int64")
             report_df = only_column.merge(values_df, on="ROW_ID")
+
             table_reports.append(report_df)
 
         reports.extend(table_reports)
     # add in the la-level locations
     reports.append(no_table)
 
+    # ensure that all required column names will be present in the result.
+    full_report_cols_df = pd.DataFrame(
+        columns=[
+            "ERROR_ID",
+            "LAchildID",
+            "rule_code",
+            "tables_affected",
+            "columns_affected",
+            "ROW_ID",
+            "value_flagged",
+            "rule_description",
+        ]
+    )
+    reports.append(full_report_cols_df)
+
     full_report = pd.concat(reports, ignore_index=True)
-    return full_report[
+
+    # columns of interest are filtered and arranged in the desired order. values unified under str datatype.
+    user_report = full_report[
         [
             "ERROR_ID",
             "LAchildID",
@@ -157,38 +194,66 @@ def create_user_report(issue_df, cin_data):
             "tables_affected",
             "columns_affected",
             "ROW_ID",
-            "values_flagged",
+            "value_flagged",
             "rule_description",
         ]
     ]
 
+    def datetime_to_str(element):
+        if isinstance(element, pd.Timestamp):
+            # convert datetime elements to str date values
+            return str(element.strftime("%Y-%m-%d"))
+        elif isinstance(element, tuple):
+            # loop through tuples and convert each element accordingly. mostly in ERROR_ID column.
+            return tuple(map(datetime_to_str, element))
+        else:
+            # ensure all other elements are strings too.
+            return str(element)
 
-class CinValidationSession:
+    user_report = user_report.applymap(datetime_to_str)
+
+    # Related issue locations should be displayed next to each other.
+    user_report.sort_values(
+        [
+            "LAchildID",
+            "ERROR_ID",
+            "tables_affected",
+            "columns_affected",
+        ],
+        inplace=True,
+        ignore_index=True,
+    )
+
+    user_report.drop_duplicates(
+        ["LAchildID", "rule_code", "columns_affected", "ROW_ID"], inplace=True
+    )
+
+    return user_report
+
+
+class CinValidator:
     """
     A class to contain the process of CIN validation. Generates error reports as dataframes.
 
     :param any data_files: Data files for validation, either a DataContainerWrapper object, or a
         dictionary of DataFrames.
     :param dir ruleset: The directory containing the validation rules to be run according to the year in which they were published.
-    :param str issue_id: ID of individual errors to be selected for viewing using
-        select_by_id method (Error IDs, not rule codes).
     """
 
     def __init__(
         self,
+        ruleset,
         data_files=None,
-        ruleset="rules.cin2022_23",
-        issue_id=None,
         selected_rules=None,
     ) -> None:
         """
-        Initialises CinValidationSession class.
+        Initialises CinValidator class.
 
         Creates DataFrame containing error report, and allows selection of individual instances of error using ERROR_ID
 
-        :param any data_files: The data extracted from input XML (or CSV) for validation.
         :param list ruleset: The list of rules used in an individual validation session.
             Refers to rules in particular subdirectories of the rules directory.
+        :param any data_files: The data extracted from input XML (or CSV) for validation.
         :param str issue_id: Can be used to choose a particular instance of an error using ERROR_ID.
         :param list selected_rules: array of rule codes (as strings) selected by the user. Determines what rules should be run.
         :returns: DataFrame of error report which could be a filtered version if issue_id is input.
@@ -197,18 +262,24 @@ class CinValidationSession:
 
         self.data_files = data_files
         self.ruleset = ruleset
-        self.issue_id = issue_id
 
         # save independent version of data to be used in report.
         raw_data = copy.deepcopy(self.data_files)
 
         # run
         self.create_issue_report_df(selected_rules)
-        self.select_by_id()
 
         # add child_id to issue location report.
         self.full_issue_df = include_issue_child(self.full_issue_df, raw_data)
         self.user_report = create_user_report(self.full_issue_df, raw_data)
+
+        # regularise full_issue_df
+        self.full_issue_df.rename(columns={"ROW_ID": "row_id"}, inplace=True)
+        self.full_issue_df.rename(columns={"LAchildID": "child_id"}, inplace=True)
+        self.full_issue_df.drop(columns=["ERROR_ID"], inplace=True, errors="ignore")
+        self.full_issue_df.drop_duplicates(
+            ["child_id", "rule_code", "columns_affected", "row_id"], inplace=True
+        )
 
     def get_rules_to_run(self, registry, selected_rules):
         """
@@ -248,8 +319,9 @@ class CinValidationSession:
         if error_df_lengths.max() == 0:
             # if the rule didn't push to any of the issue accumulators, then it didn't find any issues in the file.
             self.rules_passed.append(rule.code)
-        elif error_df_lengths.max() == 4:
-            # this is a return level validation rule. It has no locations attached so it is only displayed in the rule descriptions.
+        elif error_df_lengths.idxmax() == 4:
+            # If the maximum value is in position 4, this is a return level validation rule.
+            # It has no locations attached so it is only displayed in the rule descriptions.
             self.la_rules_broken.append(issue_dfs_per_rule[4])
         else:
             # get the rule type based on which attribute had elements pushed to it (i.e non-zero length)
@@ -309,18 +381,29 @@ class CinValidationSession:
 
         enum_data_files = enum_keys(self.data_files)
         self.issue_instances = pd.DataFrame()
-        self.full_issue_df = pd.DataFrame()
+        self.full_issue_df = pd.DataFrame(
+            columns=[
+                "tables_affected",
+                "columns_affected",
+                "ROW_ID",
+                "ERROR_ID",
+                "rule_code",
+                "rule_description",
+                "rule_type",
+                "la_level",
+                "LAchildID",
+            ]
+        )
         self.rules_passed = []
 
         self.rules_broken = []
         self.rule_messages = []
         self.la_rules_broken = []
 
-        importlib.import_module(f"cin_validator.{self.ruleset}")
+        registry = create_registry(self.ruleset)
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:
-            # data_files = self.data_files.__deepcopy__({})
             data_files = copy.deepcopy(enum_data_files)
             ctx = RuleContext(rule)
             try:
@@ -333,27 +416,9 @@ class CinValidationSession:
         child_level_rules = pd.DataFrame(
             {"Rule code": self.rules_broken, "Rule Message": self.rule_messages}
         )
-        la_level_rules = pd.DataFrame(self.la_rules_broken)
-        if not la_level_rules.empty:
-            self.rule_descriptors = pd.concat([child_level_rules, la_level_rules])
-        else:
-            self.rule_descriptors = child_level_rules
-
-    def select_by_id(self):
-        """
-        Allows users to select reports of individual errors by ERROR_ID. Note:
-        this is individual instances of errors, not rule codes.
-
-        :param str issue_id: The ID of an individual issue, to be matched with an ERROR_ID
-            from validation.
-        :returns: Validation information associated with specific ERROR_ID.
-        :rtype: DataFrame
-        """
-
-        if self.issue_id is not None:
-            self.issue_id = tuple(self.issue_id.split(", "))
-            self.full_issue_df = self.full_issue_df[
-                self.full_issue_df["ERROR_ID"] == self.issue_id
-            ]
-        else:
-            pass
+        # self.la_rules_broken is a list of issue_dfs, one per la-level rule that failed.
+        try:
+            self.la_rule_issues = pd.concat(self.la_rules_broken)
+        except:
+            # if la_rules_broken is still an empty list
+            self.la_rule_issues = pd.DataFrame()

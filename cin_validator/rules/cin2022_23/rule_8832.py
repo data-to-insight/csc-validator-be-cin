@@ -37,8 +37,8 @@ def validate(
     # PREPARING DATA
 
     # Replace ChildProtectionPlans with the name of the table you need.
-    df_cpp = data_container[ChildProtectionPlans].copy()
-    df_CINdetails = data_container[CINdetails].copy()
+    df_cpp = data_container[ChildProtectionPlans]
+    df_CINdetails = data_container[CINdetails]
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_cpp.index.name = "ROW_ID"
@@ -50,17 +50,24 @@ def validate(
     df_CINdetails.reset_index(inplace=True)
 
     # If a <CINdetails> module has <ReferralNFA> (N00112) = true or 1, then there should be no Child Protection module present
+
+    # Excluding rows with false or 0 <ReferralNFA> to fix bug where they were flagged as failing
+    # TODO remove this step when proven to be redundant.
+    df_CINdetails = df_CINdetails[
+        ~(df_CINdetails[ReferralNFA].str.lower() == "false")
+        | ~(df_CINdetails[ReferralNFA].astype(str) == "0")
+    ]
+
     df_CINdetails = df_CINdetails[
         (df_CINdetails[ReferralNFA].str.lower() == "true")
         | (df_CINdetails[ReferralNFA].astype(str) == "1")
-        | (df_CINdetails[ReferralNFA] == True)
     ]
 
     #  Merge tables to get corresponding CP plan group and reviews
-    df_merged = df_cpp.merge(
-        df_CINdetails,
+    df_merged = df_CINdetails.merge(
+        df_cpp,
         on=["LAchildID", "CINdetailsID"],
-        how="left",
+        how="inner",
         suffixes=("_cpp", "_cin"),
     )
     # any rows found in df_merged are ones where <ReferralNFA> (N00112) = true or 1 and yet the child existed in the CINdetails table.
@@ -116,6 +123,14 @@ def test_validate():
             #     "LAchildID": "child3",
             #     "CINdetailsID": "CDID6",
             # },
+            {
+                "LAchildID": "child4",  # ignored
+                "CINdetailsID": "CDID0",
+            },
+            {
+                "LAchildID": "child5",  # ignored, ReferralNFA is neither "1" nor "true"
+                "CINdetailsID": "CDID0",
+            },
         ]
     )
     sample_cin = pd.DataFrame(
@@ -134,6 +149,16 @@ def test_validate():
                 "LAchildID": "child3",  # Pass, no module
                 "CINdetailsID": "CDID6",
                 "ReferralNFA": "1",
+            },
+            {
+                "LAchildID": "child4",  # ignored, ReferralNFA is neither "1" nor "true"
+                "CINdetailsID": "CDID0",
+                "ReferralNFA": "false",
+            },
+            {
+                "LAchildID": "child5",  # ignored, ReferralNFA is neither "1" nor "true"
+                "CINdetailsID": "CDID0",
+                "ReferralNFA": 0,
             },
         ]
     )

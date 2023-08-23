@@ -1,9 +1,3 @@
-# TODO Possible tests for this file
-# - Check that no generated table has more columns than expected.
-# - Check that all generated tables have the required IDs.
-# - Check that Header, ChildIdentifiers, and ChildCharacteristics tags do not repeat and have no duplicate subelements.
-# - Check that all expected columns are created for every appropriate xml block found.
-
 import pandas as pd
 
 from .utils import get_values
@@ -258,7 +252,7 @@ class XMLtoCSV:
         elements = list(set(columns).difference(set(self.id_cols)))
         # get the Disabilities block
         disabilities = characteristics.find("Disabilities")
-        if disabilities:
+        if disabilities is not None:
             # Only run this if a "Disabilities" xml block has been found
             for disability in disabilities:
                 disability_dict = {
@@ -319,6 +313,17 @@ class XMLtoCSV:
         :rtype: DataFrame
         """
 
+        def assessment_block_maker(assmnt):
+            assessment_dict = {
+                "LAchildID": self.LAchildID,
+                "CINdetailsID": self.CINdetailsID,
+            }
+            assessment_dict = get_values(elements, assessment_dict, assessment)
+            # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
+            assessment_dict["AssessmentFactors"] = assmnt.text
+            assessments_list.append(assessment_dict)
+            return assessment_dict
+
         assessments_list = []
         columns = self.Assessments.columns
         elements = list(set(columns).difference(set(self.id_cols)))
@@ -327,17 +332,15 @@ class XMLtoCSV:
         for assessment in assessments:
             # all the assessment descriptors repeat to create a row for each assessment factor.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
-            if assessment_factors:
+            if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
-                    assessment_dict = {
-                        "LAchildID": self.LAchildID,
-                        "CINdetailsID": self.CINdetailsID,
-                    }
-                    assessment_dict = get_values(elements, assessment_dict, assessment)
-                    # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
-                    assessment_dict["AssessmentFactors"] = factor.text
-                    assessments_list.append(assessment_dict)
+                    assessment_block_maker(factor)
+
+            # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
+            else:
+                for assessment in assessments:
+                    assessment_block_maker(assessment)
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
@@ -443,7 +446,7 @@ class XMLtoCSV:
         columns = self.Reviews.columns
         elements = list(set(columns).difference(set(self.id_cols)))
 
-        reviews = plan.findall("Reviews")
+        reviews = plan.findall("Reviews[CPPreviewDate]")
         for review in reviews:
             review_dict = {
                 "LAchildID": self.LAchildID,
