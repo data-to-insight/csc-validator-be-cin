@@ -1,6 +1,7 @@
 # CIN-validator
 The CIN validator is an open source, volunteer built tool that allows users to validate CIN census data year round via the command line, or using the browser based front end (URL HERE). It also provides a framework which other validation tools can easily be built on top of.
 
+The functions are documented using sphinx format so that a docs website can be auto-generated if need be. Also, there is an increased use of python typing as a form of intrinsic documentation. This does not apply to test functions as they neither receive nor return data, in the strict sense.
 More extensive documentation can be found here: https://data-to-insight.github.io/CIN-validator/
 
 ## Setup
