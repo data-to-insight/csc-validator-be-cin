@@ -1,7 +1,7 @@
 import importlib
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Optional
 
 
 class CINTable(Enum):
@@ -154,9 +154,9 @@ class RuleDefinition:
     code: int
     func: Callable
     rule_type: RuleType = RuleType.ERROR
-    module: CINTable = None
-    affected_fields: Iterable[str] = None
-    message: str = None
+    module: Optional[CINTable] = None
+    affected_fields: Optional[Iterable[str]] = None
+    message: Optional[str] = None
 
     @property
     def code_module(self):

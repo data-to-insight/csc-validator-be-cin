@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Optional
 
 from cin_validator.rule_engine.__api import CINTable, RuleDefinition, RuleType
 
@@ -29,7 +29,7 @@ class __Registry:
             raise ValueError(f"Rule with code {rd.code} already exists")
         self._registry[str(rd.code)] = rd
 
-    def add_ruleset(self, ruleset_dict):
+    def add_ruleset(self, ruleset_dict: dict[str, RuleDefinition]):
         """
         to merge two rulesets, registry might be converted into a dict.
         this method brings dicts back into registry format so that they can be run on user data.
@@ -101,8 +101,8 @@ def rule_definition(
     code: int,
     module: CINTable,
     rule_type: RuleType = RuleType.ERROR,
-    message: str = None,
-    affected_fields: Iterable[str] = None,
+    message: Optional[str] = None,
+    affected_fields: Optional[Iterable[str]] = None,
 ):
     """
     Creates the rule definition for validation rules using RuleDefinition class as a template.

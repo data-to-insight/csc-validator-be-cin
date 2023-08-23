@@ -4,7 +4,7 @@ import pandas as pd
 from cin_validator.england_holidates import england_holidates
 
 
-def get_values(xml_elements, table_dict, xml_block):
+def get_values(xml_elements, table_dict: dict, xml_block):
     """
     Iterates through the input XML to extract values from XML input data for validation.
     Called in the ingress to create each table.
@@ -25,7 +25,7 @@ def get_values(xml_elements, table_dict, xml_block):
     return table_dict
 
 
-def make_date(date_input):
+def make_date(date_input: str):
     """
     Allows Ymd or dmY date inputs, used for make_census_period.
     Important for test_validate functions.
@@ -42,7 +42,7 @@ def make_date(date_input):
     return date
 
 
-def make_census_period(reference_date):
+def make_census_period(reference_date: pd.Series):
     """
     Generates the census period with variables for each of the first and last
     day of the census period. Thesze are April first of the previous year and the reference date.
@@ -98,7 +98,7 @@ def create_issue_locs(issues):
     return df_issue_locs
 
 
-def process_date_columns(df):
+def process_date_columns(df: pd.DataFrame):
     """
     Takes a DataFrame in and converts all columns with Date or date in the
     title to pd.datetime objects. Used before validating rules to allow
@@ -123,7 +123,7 @@ def create_holidays_array():
     return np.busdaycalendar(holidays=england_holidates)
 
 
-def england_working_days(num_days):
+def england_working_days(num_days: int):
     """
     This function implements a date offset based on a holiday calendar.
     :param int num_days: number of days to offset by

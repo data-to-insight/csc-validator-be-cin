@@ -27,7 +27,7 @@ registry.reset()
 
 
 # Create customised registry object based on year specified.
-def create_registry(ruleset=ruleset_years[-1]):
+def create_registry(ruleset: str = ruleset_years[-1]):
     """
     :param str ruleset: year whose version of rules should be run. e.g cin2022_23.
     Defaults to latest recorded year.
