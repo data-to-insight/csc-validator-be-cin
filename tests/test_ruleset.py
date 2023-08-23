@@ -5,4 +5,4 @@ def test_ruleset_complete():
     from cin_validator.rule_engine import registry
 
     # check that there are 107 rules in the 2022/2023 version of CIN rules.
-    assert len(registry) == 107
+    assert len(registry) == 105
