@@ -15,7 +15,7 @@ ruleset_years.append("cin2022_23")
 registry.reset()
 
 # 2023_24
-import cin_validator.rules.cin_2023_24
+import cin_validator.rules.cin2023_24
 
 cin23_24 = registry.to_dict()
 ruleset_updates["cin2023_24"] = {"deleted": [], "ruleset": cin23_24}
