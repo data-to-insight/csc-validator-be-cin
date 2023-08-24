@@ -15,20 +15,6 @@ class __Registry:
 
         self._registry = {}
 
-    def add(self, rd: RuleDefinition):
-        """
-        Adds rules to the registry for iterating through and validating.
-
-        :param RuleDefinition-object: Object containing rule definition for every validation rule.
-        :returns: Adds rule definition fo rule to registry. Error if the rule code already exists.
-        :rtype: RuleDefinition object dictionary entry.
-        """
-
-        if str(rd.code) in self._registry:
-            # prevent duplicate rules from being created
-            raise ValueError(f"Rule with code {rd.code} already exists")
-        self._registry[str(rd.code)] = rd
-
     def add_ruleset(self, ruleset_dict: dict[str, RuleDefinition]):
         """
         to merge two rulesets, registry might be converted into a dict.
@@ -129,8 +115,7 @@ def rule_definition(
             message=message,
             affected_fields=affected_fields,
         )
-        registry.add(definition)
-        wrapper.__rule_def__ = definition
+        wrapper.rule = definition
         return wrapper
 
     return decorator
