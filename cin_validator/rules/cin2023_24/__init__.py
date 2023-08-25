@@ -1,5 +1,21 @@
 from pathlib import Path
 
-__all__ = [p.stem for p in Path(__file__).parent.glob("*.py") if p.stem != "__init__"]
+from cin_validator.rule_engine import RuleDefinition, YearConfig
+from cin_validator.rules.cin2022_23 import registry as prev_registry
+from cin_validator.rules.ruleset_utils import (
+    extract_validator_functions,
+    update_validator_functions,
+)
 
-from . import *
+files = Path(__file__).parent.glob("*.py")
+this_year_validator_funcs: dict[str, RuleDefinition] = extract_validator_functions(
+    files
+)
+# if any rules need to be deleted, add their codes as strings into del_list
+del_list: list[str] = []
+this_year_config = YearConfig(
+    deleted=del_list, added_or_modified=this_year_validator_funcs
+)
+
+registry = update_validator_functions(prev_registry, this_year_config)
+__all__ = ["registry"]
