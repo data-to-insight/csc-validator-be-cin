@@ -8,7 +8,6 @@ import click
 import pytest
 
 from cin_validator import cin_validator
-from cin_validator.ruleset import create_registry
 
 
 @click.group()
@@ -34,8 +33,9 @@ def list_cmd(ruleset):
     :returns: A list of validation rules in the given ruleset.
     :rtype: list
     """
-    registry = create_registry(ruleset=ruleset)
-    for rule in registry:
+    module = importlib.import_module(f"cin_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
+    for _, rule in ruleset_registry.items():
         click.echo(f"{rule.code}\t{rule.message} ({rule.rule_type.name})")
 
 
@@ -56,13 +56,13 @@ def run_all(filename: str, ruleset, select, output):
     CLI command:
     python -m cin_validator run <filepath_to_data>
 
-    Can be used to validate data via the data for a given rule set.
+    Can be used to validate data, via the command line interface, for a given rule set.
     Runs with the cin2022_23 ruleset as standard.
 
     :param str filename: Refers to the filepath of data to be validated.
-    :param str ruleset: The ruleset of validation rules to run input data against.
+    :param str ruleset: The folder name of the validation rules to run input data against.
     :param select: specify the rules that should be run. CLI works with a single string only.
-    :param bool output: If true, produces JSON error report output, if False (default)
+    :param bool output: If true, produces csv output of error report, if False (default)
         does not.
     :returns: DataFrame report of errors using selected validation rules, also output as
         JSON when output is True.
@@ -75,36 +75,25 @@ def run_all(filename: str, ruleset, select, output):
     raw_data = cin_validator.convert_data(root)
     data_files = cin_validator.process_data(raw_data)
 
-    validator = cin_validator.CinValidator(ruleset, data_files, selected_rules=select)
+    # get rules based on specified year.
+    module = importlib.import_module(f"cin_validator.rules.{ruleset}")
+    ruleset_registry = getattr(module, "registry")
 
-    issue_instances = validator.issue_instances
+    validator = cin_validator.CinValidator(
+        data_files, ruleset_registry, selected_rules=select
+    )
+
     full_issue_df = validator.full_issue_df
 
     if output:
         validator.user_report.to_csv("user_report.csv")
 
-        # TODO when dict of dfs can be passed into this class, run include_issue_child on issue_report
-        issue_report = validator.full_issue_df.to_json(orient="records")
-        rule_defs = validator.rule_descriptors.to_json(orient="records")
-
-        # generating sample files for the frontend.
-        # TODO. when frontend dev is complete, change this to generate csv.
-        import json
-
-        with open("rule_defs.json", "w") as f:
-            json.dump(rule_defs, f)
-
-        with open("issue_report.json", "w") as f:
-            json.dump(issue_report, f)
-
-    # print(issue_instances)
-    print(full_issue_df)
-    print(validator.la_rule_issues)
-    # print(validator.user_report)
+    click.echo(full_issue_df)
+    click.echo(validator.la_rule_issues)
 
 
 @cli.command(name="test")
-@click.argument("rule", type=int, required=False)
+@click.argument("rule", required=False)
 @click.option(
     "--ruleset",
     "-r",
@@ -136,14 +125,20 @@ def test_cmd(rule, ruleset):
 
     module = importlib.import_module(f"cin_validator.rules.{ruleset}")
     module_folder = Path(module.__file__).parent
-    registry = create_registry(ruleset=ruleset)
+
+    ruleset_registry = getattr(module, "registry")
+
     if rule:
-        rule_def = registry.get(rule)
+        rule = str(rule)
+        # when rule code is specified, test specific rule.
+        rule_def = ruleset_registry.get(rule)
         if not rule_def:
+            # if the get returns a <NoneType>
             click.secho(f"Rule {rule} not found.", err=True, fg="red")
             return 1
-        test_files = [registry.get(rule).code_module.__file__]
+        test_files = [os.path.join(module_folder, f"rule_{rule}.py")]
     else:
+        # else test all rules.
         test_files = [
             str(p.absolute())
             for p in module_folder.glob("*.py")
@@ -187,7 +182,7 @@ def timer(filepath):
     os.system(f"python -m cin_validator run {filepath}")
     et = datetime.datetime.now()
     time_elapsed = et - st
-    print(f"Time to run: {time_elapsed}")
+    click.echo(f"Time to run: {time_elapsed}")
 
 
 if __name__ == "__main__":

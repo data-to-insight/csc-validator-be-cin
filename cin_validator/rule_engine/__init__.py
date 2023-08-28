@@ -1,12 +1,12 @@
-from .__api import CINTable, RuleDefinition, RuleType
+from .__api import CINTable, RuleDefinition, RuleType, YearConfig
 from .__context import IssueLocator, RuleContext
-from .__registry import registry, rule_definition
+from .__registry import rule_definition
 
 __all__ = [
+    "YearConfig",
     "RuleDefinition",
     "RuleType",
     "CINTable",
-    "registry",
     "rule_definition",
     "RuleContext",
     "IssueLocator",

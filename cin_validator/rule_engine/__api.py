@@ -151,13 +151,15 @@ class RuleDefinition:
     :rtype: dataclass object.
     """
 
-    code: int
+    code: str
     func: Callable
     rule_type: RuleType = RuleType.ERROR
     module: Optional[CINTable] = None
     affected_fields: Optional[Iterable[str]] = None
     message: Optional[str] = None
 
-    @property
-    def code_module(self):
-        return importlib.import_module(self.func.__module__)
+
+@dataclass(eq=True)
+class YearConfig:
+    deleted: list[str]
+    added_or_modified: dict[str, RuleDefinition]
