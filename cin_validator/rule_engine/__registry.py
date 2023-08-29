@@ -9,7 +9,7 @@ def rule_definition(
     module: CINTable,
     rule_type: RuleType = RuleType.ERROR,
     message: Optional[str] = None,
-    affected_fields: Optional[Iterable[str]] = None,
+    affected_fields: Optional[Iterable] = None,
 ):
     """
     Creates the rule definition for validation rules using RuleDefinition class as a template.
