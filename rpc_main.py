@@ -7,9 +7,7 @@ from typing import Optional
 from prpc_python import RpcApp
 
 from cin_validator import cin_validator
-from cin_validator.ruleset import create_registry
-
-app = RpcApp("validate_cin")
+from cin_validator.rules.ruleset_utils import get_year_ruleset
 
 logger = logging.getLogger(__name__)
 handler = logging.FileHandler(
@@ -20,18 +18,19 @@ f_format = logging.Formatter("%(asctime)s - %(levelname)s - % (message)s")
 handler.setFormatter(f_format)
 logger.addHandler(handler)
 
+app = RpcApp("validate_cin")
+
 
 @app.call
-def get_rules(ruleset: str = "cin2022_23") -> str:
+def get_rules(collection_year: str) -> str:
     """
-    :param str ruleset: validation ruleset according to year published.
+    :param str collection_year: validation year e.g "2023" for 2022/2023 validation rules.
     :return rules_df: available rule codes and definitions according to chosen ruleset.
     """
-
-    registry = create_registry(ruleset)
+    ruleset_registry = get_year_ruleset(collection_year)
 
     rules = []
-    for rule in registry:
+    for _, rule in ruleset_registry.items():
         rules.append(
             {
                 "code": str(rule.code),
@@ -64,19 +63,18 @@ def generate_tables(cin_data: dict) -> dict[str, dict]:
     return cin_data_tables
 
 
-@app.call
 def cin_validate(
     cin_data: dict,
+    file_metadata: dict,
     selected_rules: Optional[list[str]] = None,
-    ruleset: str = "cin2022_23",
 ):
     """
     :param cin_data: eys are table names and values are CIN csv files.
+    :param file_metadata: contains collection year and local authority as strings.
     :param selected_rules: array of rules the user has chosen. consists of rule codes as strings.
-    :param ruleset: rule pack that should be run. cin2022_23 will run the 2022/2023 validation rules.
 
     :return issue_report: issue locations in the data.
-    :return rule_defs: rule codes and descriptions of the rules that triggers issues in the data.
+    :return rule_defs: codes and descriptions of the rules that triggers issues in the data.
     """
     cin_data_file = cin_data["This year"][0]
     filetext = cin_data_file.read().decode("utf-8")
@@ -95,11 +93,11 @@ def cin_validate(
 
     # Convert date columns to datetime format to enable comparison in rules.
     data_files = cin_validator.process_data(raw_data)
+    # get rules to run based on specified year.
+    ruleset_registry = get_year_ruleset(file_metadata["collectionYear"])
 
     # run validation
-    validator = cin_validator.CinValidator(
-        ruleset, data_files, selected_rules=selected_rules
-    )
+    validator = cin_validator.CinValidator(data_files, ruleset_registry, selected_rules)
 
     # make return data json-serialisable
 

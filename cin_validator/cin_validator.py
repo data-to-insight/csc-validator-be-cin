@@ -5,8 +5,7 @@ from typing import Optional
 import pandas as pd
 
 from cin_validator.ingress import XMLtoCSV
-from cin_validator.rule_engine import CINTable, RuleContext
-from cin_validator.ruleset import create_registry
+from cin_validator.rule_engine import CINTable, RuleContext, RuleDefinition
 from cin_validator.utils import process_date_columns
 
 pd.options.mode.chained_assignment = None
@@ -243,8 +242,8 @@ class CinValidator:
 
     def __init__(
         self,
-        ruleset,
-        data_files=None,
+        data_files,
+        ruleset_registry,
         selected_rules: Optional[list[str]] = None,
     ) -> None:
         """
@@ -262,7 +261,7 @@ class CinValidator:
         """
 
         self.data_files = data_files
-        self.ruleset = ruleset
+        self.ruleset_registry = ruleset_registry
 
         # save independent version of data to be used in report.
         raw_data = copy.deepcopy(self.data_files)
@@ -284,7 +283,9 @@ class CinValidator:
             ["child_id", "rule_code", "columns_affected", "row_id"], inplace=True
         )
 
-    def get_rules_to_run(self, registry, selected_rules: Optional[list[str]] = None):
+    def get_rules_to_run(
+        self, registry, selected_rules: Optional[list[str]] = None
+    ) -> list[RuleDefinition]:
         """
         Filters rules to be run based on user's selection in the frontend.
         :param Registry-class registry: record of all existing rules in rule pack
@@ -292,13 +293,13 @@ class CinValidator:
         """
         if selected_rules:
             rules_to_run = [
-                rule for rule in registry if str(rule.code) in selected_rules
+                rule for _, rule in registry.items() if str(rule.code) in selected_rules
             ]
             return rules_to_run
         else:
-            return registry
+            return registry.values()
 
-    def process_issues(self, rule, ctx):
+    def process_issues(self, rule: RuleDefinition, ctx: RuleContext):
         """
         process result of running a rule on the user's data.
 
@@ -307,7 +308,6 @@ class CinValidator:
         :returns : None
 
         """
-        # TODO is it wiser to split the rules according to types instead of checking the type each time a rule is run?.
         issue_dfs_per_rule = pd.Series(
             [
                 ctx.type_zero_issues,
@@ -403,7 +403,7 @@ class CinValidator:
         self.rule_messages: list[str] = []
         self.la_rules_broken: list[str] = []
 
-        registry = create_registry(self.ruleset)
+        registry = self.ruleset_registry
 
         rules_to_run = self.get_rules_to_run(registry, selected_rules)
         for rule in rules_to_run:

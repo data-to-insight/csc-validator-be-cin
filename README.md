@@ -1,7 +1,7 @@
 # CIN-validator
 The CIN validator is an open source, volunteer built tool that allows users to validate CIN census data year round via the command line, or using the browser based front end (URL HERE). It also provides a framework which other validation tools can easily be built on top of.
 
-The functions are documented using sphinx format so that a docs website can be auto-generated if need be. Also, there is an increased use of python typing as a form of intrinsic documentation. This does not apply to test functions as they neither receive nor return data, in the strict sense.
+The functions are documented using sphinx format so that a docs website can be auto-generated if need be. Also, there is an increased use of python type-hints as a form of intrinsic documentation. This does not apply to test functions as they neither receive nor return data, in the strict sense.
 More extensive documentation can be found here: https://data-to-insight.github.io/CIN-validator/
 
 ## Setup
@@ -29,9 +29,10 @@ If it is cloned locally, use `pre-commit install` to install the pre-commit hook
 
 ### update rules
 - If any rules have been added or changed with respect to the previous year, create files for them in a rule folder named after the new validation year. For example, new or added rules for the 2023/24 validation year should be created in a folder named `cin2023_24`. Do not copy over rules that haven't changed.
-- Follow the instructions in `cin_validator\ruleset.py`. This step ensures that your folder (containing the recent rule updates) is linked to the previous years and can inherit those rules which haven't changed. It will automatically sync even if more rules are added to the folder later.
-- If any rules have been deleted, do not delete the rule files from the previous year. Instead, add the rule codes *as strings* to the corresponding list in `cin_validator\ruleset.py`. For example, if the specification of 2023/24 states that few rules which were present in the previous year should no longer be considered - edits should be done on this line `ruleset_updates["cin2023_24"] = {"deleted": [], "ruleset": cin23_24}`. 
-- Update ruleset defaults in `cin_validator\__main__.py` by updating `default="cin2022_23"` to that of the relevant year. For example, for the year 2023/24 use `default="cin2023_24"`
+- The __init__.py file contains the code that pulls in rules from the previous year and modifies them to meet the current year's specification. Copy across that init file whenever a folder for a new collection_year is created. Change the import to the name of the previous year's folder. 
+- If the new specifications require that some rules are deleted, add their codes as strings to the `del_list` array in the current year's init file. Do not delete the rules manually. 
+- Any new rules or modified rules should be added by creating a file for each rule and writing the modified code or new code. Even for small modifications, create a new file for the rule in the year where the modification was made instead of going backwards into the previous years and editing the original file.
+- To run the modified set of rules from the command line interface, you can use the `-r` or `--ruleset` flag to specify the name of the rule folder that you wish to run. Otherwise, feel free to update the defaults of the commands so that they point to the new year's folder instead. For example, change `cin2022_23` to `cin2023_24`. 
 
 ## make changes available to user
 - delete the `dist` folder completely.

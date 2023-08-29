@@ -1,5 +1,8 @@
 from pathlib import Path
 
-__all__ = [p.stem for p in Path(__file__).parent.glob("*.py") if p.stem != "__init__"]
+from cin_validator.rules.ruleset_utils import extract_validator_functions
 
-from . import *
+files = Path(__file__).parent.glob("*.py")
+registry = extract_validator_functions(files)
+
+__all__ = ["registry"]

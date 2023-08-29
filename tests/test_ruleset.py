@@ -1,8 +1,11 @@
-def test_ruleset_complete():
-    # registry is filled with whatever ruleset is imported.
-    # If multiple rulesets are imported, the registry will contain the sum of them all.
-    import cin_validator.rules.cin2022_23
-    from cin_validator.rule_engine import registry
+from cin_validator.rules.ruleset_utils import get_year_ruleset
 
-    # check that there are 107 rules in the 2022/2023 version of CIN rules.
+
+def test_ruleset_complete():
+    registry = get_year_ruleset("2023")
+    # check that there are 105 rules in the 2022/2023 version of CIN rules.
+    assert len(registry) == 105
+
+    registry = get_year_ruleset("2024")
+    # check that the 2023/2024 version of CIN rules pulls in the preceding year's rules.
     assert len(registry) == 105

@@ -40,9 +40,9 @@ The Header contains the metadata including collection_year and census type. If C
 ## Validation: cin_validate
 This is the default feature. File input is converted into tabular-format (dataframes) and the data is validated based on rules [defined by the DfE](https://www.gov.uk/government/publications/children-in-need-census-2022-to-2023-specification) and coded in the `rules` folder.
 
-The `cin_validate` function receives three arguments: a reference to the xml file that needs to be validated, an optional choice of rules, and an optional choice of which rule pack to run. The third parameter (ruleset) will only need to be changed if the user choses to validate their data based on the rules of a year different from the one they're in.
+The `cin_validate` function receives three arguments: a reference to the xml file that needs to be validated, metadata containining the year value that should be used to generate the rule list and an optional specification of a subset of rules to run.
 
-When the `ruleset` is not specified, the internal `create_registry` function will run the latest ruleset in the repo. For now, the frontend (rpc_main) and cli (cin_validator.main) handlers have been hardcoded to default to the "cin2022_23" ruleset. As such, the behaviour is predictable. This hardcoding needs to be updated each year when there is a new default ruleset (e.g in the year 2024/2025, the ruleset default argument should be updated to "cin2024_24")
+The 2022/23 rules are the base pack of rules. Over the years, they'll be pulled in and modified according to the specification of each year.
 
 The `selected_rules` parameter works with a single string or an array (list/tuple) of strings where each value is a rule code that the user chose to run in the frontend.
 
@@ -64,3 +64,4 @@ Singular issues have values for table, column and row affected but no value in t
 
 Linked issues are the only issues that have a value in the `error_id` column. All issue locations that have the same error_id value should be highlighted together in the frontend. These are issues flagged by rules that check the relationship between multiple values in the data (for example [8606](https://github.com/data-to-insight/CIN-validator/issues/35))
 
+Going forward, the `error_id` can be ignored when creating new rules as it ended up not being used in the frontend.
