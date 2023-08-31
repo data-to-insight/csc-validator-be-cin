@@ -63,6 +63,7 @@ def generate_tables(cin_data: dict) -> dict[str, dict]:
     return cin_data_tables
 
 
+@app.call
 def cin_validate(
     cin_data: dict,
     file_metadata: dict,
