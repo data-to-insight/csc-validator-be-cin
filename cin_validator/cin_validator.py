@@ -282,6 +282,7 @@ class CinValidator:
         self.full_issue_df.drop_duplicates(
             ["child_id", "rule_code", "columns_affected", "row_id"], inplace=True
         )
+        self.full_issue_df.reset_index(drop=True, inplace=True)
 
     def get_rules_to_run(
         self, registry, selected_rules: Optional[list[str]] = None

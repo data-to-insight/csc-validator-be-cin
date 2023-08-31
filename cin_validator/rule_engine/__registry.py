@@ -29,7 +29,7 @@ def rule_definition(
             return func(*args, **kwargs)
 
         definition = RuleDefinition(
-            code=code,
+            code=str(code),
             func=func,
             rule_type=rule_type,
             module=module,
