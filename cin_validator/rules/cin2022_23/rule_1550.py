@@ -15,7 +15,7 @@ UPN = ChildIdentifiers.UPN
 
 
 @rule_definition(
-    code=1550,
+    code="1550",
     module=CINTable.ChildIdentifiers,
     message="UPN invalid (character 13 not a recognised value)",
     affected_fields=[UPN],
@@ -85,7 +85,7 @@ def test_validate():
         IssueLocator(CINTable.ChildIdentifiers, UPN, 2),
     ]
 
-    assert result.definition.code == 1550
+    assert result.definition.code == "1550"
     assert (
         result.definition.message == "UPN invalid (character 13 not a recognised value)"
     )

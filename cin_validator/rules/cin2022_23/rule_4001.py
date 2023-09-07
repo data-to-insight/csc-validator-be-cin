@@ -17,7 +17,7 @@ CINPlanStartDate = CINplanDates.CINPlanStartDate
 
 
 @rule_definition(
-    code=4001,
+    code="4001",
     module=CINTable.CINplanDates,
     message="A CIN Plan cannot run concurrently with a Child Protection Plan",
     affected_fields=[
@@ -199,7 +199,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4001
+    assert result.definition.code == "4001"
     assert (
         result.definition.message
         == "A CIN Plan cannot run concurrently with a Child Protection Plan"

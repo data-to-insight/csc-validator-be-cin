@@ -1,5 +1,5 @@
 """
-Rule number: 8606
+Rule number: '8606'
 Module: CIN details
 Rule details: <CINreferralDate> (N00100) cannot be more than 280 days before <PersonBirthDate> (N00066) or <ExpectedPersonBirthDate> (N00098)
 Rule message: Child referral date is more than 40 weeks before DOB or expected DOB
@@ -25,7 +25,7 @@ LAchildID = CINdetails.LAchildID
 
 
 @rule_definition(
-    code=8606,
+    code="8606",
     module=CINTable.CINdetails,
     message="Child referral date is more than 40 weeks before DOB or expected DOB",
     affected_fields=[
@@ -37,7 +37,6 @@ LAchildID = CINdetails.LAchildID
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df_CINDetails = data_container[CINdetails].copy()
     df_ChildIdentifiers = data_container[ChildIdentifiers].copy()
 
@@ -204,7 +203,7 @@ def test_validate():
 
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8606
+    assert result.definition.code == "8606"
     assert (
         result.definition.message
         == "Child referral date is more than 40 weeks before DOB or expected DOB"

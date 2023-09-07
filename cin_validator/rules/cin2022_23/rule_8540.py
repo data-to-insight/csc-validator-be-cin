@@ -16,7 +16,7 @@ Disability = Disabilities.Disability
 
 
 @rule_definition(
-    code=8540,
+    code="8540",
     module=CINTable.ChildCharacteristics,
     message="Child’s disability is missing or invalid (see Disability table)",
     affected_fields=[Disability, PersonBirthDate, ReferralNFA],
@@ -24,7 +24,6 @@ Disability = Disabilities.Disability
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df_dis = data_container[Disabilities].copy()
     df_ci = data_container[ChildIdentifiers].copy()
     df_cin = data_container[CINdetails].copy()
@@ -221,7 +220,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8540
+    assert result.definition.code == "8540"
     assert (
         result.definition.message
         == "Child’s disability is missing or invalid (see Disability table)"

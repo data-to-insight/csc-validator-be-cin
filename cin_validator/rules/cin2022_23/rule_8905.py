@@ -13,9 +13,10 @@ from cin_validator.test_engine import run_rule
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 InitialCategoryOfAbuse = ChildProtectionPlans.InitialCategoryOfAbuse
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8905,
+    code="8905",
     module=CINTable.ChildProtectionPlans,
     message="Initial Category of Abuse code missing or invalid (see Category of Abuse table in CIN Census code set)",
     affected_fields=[InitialCategoryOfAbuse],
@@ -43,7 +44,6 @@ def validate(
 
 
 def test_validate():
-
     fake_cats = ["NEG", "AAA", "PHY", pd.NA, "BBB", "EMO", "MUL"]
 
     fake_dataframe = pd.DataFrame({InitialCategoryOfAbuse: fake_cats})
@@ -60,7 +60,7 @@ def test_validate():
         IssueLocator(CINTable.ChildProtectionPlans, InitialCategoryOfAbuse, 4),
     ]
 
-    assert result.definition.code == 8905
+    assert result.definition.code == "8905"
     assert (
         result.definition.message
         == "Initial Category of Abuse code missing or invalid (see Category of Abuse table in CIN Census code set)"

@@ -12,7 +12,7 @@ LAchildID = ChildIdentifiers.LAchildID
 
 
 @rule_definition(
-    code=8590,
+    code="8590",
     module=CINTable.ChildIdentifiers,
     message="Child does not have a recorded CIN episode.",
     affected_fields=[LAchildID],
@@ -120,5 +120,5 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8590
+    assert result.definition.code == "8590"
     assert result.definition.message == "Child does not have a recorded CIN episode."

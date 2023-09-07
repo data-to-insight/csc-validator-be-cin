@@ -1,5 +1,5 @@
 """
-Rule number: 1105
+Rule number: '1105'
 Module: Child protection plans
 Rule details: Where present, the <CPPStartDate> (N00105) must be on or after the <CINReferralDate> (N00100)
 Rule message: The child protection plan start date cannot be before the referral date
@@ -29,7 +29,7 @@ CIN_CINdetailsID = CINDetails.CINdetailsID
 
 
 @rule_definition(
-    code=1105,
+    code="1105",
     module=CINTable.ChildProtectionPlans,
     message="The child protection plan start date cannot be before the referral date",
     affected_fields=[
@@ -208,7 +208,7 @@ def test_validate():
 
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 1105
+    assert result.definition.code == "1105"
     assert (
         result.definition.message
         == "The child protection plan start date cannot be before the referral date"

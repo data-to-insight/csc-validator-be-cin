@@ -1,5 +1,5 @@
 """
-Rule number: 8915
+Rule number: '8915'
 Module: Child protection plans
 Rule details: If <PersonDeathDate> (N00108) is present, then <CPPstartDate> (N00105) must be on or before <PersonDeathDate> (N00108)
 Rule message: Child Protection Plan shown as starting after the child’s Date of Death
@@ -25,7 +25,7 @@ CI_LAID = ChildIdentifiers.LAchildID
 
 # define characteristics of rule
 @rule_definition(
-    code=8915,
+    code="8915",
     module=CINTable.ChildProtectionPlans,
     message="Child Protection Plan shown as starting after the child’s Date of Death",
     affected_fields=[
@@ -204,7 +204,7 @@ def test_validate():
 
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8915
+    assert result.definition.code == "8915"
     assert (
         result.definition.message
         == "Child Protection Plan shown as starting after the child’s Date of Death"

@@ -1,5 +1,5 @@
 """
-Rule number: 8510
+Rule number: '8510'
 Module: Child idenitifiers
 Rule details: Each <LAchildID> (N00097) must be unique across all children within the same LA return. 
 
@@ -25,7 +25,7 @@ LAchildID = ChildIdentifiers.LAchildID
 
 
 @rule_definition(
-    code=8510,
+    code="8510",
     module=CINTable.ChildIdentifiers,
     message="More than one child record with the same LA Child ID",
     affected_fields=[LAchildID],
@@ -55,7 +55,7 @@ def test_validate():
         IssueLocator(CINTable.ChildIdentifiers, LAchildID, 1),
     ]
 
-    assert result.definition.code == 8510
+    assert result.definition.code == "8510"
     assert (
         result.definition.message
         == "More than one child record with the same LA Child ID"

@@ -1,5 +1,5 @@
 """
-Rule number: 8875
+Rule number: '8875'
 Module: Section 47
 Rule details: Where present, the <DateOfInitialCPC> (N00110) must not be a Saturday, Sunday
 Rule message: The Date of Initial Child Protection Conference cannot be a weekend
@@ -22,9 +22,10 @@ from cin_validator.test_engine import run_rule
 Section47 = CINTable.Section47
 DateOfInitialCPC = Section47.DateOfInitialCPC
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8875,
+    code="8875",
     module=CINTable.Section47,
     message="The Date of Initial Child Protection Conference cannot be a weekend",
     affected_fields=[DateOfInitialCPC],
@@ -72,7 +73,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == 8875
+    assert result.definition.code == "8875"
     assert (
         result.definition.message
         == "The Date of Initial Child Protection Conference cannot be a weekend"

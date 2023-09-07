@@ -18,9 +18,10 @@ DateOfInitialCPC = Section47.DateOfInitialCPC
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8715,
+    code="8715",
     module=CINTable.Section47,
     message="Date of Initial Child Protection Conference must fall within the census year",
     affected_fields=[DateOfInitialCPC, ReferenceDate],
@@ -93,8 +94,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8715 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8715
+    # replace '8715' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8715"
     assert (
         result.definition.message
         == "Date of Initial Child Protection Conference must fall within the census year"

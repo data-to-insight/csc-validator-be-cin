@@ -17,9 +17,10 @@ ICPCnotRequired = Section47.ICPCnotRequired
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8740,
+    code="8740",
     module=CINTable.Section47,
     message="For a Section 47 Enquiry that has not held the Initial Child Protection Conference by the end of the census year, the start date must fall within the census year",
     affected_fields=[S47ActualStartDate, DateOfInitialCPC, ICPCnotRequired],
@@ -175,8 +176,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8740 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8740
+    # replace '8740' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8740"
     assert (
         result.definition.message
         == "For a Section 47 Enquiry that has not held the Initial Child Protection Conference by the end of the census year, the start date must fall within the census year"

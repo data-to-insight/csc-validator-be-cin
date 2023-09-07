@@ -18,7 +18,7 @@ CINclosureDate = CINdetails.CINclosureDate
 # define characteristics of rule
 @rule_definition(
     # write the rule code here
-    code=8816,
+    code="8816",
     # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
@@ -257,8 +257,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8816 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8816
+    # replace '8816' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8816"
     assert (
         result.definition.message
         == "An open CIN episode is shown and case is not a referral with no further action, but it is not the latest episode."

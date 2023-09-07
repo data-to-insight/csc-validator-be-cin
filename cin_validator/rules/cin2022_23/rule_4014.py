@@ -16,7 +16,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=4014,
+    code="4014",
     module=CINTable.CINplanDates,
     message="CIN Plan data contains overlapping dates",
     affected_fields=[
@@ -252,5 +252,5 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4014
+    assert result.definition.code == "4014"
     assert result.definition.message == "CIN Plan data contains overlapping dates"

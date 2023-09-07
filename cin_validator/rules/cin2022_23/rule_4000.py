@@ -14,7 +14,7 @@ CINdetailsID_details = CINdetails.CINdetailsID
 
 
 @rule_definition(
-    code=4000,
+    code="4000",
     module=CINTable.CINplanDates,
     message="CIN Plan details provided for a referral with no further action",
     affected_fields=[
@@ -156,7 +156,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4000
+    assert result.definition.code == "4000"
     assert (
         result.definition.message
         == "CIN Plan details provided for a referral with no further action"

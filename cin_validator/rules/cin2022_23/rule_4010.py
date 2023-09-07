@@ -19,7 +19,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=4010,
+    code="4010",
     module=CINTable.CINplanDates,
     message="CIN Plan start date is missing or out of data collection period",
     affected_fields=[CINPlanStartDate],
@@ -45,7 +45,6 @@ def validate(
 
 
 def test_validate():
-
     cin_start = pd.to_datetime(
         # Create some sample data such that some values pass the validation and some fail.
         [
@@ -94,7 +93,7 @@ def test_validate():
         IssueLocator(CINTable.CINplanDates, CINPlanStartDate, 8),
     ]
 
-    assert result.definition.code == 4010
+    assert result.definition.code == "4010"
     assert (
         result.definition.message
         == "CIN Plan start date is missing or out of data collection period"

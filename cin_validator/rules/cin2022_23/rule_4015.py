@@ -15,7 +15,7 @@ CINreferralDate = CINdetails.CINreferralDate
 
 
 @rule_definition(
-    code=4015,
+    code="4015",
     module=CINTable.CINplanDates,
     message="The CIN Plan start date cannot be before the referral date",
     affected_fields=[
@@ -180,7 +180,7 @@ def test_validate():
     issue_rows.sort_values(["ROW_ID"], ignore_index=True, inplace=True)
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4015
+    assert result.definition.code == "4015"
     assert (
         result.definition.message
         == "The CIN Plan start date cannot be before the referral date"

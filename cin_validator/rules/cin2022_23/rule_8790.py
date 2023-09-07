@@ -13,9 +13,10 @@ from cin_validator.test_engine import run_rule
 Disabilities = CINTable.Disabilities
 Disability = Disabilities.Disability
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8790,
+    code="8790",
     module=CINTable.Disabilities,
     message="Disability information includes both None and other values",
     affected_fields=[Disability],
@@ -64,7 +65,7 @@ def test_validate():
         IssueLocator(CINTable.Disabilities, Disability, 6),
     ]
 
-    assert result.definition.code == 8790
+    assert result.definition.code == "8790"
     assert (
         result.definition.message
         == "Disability information includes both None and other values"

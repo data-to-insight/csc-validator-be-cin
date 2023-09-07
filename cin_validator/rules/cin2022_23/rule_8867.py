@@ -20,7 +20,7 @@ CINdetailsAssID = Assessments.CINdetailsID
 
 # define characteristics of rule
 @rule_definition(
-    code=8867,
+    code="8867",
     module=CINTable.CINdetails,
     message="CIN episode is shown as closed, however Assessment is not shown as completed",
     affected_fields=[
@@ -244,7 +244,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == 8867
+    assert result.definition.code == "8867"
     assert (
         result.definition.message
         == "CIN episode is shown as closed, however Assessment is not shown as completed"

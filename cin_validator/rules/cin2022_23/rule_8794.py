@@ -13,9 +13,10 @@ from cin_validator.test_engine import run_rule
 Disabilities = CINTable.Disabilities
 Disability = Disabilities.Disability
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8794,
+    code="8794",
     module=CINTable.Disabilities,
     message="Child has two or more disabilities with the same code",
     affected_fields=[Disability],
@@ -83,7 +84,7 @@ def test_validate():
         IssueLocator(CINTable.Disabilities, Disability, 12),
     ]
 
-    assert result.definition.code == 8794
+    assert result.definition.code == "8794"
     assert (
         result.definition.message
         == "Child has two or more disabilities with the same code"

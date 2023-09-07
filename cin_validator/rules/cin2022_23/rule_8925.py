@@ -12,9 +12,10 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8925,
+    code="8925",
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -160,8 +161,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8925 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8925
+    # replace '8925' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8925"
     assert (
         result.definition.message
         == "Child Protection Plan End Date earlier than Start Date"

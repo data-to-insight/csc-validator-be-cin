@@ -16,9 +16,10 @@ CINdetailsID = CINdetails.CINdetailsID
 DateOfInitialCPC = Section47.DateOfInitialCPC
 ICPCnotRequired = Section47.ICPCnotRequired
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8868,
+    code="8868",
     # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
@@ -267,8 +268,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8868 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8868
+    # replace '8868' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8868"
     assert (
         result.definition.message
         == "CIN episode is shown as closed, however Section 47 enquiry is not shown as completed by ICPC date or ICPC not required flag"

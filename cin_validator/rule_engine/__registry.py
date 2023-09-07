@@ -5,7 +5,7 @@ from cin_validator.rule_engine.__api import CINTable, RuleDefinition, RuleType
 
 
 def rule_definition(
-    code: int,
+    code: str,
     module: CINTable,
     rule_type: RuleType = RuleType.ERROR,
     message: Optional[str] = None,

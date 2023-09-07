@@ -22,7 +22,7 @@ CINdetailsID = CINdetails.CINdetailsID
 
 
 @rule_definition(
-    code=1103,
+    code="1103",
     module=CINTable.Assessments,
     message="The assessment start date cannot be before the referral date",
     affected_fields=[
@@ -209,7 +209,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 1103
+    assert result.definition.code == "1103"
     assert (
         result.definition.message
         == "The assessment start date cannot be before the referral date"

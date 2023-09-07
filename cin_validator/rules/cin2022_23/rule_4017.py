@@ -21,7 +21,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=4017,
+    code="4017",
     module=CINTable.CINplanDates,
     message="A CIN Plan has been reported as open at the same time as a Child Protection Plan.",
     affected_fields=[
@@ -296,7 +296,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4017
+    assert result.definition.code == "4017"
     assert (
         result.definition.message
         == "A CIN Plan has been reported as open at the same time as a Child Protection Plan."

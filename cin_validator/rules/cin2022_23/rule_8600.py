@@ -18,7 +18,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=8600,
+    code="8600",
     module=CINTable.CINdetails,
     message="Child referral date missing or after data collection period",
     affected_fields=[CINreferralDate],
@@ -26,7 +26,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df = data_container[Cindetails]
     df_ref = data_container[Header]
 
@@ -81,7 +80,7 @@ def test_validate():
         IssueLocator(CINTable.CINdetails, CINreferralDate, 8),
     ]
 
-    assert result.definition.code == 8600
+    assert result.definition.code == "8600"
     assert (
         result.definition.message
         == "Child referral date missing or after data collection period"

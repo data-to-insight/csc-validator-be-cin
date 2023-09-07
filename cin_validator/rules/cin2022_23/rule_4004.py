@@ -1,5 +1,5 @@
 """
-Rule number: 4004
+Rule number: '4004'
 Module: CIN plan dates
 Rule details: Within a <CINDetails> module, there must be only one <CINplanDates> group where the <CINPlanEnd Date> (N00690) is missing
 Rule message: This child is showing more than one open CIN Plan, i.e. with no End Date
@@ -21,7 +21,7 @@ CINdetailsID = CINplanDates.CINdetailsID
 
 
 @rule_definition(
-    code=4004,
+    code="4004",
     module=CINTable.CINplanDates,
     message="This child is showing more than one open CIN Plan, i.e. with no End Date",
     affected_fields=[CINPlanEndDate],
@@ -142,7 +142,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4004
+    assert result.definition.code == "4004"
     assert (
         result.definition.message
         == "This child is showing more than one open CIN Plan, i.e. with no End Date"

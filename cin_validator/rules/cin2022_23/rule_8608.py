@@ -12,7 +12,7 @@ AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 
 
 @rule_definition(
-    code=8608,
+    code="8608",
     module=CINTable.Assessments,
     message="Assessment Start Date cannot be later than its End Date",
     affected_fields=[AssessmentActualStartDate, AssessmentAuthorisationDate],
@@ -129,7 +129,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8608
+    assert result.definition.code == "8608"
     assert (
         result.definition.message
         == "Assessment Start Date cannot be later than its End Date"

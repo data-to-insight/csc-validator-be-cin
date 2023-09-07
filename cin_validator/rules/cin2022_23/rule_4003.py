@@ -18,7 +18,7 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 
 
 @rule_definition(
-    code=4003,
+    code="4003",
     module=CINTable.Reviews,
     message="A CPP review date is shown as being held at the same time as an open CIN Plan.",
     affected_fields=[
@@ -101,7 +101,6 @@ def validate(
 
 
 def test_validate():
-
     sample_cpp = pd.DataFrame(
         [
             {
@@ -280,7 +279,7 @@ def test_validate():
     )
 
     assert issue_rows.equals(expected_df)
-    assert result.definition.code == 4003
+    assert result.definition.code == "4003"
     assert (
         result.definition.message
         == "A CPP review date is shown as being held at the same time as an open CIN Plan."
