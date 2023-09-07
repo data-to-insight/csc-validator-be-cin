@@ -17,9 +17,10 @@ LAchildID = Assessments.LAchildID
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8736,
+    code="8736",
     module=CINTable.Assessments,
     message="For an Assessment that has not been completed, the start date must fall within the census year",
     affected_fields=[AssessmentAuthorisationDate, AssessmentActualStartDate],
@@ -190,8 +191,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8736 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8736
+    # replace '8736' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8736"
     assert (
         result.definition.message
         == "For an Assessment that has not been completed, the start date must fall within the census year"

@@ -16,10 +16,11 @@ from cin_validator.test_engine import run_rule
 ChildIdentifiers = CINTable.ChildIdentifiers
 LAchildID = ChildIdentifiers.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8500
-    code=8500,
+    # write the rule code here, in place of '8500'
+    code="8500",
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -65,6 +66,6 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8500 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8500
+    # replace '8500' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8500"
     assert result.definition.message == "LA Child ID missing"

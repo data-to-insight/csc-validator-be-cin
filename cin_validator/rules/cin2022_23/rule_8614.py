@@ -12,7 +12,7 @@ LAchildID = Assessments.LAchildID
 
 
 @rule_definition(
-    code=8614,
+    code="8614",
     module=CINTable.Assessments,
     message="Parental or child factors at assessment should only be present for a completed assessment.",
     affected_fields=[AssessmentAuthorisationDate, AssessmentFactors],
@@ -52,7 +52,6 @@ def validate(
 
 
 def test_validate():
-
     fake_data = pd.DataFrame(
         [
             {
@@ -124,7 +123,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8614
+    assert result.definition.code == "8614"
     assert (
         result.definition.message
         == "Parental or child factors at assessment should only be present for a completed assessment."

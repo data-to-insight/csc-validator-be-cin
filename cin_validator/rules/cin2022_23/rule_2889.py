@@ -14,7 +14,7 @@ LAchildID = CINdetails.LAchildID
 
 
 @rule_definition(
-    code=2889,
+    code="2889",
     module=CINTable.Section47,
     message="The S47 start date cannot be before the referral date.",
     affected_fields=[S47ActualStartDate, CINreferralDate],
@@ -22,7 +22,6 @@ LAchildID = CINdetails.LAchildID
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df_s47 = data_container[Section47]
     df_cin = data_container[CINdetails]
 
@@ -162,7 +161,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 2889
+    assert result.definition.code == "2889"
     assert (
         result.definition.message
         == "The S47 start date cannot be before the referral date."

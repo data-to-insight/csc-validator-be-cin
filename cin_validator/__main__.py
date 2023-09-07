@@ -1,5 +1,6 @@
 import datetime
 import importlib
+import json
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -144,7 +145,23 @@ def test_cmd(rule, ruleset):
             for p in module_folder.glob("*.py")
             if p.stem != "__init__"
         ]
-    pytest.main(test_files)
+
+    failed_files = []
+    for file_path in test_files:
+        result = pytest.main([file_path])
+        if result != pytest.ExitCode.OK:
+            failed_files.append(file_path)
+
+    with open("files_failed.json", "w") as f:
+        json.dump(failed_files, f)
+    # pytest.main(test_files)
+
+
+@cli.command(name="retest")
+def retest():
+    with open("files_failed.json", "r") as f:
+        filepaths = json.load(f)
+    pytest.main(filepaths)
 
 
 @cli.command(name="xmltocsv")

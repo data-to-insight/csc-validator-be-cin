@@ -1,5 +1,5 @@
 """
-Rule number: 1520
+Rule number: '1520'
 Module: Child idenitifiers
 Rule details: Each pupil <UPN> (N00001) must be unique across all pupils in the extract. 
 Note: This rule should be evaluated at LA-level for imported data                                                                     
@@ -17,7 +17,7 @@ UPN = ChildIdentifiers.UPN
 
 
 @rule_definition(
-    code=1520,
+    code="1520",
     module=CINTable.ChildIdentifiers,
     message="More than one record with the same UPN.",
     affected_fields=[UPN],
@@ -125,5 +125,5 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8840 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 1520
+    assert result.definition.code == "1520"
     assert result.definition.message == "More than one record with the same UPN."

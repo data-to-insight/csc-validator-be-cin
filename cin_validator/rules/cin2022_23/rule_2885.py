@@ -22,8 +22,8 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 2885
-    code=2885,
+    # write the rule code here, in place of '2885'
+    code="2885",
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildProtectionPlans,
@@ -606,7 +606,7 @@ def test_validate():
     assert issue_rows0.equals(expected_df0)
 
     # Confirm that the rule details were properly pushed through.
-    assert result.definition.code == 2885
+    assert result.definition.code == "2885"
     assert (
         result.definition.message
         == "Child protection plan shown as starting a different day to the initial child protection conference."

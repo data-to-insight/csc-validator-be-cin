@@ -15,7 +15,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
 
 @rule_definition(
-    code=2884,
+    code="2884",
     module=CINTable.Section47,
     message="An initial child protection conference is recorded at both the S47 and CIN Details level and it should only be recorded in one",
     affected_fields=[
@@ -25,7 +25,6 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df_47 = data_container[Section47].copy()
     df_cin = data_container[CINdetails].copy()
 
@@ -221,7 +220,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 2884
+    assert result.definition.code == "2884"
     assert (
         result.definition.message
         == "An initial child protection conference is recorded at both the S47 and CIN Details level and it should only be recorded in one"

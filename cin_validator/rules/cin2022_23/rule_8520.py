@@ -18,7 +18,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=8520,
+    code="8520",
     module=CINTable.ChildIdentifiers,
     message="Date of Birth is after data collection period (must be on or before the end of the census period)",
     affected_fields=[PersonBirthDate, ReferenceDate],
@@ -26,7 +26,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df = data_container[ChildIdentifiers]
     df_ref = data_container[Header]
 
@@ -69,7 +68,7 @@ def test_validate():
         IssueLocator(CINTable.ChildIdentifiers, PersonBirthDate, 3),
     ]
 
-    assert result.definition.code == 8520
+    assert result.definition.code == "8520"
     assert (
         result.definition.message
         == "Date of Birth is after data collection period (must be on or before the end of the census period)"

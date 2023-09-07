@@ -13,10 +13,11 @@ PersonBirthDate = ChildIdentifiers.PersonBirthDate
 ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
 GenderCurrent = ChildIdentifiers.GenderCurrent
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8750
-    code=8750,
+    code="8750",
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -172,5 +173,5 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8750 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8750
+    assert result.definition.code == "8750"
     assert result.definition.message == "Gender must equal 0 for an unborn child"

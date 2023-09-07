@@ -18,10 +18,11 @@ CPPreviewDate = Reviews.CPPreviewDate
 CPPID_reviews = Reviews.CPPID
 CINdetailsReviews = Reviews.CINdetailsID
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here
-    code=8841,
+    code="8841",
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.ChildProtectionPlans,
@@ -283,8 +284,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8841 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8841
+    # replace '8841' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8841"
     assert (
         result.definition.message
         == "The review date cannot be on the same day or before the Child protection Plan start date."

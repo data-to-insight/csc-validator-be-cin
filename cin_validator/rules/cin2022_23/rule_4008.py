@@ -15,7 +15,7 @@ CINPlanStartDate = CINplanDates.CINPlanStartDate
 
 
 @rule_definition(
-    code=4008,
+    code="4008",
     module=CINTable.ChildIdentifiers,
     message="CIN Plan shown as starting after the child’s Date of Death.",
     affected_fields=[
@@ -79,7 +79,6 @@ def validate(
 
 
 def test_validate():
-
     sample_ci = pd.DataFrame(
         [
             {
@@ -188,7 +187,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 4008
+    assert result.definition.code == "4008"
     assert (
         result.definition.message
         == "CIN Plan shown as starting after the child’s Date of Death."

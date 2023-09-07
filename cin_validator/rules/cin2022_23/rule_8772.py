@@ -17,7 +17,7 @@ ReferralNFA = CINdetails.ReferralNFA
 
 
 @rule_definition(
-    code=8772,
+    code="8772",
     module=CINTable.ChildIdentifiers,
     message="UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action",
     affected_fields=[
@@ -203,8 +203,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8772 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8772
+    # replace '8772' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8772"
     assert (
         result.definition.message
         == "UPN unknown reason is UN7 (Referral with no further action) but at least one CIN details is a referral going on to further action"

@@ -21,7 +21,7 @@ ReferenceDate = Header.ReferenceDate
 
 # define characteristics of rule
 @rule_definition(
-    code=8620,
+    code="8620",
     module=CINTable.CINdetails,
     message="CIN Closure Date present and does not fall within the Census year",
     affected_fields=[CINclosureDate],
@@ -95,8 +95,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8620 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8620
+    # replace '8620' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8620"
     assert (
         result.definition.message
         == "CIN Closure Date present and does not fall within the Census year"

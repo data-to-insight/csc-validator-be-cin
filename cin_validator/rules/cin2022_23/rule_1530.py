@@ -15,7 +15,7 @@ UPN = ChildIdentifiers.UPN
 
 
 @rule_definition(
-    code=1530,
+    code="1530",
     module=CINTable.ChildIdentifiers,
     message="UPN invalid (characters 2-4 not a recognised LA code)",
     affected_fields=[UPN],
@@ -98,7 +98,6 @@ def validate(
 
 
 def test_validate():
-
     child_identifiers = pd.DataFrame(
         {
             "UPN": [
@@ -127,7 +126,7 @@ def test_validate():
         IssueLocator(CINTable.ChildIdentifiers, UPN, 6),
     ]
 
-    assert result.definition.code == 1530
+    assert result.definition.code == "1530"
     assert (
         result.definition.message
         == "UPN invalid (characters 2-4 not a recognised LA code)"

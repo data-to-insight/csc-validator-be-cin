@@ -19,7 +19,7 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
 # define characteristics of rule
 @rule_definition(
-    code=2990,
+    code="2990",
     module=CINTable.CINdetails,
     message="Activity is recorded against a case marked as ‘Case closed after assessment, no further action’ or 'case closed after assessment, referred to early help'.",
     affected_fields=[
@@ -382,7 +382,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 2990
+    assert result.definition.code == "2990"
     assert (
         result.definition.message
         == "Activity is recorded against a case marked as ‘Case closed after assessment, no further action’ or 'case closed after assessment, referred to early help'."

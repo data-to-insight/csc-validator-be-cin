@@ -18,9 +18,10 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 
 Section47 = CINTable.Section47
 
+
 # define characteristics of rule
 @rule_definition(
-    code=2883,
+    code="2883",
     # module is table that seems central to the condition.
     module=CINTable.ChildProtectionPlans,
     message="There are more child protection plans starting than initial conferences taking place",
@@ -150,6 +151,6 @@ def test_validate():
 
     issues = result.la_issues
     assert issues == (
-        2883,
+        "2883",
         "There are more child protection plans starting than initial conferences taking place",
     )

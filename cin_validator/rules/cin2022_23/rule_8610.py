@@ -13,7 +13,7 @@ CINdetailsID = CINdetails.CINdetailsID
 
 
 @rule_definition(
-    code=8610,
+    code="8610",
     module=CINTable.CINdetails,
     message="Primary Need code is missing for a referral which led to further action.",
     affected_fields=[ReferralNFA, PrimaryNeedCode],
@@ -105,7 +105,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 8610
+    assert result.definition.code == "8610"
     assert (
         result.definition.message
         == "Primary Need code is missing for a referral which led to further action."

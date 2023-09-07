@@ -1,5 +1,5 @@
 """
-Rule number: 8565
+Rule number: '8565'
 Module: CIN Details
 Rule details: If <CINclosureDate> (N00102) is present then it must be on or after all of the following dates that are present:
     <AssessmentActualStartDate> (N00159)
@@ -51,7 +51,7 @@ CINPlanEndDate = CINplanDates.CINPlanEndDate
 
 
 @rule_definition(
-    code=8565,
+    code="8565",
     module=CINTable.ChildProtectionPlans,
     message="Activity shown after a case has been closed",
     affected_fields=[
@@ -502,5 +502,5 @@ def test_validate():
         ]
     )
 
-    assert result.definition.code == 8565
+    assert result.definition.code == "8565"
     assert result.definition.message == "Activity shown after a case has been closed"

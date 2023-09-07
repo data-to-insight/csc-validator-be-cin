@@ -22,7 +22,7 @@ AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 # define characteristics of rule
 @rule_definition(
     # write the rule code here
-    code=8869,
+    code="8869",
     # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.Assessments,
@@ -123,7 +123,7 @@ def test_validate():
         IssueLocator(CINTable.Assessments, AssessmentFactors, 6),
     ]
 
-    assert result.definition.code == 8869
+    assert result.definition.code == "8869"
     assert (
         result.definition.message
         == "The assessment factors code “21” cannot be used in conjunction with any other assessment factors."

@@ -15,9 +15,10 @@ ChildIdentifiers = CINTable.ChildIdentifiers
 PersonDeathDate = ChildIdentifiers.PersonDeathDate
 LAchildID = ChildIdentifiers.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8920,
+    code="8920",
     module=CINTable.ChildProtectionPlans,
     message="Child Protection Plan cannot end after the child’s Date of Death",
     affected_fields=[
@@ -249,7 +250,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 2885 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8920
+    assert result.definition.code == "8920"
     assert (
         result.definition.message
         == "Child Protection Plan cannot end after the child’s Date of Death"

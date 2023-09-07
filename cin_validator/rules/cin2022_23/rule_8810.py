@@ -13,9 +13,10 @@ CINclosureDate = CINdetails.CINclosureDate
 CINdetailsID = CINdetails.CINdetailsID
 LAchildID = CINdetails.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8810,
+    code="8810",
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="A CIN case cannot have a Reason for Closure without a CIN Closure Date",
@@ -150,8 +151,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8810 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8810
+    # replace '8810' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8810"
     assert (
         result.definition.message
         == "A CIN case cannot have a Reason for Closure without a CIN Closure Date"

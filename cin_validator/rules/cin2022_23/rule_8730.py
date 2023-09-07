@@ -15,9 +15,10 @@ from cin_validator.test_engine import run_rule
 ChildProtectionPlans = CINTable.ChildProtectionPlans
 NumberOfPreviousCPP = ChildProtectionPlans.NumberOfPreviousCPP
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8730,
+    code="8730",
     module=CINTable.ChildProtectionPlans,
     message="Total Number of previous Child Protection Plans missing",
     affected_fields=[NumberOfPreviousCPP],
@@ -66,8 +67,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8730 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8730
+    # replace '8730' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8730"
     assert (
         result.definition.message
         == "Total Number of previous Child Protection Plans missing"

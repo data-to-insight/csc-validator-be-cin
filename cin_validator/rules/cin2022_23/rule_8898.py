@@ -13,10 +13,11 @@ AssessmentFactors = Assessments.AssessmentFactors
 LAchildID = Assessments.LAchildID
 CINdetailsID = Assessments.CINdetailsID
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8898
-    code=8898,
+    # write the rule code here, in place of '8898'
+    code="8898",
     # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -27,7 +28,6 @@ CINdetailsID = Assessments.CINdetailsID
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df = data_container[Assessments]
     df.index.name = "ROW_ID"
     df.reset_index(inplace=True)
@@ -143,8 +143,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8898 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8898
+    # replace '8898' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8898"
     assert (
         result.definition.message
         == " The assessment has more than one parental or child factors with the same code"

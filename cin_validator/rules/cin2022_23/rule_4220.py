@@ -15,7 +15,7 @@ Ethnicity = ChildCharacteristics.Ethnicity
 
 
 @rule_definition(
-    code=4220,
+    code="4220",
     module=CINTable.ChildCharacteristics,
     message="Ethnicity is missing or invalid (see Ethnicity table)",
     affected_fields=[Ethnicity],
@@ -81,7 +81,7 @@ def test_validate():
         IssueLocator(CINTable.ChildCharacteristics, Ethnicity, 6),
     ]
 
-    assert result.definition.code == 4220
+    assert result.definition.code == "4220"
     assert (
         result.definition.message
         == "Ethnicity is missing or invalid (see Ethnicity table)"

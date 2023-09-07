@@ -12,10 +12,11 @@ AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 LAchildID = Assessments.LAchildID
 CINdetailsID = Assessments.CINdetailsID
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8896
-    code=8896,
+    # write the rule code here, in place of '8896'
+    code="8896",
     # replace Assessments with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.Assessments,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -174,7 +175,7 @@ def test_validate():
     # Check that the rule definition is what you wrote in the context above.
 
     # replace 8925 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8896
+    assert result.definition.code == "8896"
     assert (
         result.definition.message
         == "Within one CINDetails group there are 2 or more open Assessments groups"

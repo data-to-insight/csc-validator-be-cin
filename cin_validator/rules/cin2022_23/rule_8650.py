@@ -13,9 +13,10 @@ from cin_validator.test_engine import run_rule
 CINdetails = CINTable.CINdetails
 PrimaryNeedCode = CINdetails.PrimaryNeedCode
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8650,
+    code="8650",
     module=CINTable.CINdetails,
     message="Primary Need Code invalid (see Primary Need table in CIN census code set)",
     affected_fields=[PrimaryNeedCode],
@@ -39,7 +40,6 @@ def validate(
 
 
 def test_validate():
-
     pri_need = ["N1", "N8", "AA", pd.NA, "N6", "BB", "N9"]
 
     fake_dataframe = pd.DataFrame({"PrimaryNeedCode": pri_need})
@@ -55,7 +55,7 @@ def test_validate():
         IssueLocator(CINTable.CINdetails, PrimaryNeedCode, 5),
     ]
 
-    assert result.definition.code == 8650
+    assert result.definition.code == "8650"
     assert (
         result.definition.message
         == "Primary Need Code invalid (see Primary Need table in CIN census code set)"

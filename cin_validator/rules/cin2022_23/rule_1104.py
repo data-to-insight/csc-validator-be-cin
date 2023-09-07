@@ -15,7 +15,7 @@ CINdetailsID = CINdetails.CINdetailsID
 
 
 @rule_definition(
-    code=1104,
+    code="1104",
     module=CINTable.Section47,
     message="The date of the initial child protection conference cannot be before the referral date",
     affected_fields=[
@@ -200,7 +200,7 @@ def test_validate():
     )
     assert issue_rows.equals(expected_df)
 
-    assert result.definition.code == 1104
+    assert result.definition.code == "1104"
     assert (
         result.definition.message
         == "The date of the initial child protection conference cannot be before the referral date"

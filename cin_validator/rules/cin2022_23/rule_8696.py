@@ -18,9 +18,10 @@ Header = CINTable.Header
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8696,
+    code="8696",
     module=CINTable.Assessments,
     message="Assessment end date must fall within the census year",
     affected_fields=[AssessmentAuthorisationDate, ReferenceDate],
@@ -28,7 +29,6 @@ ReferenceDate = Header.ReferenceDate
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-
     df = data_container[Assessments]
     df_ref = data_container[Header]
 
@@ -84,7 +84,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == 8696
+    assert result.definition.code == "8696"
     assert (
         result.definition.message
         == "Assessment end date must fall within the census year"

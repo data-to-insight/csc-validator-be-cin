@@ -12,10 +12,11 @@ LAchildID = CINdetails.LAchildID
 CINreferralDate = CINdetails.CINreferralDate
 ReferralSource = CINdetails.ReferralSource
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8866
-    code=8866,
+    # write the rule code here, in place of '8866'
+    code="8866",
     # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.CINdetails,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -167,7 +168,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == 8866
+    assert result.definition.code == "8866"
     assert (
         result.definition.message == "Source of Referral is missing or an invalid code"
     )

@@ -18,7 +18,7 @@ ReferenceDate = Header.ReferenceDate
 
 
 @rule_definition(
-    code=4013,
+    code="4013",
     module=CINTable.CINplanDates,
     message="CIN Plan end date must fall within the census year",
     affected_fields=[CINPlanEndDate, ReferenceDate],
@@ -75,7 +75,7 @@ def test_validate():
         IssueLocator(CINTable.CINplanDates, CINPlanEndDate, 2),
     ]
 
-    assert result.definition.code == 4013
+    assert result.definition.code == "4013"
     assert (
         result.definition.message
         == "CIN Plan end date must fall within the census year"

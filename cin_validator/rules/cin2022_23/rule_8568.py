@@ -15,7 +15,7 @@ ReferralNFA = CINdetails.ReferralNFA
 
 
 @rule_definition(
-    code=8568,
+    code="8568",
     module=CINTable.CINdetails,
     message="RNFA flag is missing or invalid",
     affected_fields=[ReferralNFA],
@@ -35,7 +35,6 @@ def validate(
 
 
 def test_validate():
-
     RNFA = [1, 0, 2, pd.NA, "true", "Woof", "Meow"]
 
     fake_dataframe = pd.DataFrame({"ReferralNFA": RNFA})
@@ -53,5 +52,5 @@ def test_validate():
         IssueLocator(CINTable.CINdetails, ReferralNFA, 6),
     ]
 
-    assert result.definition.code == 8568
+    assert result.definition.code == "8568"
     assert result.definition.message == "RNFA flag is missing or invalid"

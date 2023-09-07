@@ -18,10 +18,11 @@ CPPendDate = ChildProtectionPlans.CPPendDate
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8930
-    code=8930,
+    # write the rule code here, in place of '8930'
+    code="8930",
     # replace ChildProtectionPlans with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildProtectionPlans,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
@@ -98,8 +99,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8930 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8930
+    # replace '8930' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8930"
     assert (
         result.definition.message
         == "Child Protection Plan End Date must fall within the census year"

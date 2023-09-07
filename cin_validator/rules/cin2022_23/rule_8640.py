@@ -13,9 +13,10 @@ from cin_validator.test_engine import run_rule
 CINdetails = CINTable.CINdetails
 ReasonForClosure = CINdetails.ReasonForClosure
 
+
 # define characteristics of rule
 @rule_definition(
-    code=8640,
+    code="8640",
     module=CINTable.CINdetails,
     message="CIN Reason for closure code invalid (see Reason for Closure table in CIN Census code set)",
     affected_fields=[ReasonForClosure],
@@ -68,7 +69,7 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    assert result.definition.code == 8640
+    assert result.definition.code == "8640"
     assert (
         result.definition.message
         == "CIN Reason for closure code invalid (see Reason for Closure table in CIN Census code set)"

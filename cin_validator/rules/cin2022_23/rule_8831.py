@@ -20,10 +20,11 @@ DateOfInitialCPC = CINdetails.DateOfInitialCPC
 LAchildID = CINdetails.LAchildID
 CINdetailsID = CINdetails.CINdetailsID
 
+
 # define characteristics of rule
 @rule_definition(
-    # write the rule code here, in place of 8831
-    code=8831,
+    # write the rule code here, in place of '8831'
+    code="8831",
     # replace CINdetails with the value in the module column of the excel sheet corresponding to this rule .
     # Note that even if multiple tables are involved, one table will be named in the module column.
     module=CINTable.CINdetails,
@@ -352,8 +353,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8831 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8831
+    # replace '8831' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8831"
     assert (
         result.definition.message
         == "Activity is recorded against a case marked as a referral with no further action"

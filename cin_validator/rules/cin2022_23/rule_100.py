@@ -16,7 +16,7 @@ Year = Header.Year
 
 
 @rule_definition(
-    code=100,
+    code="100",
     module=CINTable.Header,
     message="Reference Date is incorrect",
     affected_fields=[ReferenceDate],
@@ -72,5 +72,5 @@ def test_validate():
     ]
 
     # Checks rule code and message are correct.
-    assert result.definition.code == 100
+    assert result.definition.code == "100"
     assert result.definition.message == "Reference Date is incorrect"

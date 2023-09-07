@@ -16,7 +16,7 @@ ICPCnotRequired = Section47.ICPCnotRequired
 
 # define characteristics of rule
 @rule_definition(
-    code=8839,
+    code="8839",
     module=CINTable.Section47,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message="Within one CINDetails group there are 2 or more open S47 Assessments",
@@ -216,8 +216,8 @@ def test_validate():
 
     # Check that the rule definition is what you wrote in the context above.
 
-    # replace 8839 with the rule code and put the appropriate message in its place too.
-    assert result.definition.code == 8839
+    # replace '8839' with the rule code and put the appropriate message in its place too.
+    assert result.definition.code == "8839"
     assert (
         result.definition.message
         == "Within one CINDetails group there are 2 or more open S47 Assessments"
