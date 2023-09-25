@@ -95,8 +95,38 @@ There are also demonstrations of some of the types of validation used for rule c
 
 If you alter a rule or add one, it's important to follow the naming convention used in the rules directory of the CIN validator so that it's picked up and run: rule_xxx.py where xxx is replaced with the rule code. It is also important that you write an appropriate test for your rule, using the template provided by other rules. To do this, you'll need to use the template found in any rule of the same type, and fill it out to suit your rule. That means making a DataFrame (or set of data-frames) that should pass and fail in known rows to make sure that your validate function allows data to pass which should, and fails data that should fail. You'll then need to fill out the assert statements and expected DataFrame to match this. To check your validation code works as intended, try and account for as many possible cases as you can in your test DataFrames. Also, don't change your assert statements just so they pass! Make sure you know you're returning what you expect and why. 
 
+## Debugging multiple failing tests.
+Sometimes, due to a change in the behaviour of a dependency or a change done in the core functions of the tool, multiple validation rules might fail for a variety of reasons. 
+It is wise to separate out the files of the rules which fail so that you can debug progressively.
+
+In the `__main__.py` file, which controls the command line functionality, find the code for the `test` command and replace the `pytest.main(test_files)` line with this instead
+```
+failed_files = []
+for file_path in test_files:
+    result = pytest.main([file_path])
+    if result != pytest.ExitCode.OK:
+        failed_files.append(file_path)
+
+with open("files_failed.json", "w") as f:
+    json.dump(failed_files, f)
+```
+Next, run `python -m cin_validator test`. This creates a json file containing the absolute filepaths of the rules whose tests failed. You can now run only the rules which failed by creating a new command in main.py as such:
+
+```
+@cli.command(name="retest")
+def retest():
+    with open("files_failed.json", "r") as f:
+        filepaths = json.load(f)
+    pytest.main(filepaths)
+```
+
+Now, running `python -m cin_validator retest` only runs the rules which failed and as you debug, it is easier to track whether or not your changes have worked since it is a shorter list of rules to look through.
+
+When a number of rules pass on the retest command, you might want to filter it out again so that you only have the rules that still fail. To do that, run `python -m cin_validator test` again so that the `files_failed.json` file is updated.
+The files_failed.json is a temporary file for debugging purposes only and can easily be regenerated so do not commit it when you push your changes to the Github repo. 
+
 ## Pushing changes to the live version
-This section will be filled out when the relevant workflow is finalised.
+Refer to the README file on the landing page of the repo for the up-to-date process.
 
 # Road-map
 Community maintenance: The CIN validation tool relies on the community of analysts who use it to be an effective tool. Currently this community is relied on for bug reports, bug fixing, updating the tool to write new rules, and maintaining the current ones. This is done in collaboration with one paid member of staff at Data to Insight and one at Social Finance who have to goal of facilitating and aiding analysts in being able to work on the tool. As part of this, the road-map for the CIN validator also includes building the community of analysts who work on and use the tool, building up the Python skills of interested analysts, and encouraging interested analysts to join other Python related projects with Data to Insight, who are currently working on an online data analysis and visualisation pipeline, allowing analysts without access to Python in their LA to code Python and then access the output sin their browser.

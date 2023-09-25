@@ -146,22 +146,7 @@ def test_cmd(rule, ruleset):
             if p.stem != "__init__"
         ]
 
-    failed_files = []
-    for file_path in test_files:
-        result = pytest.main([file_path])
-        if result != pytest.ExitCode.OK:
-            failed_files.append(file_path)
-
-    with open("files_failed.json", "w") as f:
-        json.dump(failed_files, f)
-    # pytest.main(test_files)
-
-
-@cli.command(name="retest")
-def retest():
-    with open("files_failed.json", "r") as f:
-        filepaths = json.load(f)
-    pytest.main(filepaths)
+    pytest.main(test_files)
 
 
 @cli.command(name="xmltocsv")
@@ -184,7 +169,6 @@ def cli_converter(filename: str):
 
         cin_tables_dict = cin_validator.convert_data(root)
         for k, v in cin_tables_dict.items():
-            #  TODO output CSVs as a zip file
             filepath = Path(f"output_csvs/{k}.csv")
             filepath.parent.mkdir(parents=True, exist_ok=True)
             v.to_csv(filepath)
