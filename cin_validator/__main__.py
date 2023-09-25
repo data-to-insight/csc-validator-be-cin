@@ -91,6 +91,7 @@ def run_all(filename: str, ruleset, select, output):
 
     click.echo(full_issue_df)
     click.echo(validator.la_rule_issues)
+    click.echo(full_issue_df[full_issue_df["tables_affected"] == "Header"])
 
 
 @cli.command(name="test")
