@@ -104,15 +104,14 @@ def cin_validate(
 
     # what the frontend will display
     issue_report = validator.full_issue_df.to_json(orient="records")
-    la_rule_issues = validator.la_rule_issues.to_json(orient="records")
+    multichild_issues = validator.multichild_issues.to_json(orient="records")
 
     # what the user will download
     user_report = validator.user_report.to_json(orient="records")
 
-    # TODO check that header issues are filtered out and also displayed in the frontend.
     validation_results = {
         "issue_locations": [issue_report],
-        "la_rule_issues": la_rule_issues,
+        "multichild_issues": [multichild_issues],
         "data_tables": [cin_data_tables],
         "user_report": [user_report],
     }
