@@ -284,6 +284,14 @@ class CinValidator:
         )
         self.full_issue_df.reset_index(drop=True, inplace=True)
 
+        # combine multichild issues
+        header_issues = self.full_issue_df[
+            self.full_issue_df["tables_affected"] == "Header"
+        ]
+        self.multichild_issues = pd.concat([header_issues, self.la_rule_issues])[
+            ["rule_code", "rule_description"]
+        ]
+
     def get_rules_to_run(
         self, registry, selected_rules: Optional[list[str]] = None
     ) -> list[RuleDefinition]:

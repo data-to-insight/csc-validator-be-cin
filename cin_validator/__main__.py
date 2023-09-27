@@ -90,7 +90,7 @@ def run_all(filename: str, ruleset, select, output):
         validator.user_report.to_csv("user_report.csv")
 
     click.echo(full_issue_df)
-    click.echo(validator.la_rule_issues)
+    click.echo(validator.multichild_issues)
 
 
 @cli.command(name="test")
