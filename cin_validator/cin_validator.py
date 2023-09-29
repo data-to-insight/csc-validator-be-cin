@@ -284,10 +284,14 @@ class CinValidator:
         )
         self.full_issue_df.reset_index(drop=True, inplace=True)
 
-        # combine multichild issues
+        # remove header issues from main dataframe and transfer to no-child-id dataframe
         header_issues = self.full_issue_df[
             self.full_issue_df["tables_affected"] == "Header"
         ]
+        self.full_issue_df = self.full_issue_df[
+            self.full_issue_df["tables_affected"] != "Header"
+        ]
+        # combine multichild issues
         self.multichild_issues = pd.concat([header_issues, self.la_rule_issues])[
             ["rule_code", "rule_description"]
         ]
