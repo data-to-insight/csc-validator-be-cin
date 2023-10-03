@@ -2,7 +2,7 @@
 name = "cin-validator"
 version = "0.1.3"
 description = "Shared module for validating CIN census data using DfE rules."
-authors = "Tambe Tabitha <tambe.tabitha@socialfinance.org.uk>, Kaj Siebert <kaj.siebert@socialfinance.org.uk>, William Levack-Payne <william.levack-payne@eastsussex.gov.uk>, DatatoInsight's children's social care analyst community"
+authors = ["Tambe Tabitha <tambe.tabitha@socialfinance.org.uk>, Kaj Siebert <kaj.siebert@socialfinance.org.uk>, William Levack-Payne <william.levack-payne@eastsussex.gov.uk>, DatatoInsight's children's social care analyst community <datatoinsight.enquiries@gmail.com>"]
 packages = [
     { include = "rpc_main.py" },
     { include = "cin_validator/**/*.py"  }	
