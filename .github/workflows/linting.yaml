@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: psf/black@stable
         with:
           version: "22.8.0"
