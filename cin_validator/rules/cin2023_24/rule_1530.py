@@ -121,7 +121,7 @@ def test_validate():
 
     issues = list(result.issues)
 
-    assert len(issues) == 3
+    assert len(issues) == 2
 
     assert issues == [
         IssueLocator(CINTable.ChildIdentifiers, UPN, 4),
