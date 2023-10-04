@@ -63,7 +63,7 @@ def test_validate():
 
     issues = list(result.issues)
     # Intended fail points in data.
-    assert len(issues) == 3
+    assert len(issues) == 2
     # Intended failures of test data by index.
     assert issues == [
         IssueLocator(CINTable.Header, ReferenceDate, 1),
