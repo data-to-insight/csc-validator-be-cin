@@ -10,6 +10,7 @@ S47ActualStartDate = Section47.S47ActualStartDate
 DateOfInitialCPC = Section47.DateOfInitialCPC
 LAchildID = Section47.LAchildID
 
+
 # define characteristics of rule
 @rule_definition(
     code="8615",
