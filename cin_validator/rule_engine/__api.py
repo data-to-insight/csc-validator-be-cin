@@ -36,6 +36,7 @@ class CINTable(Enum):
             "PersonBirthDate",
             "ExpectedPersonBirthDate",
             "GenderCurrent",
+            "Sex",
             "PersonDeathDate",
         ],
     )

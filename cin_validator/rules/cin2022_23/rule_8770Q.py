@@ -20,6 +20,7 @@ ReferralNFA = CINdetails.ReferralNFA
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
 
+
 # define characteristics of rule
 @rule_definition(
     # write the rule code here, in place of 8770Q

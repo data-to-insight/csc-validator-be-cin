@@ -57,6 +57,7 @@ class XMLtoCSV:
             "PersonBirthDate",
             "ExpectedPersonBirthDate",
             "GenderCurrent",
+            "Sex",
             "PersonDeathDate",
         ]
     )
