@@ -15,7 +15,7 @@ ExpectedPersonBirthDate = ChildIdentifiers.ExpectedPersonBirthDate
     code="2886Q",
     rule_type=RuleType.QUERY,
     module=CINTable.ChildIdentifiers,
-    message="Please check and either amend or provide a reason: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
+    message="Please check and either amend or provide a reason: Percentage of children with no sex recorded is more than 2% (excluding unborns)",
     affected_fields=[ExpectedPersonBirthDate, ChildIdentifiers],
 )
 def validate(
@@ -64,5 +64,5 @@ def test_validate():
 
     assert result.la_issues == (
         "2886Q",
-        "Please check and either amend or provide a reason: Percentage of children with no gender recorded is more than 2% (excluding unborns)",
+        "Please check and either amend or provide a reason: Percentage of children with no sex recorded is more than 2% (excluding unborns)",
     )
