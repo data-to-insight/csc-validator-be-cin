@@ -86,10 +86,18 @@ class XMLtoCSV:
         columns=[
             "LAchildID",
             "CINdetailsID",
+            "AssessmentID",
             "AssessmentActualStartDate",
             "AssessmentInternalReviewDate",
             "AssessmentAuthorisationDate",
-            "AssessmentFactors",
+        ]
+    )
+    AssessmentFactors = pd.DataFrame(
+        columns=[
+            "LAchildID",
+            "CINdetailsID",
+            "AssessmentID",
+            "AssessmentFactor",
         ]
     )
     CINplanDates = pd.DataFrame(
@@ -121,7 +129,7 @@ class XMLtoCSV:
         columns=["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"]
     )
 
-    id_cols = ["LAchildID", "CINdetailsID", "CPPID"]
+    id_cols = ["LAchildID", "CINdetailsID", "AssessmentID", "CPPID"]
 
     def __init__(self, root):
         """
@@ -314,34 +322,42 @@ class XMLtoCSV:
         :rtype: DataFrame
         """
 
-        def assessment_block_maker(assmnt):
-            assessment_dict = {
-                "LAchildID": self.LAchildID,
-                "CINdetailsID": self.CINdetailsID,
-            }
-            assessment_dict = get_values(elements, assessment_dict, assessment)
-            # the get_values function will not find AssessmentFactors on that level so it'll assign it to NaN
-            assessment_dict["AssessmentFactors"] = assmnt.text
-            assessments_list.append(assessment_dict)
-            return assessment_dict
-
         assessments_list = []
         columns = self.Assessments.columns
         elements = list(set(columns).difference(set(self.id_cols)))
 
+        self.AssessmentID = 0
         assessments = cin_detail.findall("Assessments")
         for assessment in assessments:
-            # all the assessment descriptors repeat to create a row for each assessment factor.
+            self.AssessmentID += 1
+            assessment_dict = {
+                "LAchildID": self.LAchildID,
+                "CINdetailsID": self.CINdetailsID,
+                "AssessmentID": self.AssessmentID,
+            }
+            assessment_dict = get_values(elements, assessment_dict, assessment)
+            assessments_list.append(assessment_dict)
+
+            # the get_values function will not find AssessmentFactors on that level so we retrieve these separately.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
+            assessment_factors_list = []
+            assessment_columns = self.AssessmentFactors.columns
+            assessment_elements = list(set(assessment_columns).difference(set(self.id_cols)))
             if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
-                    assessment_block_maker(factor)
-
-            # else needed to build blocks in instances where assessments aren't completed which means there's no assessment factors to build with.
-            else:
-                for assessment in assessments:
-                    assessment_block_maker(assessment)
+                    assessment_factors_dict = {
+                    "LAchildID": self.LAchildID,
+                    "CINdetailsID": self.CINdetailsID,
+                    "AssessmentID": self.AssessmentID,
+                    }
+                    assessment_factors_dict = get_values(assessment_elements, assessment_factors_dict, factor)
+                    assessment_factors_dict["AssessmentFactor"] = factor.text
+                    assessment_factors_list.append(assessment_factors_dict)
+                assessment_factors_df = pd.DataFrame(assessment_factors_list)
+                self.AssessmentFactors = pd.concat(
+                    [self.AssessmentFactors, assessment_factors_df], ignore_index=True
+                    )
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
