@@ -329,6 +329,7 @@ class XMLtoCSV:
 
         self.AssessmentID = 0
         assessments = cin_detail.findall("Assessments")
+
         for assessment in assessments:
             self.AssessmentID += 1
             assessment_dict = {
@@ -336,6 +337,7 @@ class XMLtoCSV:
                 "CINdetailsID": self.CINdetailsID,
                 "AssessmentID": self.AssessmentID,
             }
+
             assessment_dict = get_values(elements, assessment_dict, assessment)
 
             # the get_values function will not find AssessmentFactors on that level so we retrieve these separately.
@@ -364,9 +366,10 @@ class XMLtoCSV:
                     [self.AssessmentFactorsList, assessment_factors_df],
                     ignore_index=True,
                 )
-            assessment_dict["AssessmentFactors"] = assessment_factors_df[
-                "AssessmentFactor"
-            ].tolist()
+                assessment_dict["AssessmentFactors"] = assessment_factors_df[
+                    "AssessmentFactor"
+                ].tolist()
+
             assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
