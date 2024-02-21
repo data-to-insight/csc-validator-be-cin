@@ -337,7 +337,6 @@ class XMLtoCSV:
                 "AssessmentID": self.AssessmentID,
             }
             assessment_dict = get_values(elements, assessment_dict, assessment)
-            assessments_list.append(assessment_dict)
 
             # the get_values function will not find AssessmentFactors on that level so we retrieve these separately.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
@@ -346,6 +345,7 @@ class XMLtoCSV:
             assessment_elements = list(
                 set(assessment_columns).difference(set(self.id_cols))
             )
+            
             if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
@@ -364,6 +364,8 @@ class XMLtoCSV:
                     [self.AssessmentFactorsList, assessment_factors_df],
                     ignore_index=True,
                 )
+            assessment_dict["AssessmentFactors"] = assessment_factors_df["AssessmentFactor"].tolist()
+            assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
