@@ -91,7 +91,7 @@ def run_all(filename: str, ruleset, select, output):
 
     # click.echo(full_issue_df)
     # click.echo(validator.multichild_issues)
-    click.echo(validator.data_files["AssessmentFactors"])
+    click.echo(validator.data_files["AssessmentFactorsList"])
 
 
 @cli.command(name="test")

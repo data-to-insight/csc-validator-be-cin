@@ -52,7 +52,7 @@ def convert_data(root: ET.Element):
         "Reviews": data_files.Reviews,
         "Section47": data_files.Section47,
         "Assessments": data_files.Assessments,
-        "AssessmentFactors": data_files.AssessmentFactors,
+        "AssessmentFactorsList": data_files.AssessmentFactorsList,
         "Disabilities": data_files.Disabilities,
     }
     return cin_tables

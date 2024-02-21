@@ -90,9 +90,10 @@ class XMLtoCSV:
             "AssessmentActualStartDate",
             "AssessmentInternalReviewDate",
             "AssessmentAuthorisationDate",
+            "AssessmentFactors",
         ]
     )
-    AssessmentFactors = pd.DataFrame(
+    AssessmentFactorsList = pd.DataFrame(
         columns=[
             "LAchildID",
             "CINdetailsID",
@@ -341,23 +342,28 @@ class XMLtoCSV:
             # the get_values function will not find AssessmentFactors on that level so we retrieve these separately.
             assessment_factors = assessment.find("FactorsIdentifiedAtAssessment")
             assessment_factors_list = []
-            assessment_columns = self.AssessmentFactors.columns
-            assessment_elements = list(set(assessment_columns).difference(set(self.id_cols)))
+            assessment_columns = self.AssessmentFactorsList.columns
+            assessment_elements = list(
+                set(assessment_columns).difference(set(self.id_cols))
+            )
             if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 for factor in assessment_factors:
                     assessment_factors_dict = {
-                    "LAchildID": self.LAchildID,
-                    "CINdetailsID": self.CINdetailsID,
-                    "AssessmentID": self.AssessmentID,
+                        "LAchildID": self.LAchildID,
+                        "CINdetailsID": self.CINdetailsID,
+                        "AssessmentID": self.AssessmentID,
                     }
-                    assessment_factors_dict = get_values(assessment_elements, assessment_factors_dict, factor)
+                    assessment_factors_dict = get_values(
+                        assessment_elements, assessment_factors_dict, factor
+                    )
                     assessment_factors_dict["AssessmentFactor"] = factor.text
                     assessment_factors_list.append(assessment_factors_dict)
                 assessment_factors_df = pd.DataFrame(assessment_factors_list)
-                self.AssessmentFactors = pd.concat(
-                    [self.AssessmentFactors, assessment_factors_df], ignore_index=True
-                    )
+                self.AssessmentFactorsList = pd.concat(
+                    [self.AssessmentFactorsList, assessment_factors_df],
+                    ignore_index=True,
+                )
 
         assessments_df = pd.DataFrame(assessments_list)
         self.Assessments = pd.concat(
