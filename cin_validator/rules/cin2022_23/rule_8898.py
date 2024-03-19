@@ -8,10 +8,14 @@ from cin_validator.test_engine import run_rule
 # Get tables and columns of interest from the CINTable object defined in rule_engine/__api.py
 
 Assessments = CINTable.Assessments
-AssessmentActualStartDate = Assessments.AssessmentActualStartDate
+AssessmentID = Assessments.AssessmentID
 AssessmentFactors = Assessments.AssessmentFactors
+AssessmentActualStartDate = Assessments.AssessmentActualStartDate
 LAchildID = Assessments.LAchildID
 CINdetailsID = Assessments.CINdetailsID
+
+AssessmentFactorsList = CINTable.AssessmentFactorsList
+AssessmentFactor = AssessmentFactorsList.AssessmentFactor
 
 
 # define characteristics of rule
@@ -23,29 +27,36 @@ CINdetailsID = Assessments.CINdetailsID
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
     message=" The assessment has more than one parental or child factors with the same code",
     # The column names tend to be the words within the < > signs in the github issue description.
-    affected_fields=[AssessmentActualStartDate],
+    affected_fields=[AssessmentFactors],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    df = data_container[Assessments]
-    df.index.name = "ROW_ID"
-    df.reset_index(inplace=True)
+    df_ass = data_container[Assessments]
+    df_asslist = data_container[AssessmentFactorsList]
+    df_ass.index.name = "ROW_ID"
+    df_ass.reset_index(inplace=True)
+
+    df_ass_merged = df_ass.merge(
+        df_asslist[["LAchildID", "CINdetailsID", "AssessmentID", "AssessmentFactor"]],
+        on=["LAchildID", "CINdetailsID", "AssessmentID"],
+    )
 
     # If there is more than one <AssessmentFactors> (N00181) for an assessment recorded, then none of the values should appear more than once for an assessment.
 
-    # .duplicated() returns True in all the locations where LAchildID-CINdetailsID-AssessmentActualStartDate-AssessmentFactors combination is a duplicate
-    condition = df.duplicated(
-        [LAchildID, CINdetailsID, AssessmentActualStartDate, AssessmentFactors],
+    # .duplicated() returns True in all the locations where LAchildID-CINdetailsID-AssessmentID-AssessmentFactors combination is a duplicate
+    condition = df_ass_merged.duplicated(
+        [LAchildID, CINdetailsID, AssessmentID, AssessmentFactor],
         keep=False,
     )
-    df_issues = df[condition].reset_index()
+
+    df_issues = df_ass_merged[condition].drop_duplicates().reset_index()
 
     df_issues["ERROR_ID"] = tuple(
         zip(
             df_issues[LAchildID],
-            df_issues[CINdetailsID],
-            df_issues[AssessmentActualStartDate],
+            df_issues[AssessmentID],
+            df_issues[AssessmentFactors],
         )
     )
 
@@ -57,7 +68,7 @@ def validate(
 
     # Ensure that you do not change the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_3(
-        table=Assessments, columns=[AssessmentActualStartDate], row_df=df_issues
+        table=Assessments, columns=[AssessmentFactors], row_df=df_issues
     )
 
 
@@ -68,26 +79,44 @@ def test_validate():
             {
                 LAchildID: "child1",
                 CINdetailsID: "cinID1",
-                AssessmentFactors: "111",  # fail: duplicate in Assessment group
                 AssessmentActualStartDate: "01/01/2000",
+                AssessmentFactors: ("111", "111"),  # fail: duplicate Assessment Factor
+                AssessmentID: "1",  # fail: duplicate Assessment Factor
             },
             {
                 LAchildID: "child1",
                 CINdetailsID: "cinID1",
-                AssessmentFactors: "111",  # fail: duplicate in Assessment group
-                AssessmentActualStartDate: "01/01/2000",
-            },
-            {
-                LAchildID: "child1",
-                CINdetailsID: "cinID1",
-                AssessmentFactors: "111",  # pass: different Assessment group
                 AssessmentActualStartDate: "02/01/2000",
+                AssessmentFactors: ("111", "222"),
+                AssessmentID: "2",  # pass: different Assessment Factor
+            },
+        ]
+    )
+    sample_factors = pd.DataFrame(
+        [  # child1
+            {
+                LAchildID: "child1",
+                CINdetailsID: "cinID1",
+                AssessmentFactor: "111",  # fail: duplicate Assessment Factor
+                AssessmentID: "1",
+            },
+            {
+                LAchildID: "child1",
+                CINdetailsID: "cinID1",
+                AssessmentFactor: "111",  # fail: duplicate Assessment Factor
+                AssessmentID: "1",
+            },
+            {
+                LAchildID: "child1",
+                CINdetailsID: "cinID1",
+                AssessmentFactor: "111",  # pass: different Assessment Factor
+                AssessmentID: "2",
             },
             {
                 LAchildID: "child1",
                 CINdetailsID: "cinID2",
-                AssessmentFactors: "222",  # pass: not duplicate
-                AssessmentActualStartDate: "02/01/2001",
+                AssessmentFactor: "222",  # pass: different Assessment Factor
+                AssessmentID: "2",
             },
         ]
     )
@@ -99,7 +128,13 @@ def test_validate():
     )
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Assessments: sample_assessments})
+    result = run_rule(
+        validate,
+        {
+            Assessments: sample_assessments,
+            AssessmentFactorsList: sample_factors,
+        },
+    )
 
     # Use .type3_issues to check for the result of .push_type3_issues() which you used above.
     issues_list = result.type3_issues
@@ -112,7 +147,7 @@ def test_validate():
     assert issue_table == Assessments
 
     issue_columns = issues.columns
-    assert issue_columns == [AssessmentActualStartDate]
+    assert issue_columns == [AssessmentFactors]
 
     # check that the location linking dataframe was formed properly.
     issue_rows = issues.row_df
@@ -121,7 +156,7 @@ def test_validate():
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
-
+    print(issue_rows)
     # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
     # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
     # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
@@ -132,10 +167,10 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    "cinID1",
-                    pd.to_datetime("01/01/2000", format="%d/%m/%Y"),
+                    "1",
+                    ("111", "111"),
                 ),
-                "ROW_ID": [0, 1],
+                "ROW_ID": [0],
             },
         ]
     )

@@ -12,6 +12,10 @@ Assessments = CINTable.Assessments
 AssessmentAuthorisationDate = Assessments.AssessmentAuthorisationDate
 AssessmentFactors = Assessments.AssessmentFactors
 LAchildID = Assessments.LAchildID
+AssessmentID = Assessments.AssessmentID
+
+AssessmentFactorsList = CINTable.AssessmentFactorsList
+AssessmentFactor = AssessmentFactorsList.AssessmentFactor
 
 Header = CINTable.Header
 ReferenceDate = Header.ReferenceDate
@@ -32,14 +36,16 @@ def validate(
 ):
     # PREPARING DATA
 
-    df = data_container[Assessments]
+    df_ass = data_container[Assessments]
+    df_asslist = data_container[AssessmentFactorsList]
 
     header = data_container[Header]
     ref_date_series = header[ReferenceDate]
     collection_start, collection_end = make_census_period(ref_date_series)
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
-    df.index.name = "ROW_ID"
+    df_ass.index.name = "ROW_ID"
+    df_ass.reset_index(inplace=True)
 
     # lOGIC
     # Implement rule logic as described by the Github issue.
@@ -95,15 +101,21 @@ def validate(
         "24A",
     ]
 
-    condition1 = (df[AssessmentAuthorisationDate] >= collection_start) & (
-        df[AssessmentAuthorisationDate].notna()
+    df_ass_merged = df_ass.merge(
+        df_asslist[["LAchildID", "AssessmentID", "AssessmentFactor"]],
+        on=["LAchildID", "AssessmentID"],
+        how="left",
     )
-    condition2 = (df[AssessmentFactors].notna()) & (
-        df[AssessmentFactors].isin(factors_list)
+
+    condition1 = (df_ass_merged[AssessmentAuthorisationDate] >= collection_start) & (
+        df_ass_merged[AssessmentAuthorisationDate].notna()
+    )
+    condition2 = (df_ass_merged[AssessmentFactors].notna()) & (
+        df_ass_merged[AssessmentFactor].isin(factors_list)
     )
 
     # get all the data that fits the failing condition. Reset the index so that ROW_ID now becomes a column of df
-    df_issues = df[condition1 & ~condition2].reset_index()
+    df_issues = df_ass_merged[condition1 & ~condition2].reset_index()
 
     # SUBMIT ERRORS
     # Generate a unique ID for each instance of an error. In this case,
@@ -118,7 +130,7 @@ def validate(
     link_id = tuple(
         zip(
             df_issues[LAchildID],
-            df_issues[AssessmentAuthorisationDate],
+            df_issues[AssessmentID],
             df_issues[AssessmentFactors],
         )
     )
@@ -142,36 +154,43 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",
+                "AssessmentID": "11",
                 "AssessmentFactors": pd.NA,
                 "AssessmentAuthorisationDate": "26/05/2000",
             },  # Fails as no assessment factor code
             {
                 "LAchildID": "child2",
+                "AssessmentID": "21",
                 "AssessmentFactors": "99",
                 "AssessmentAuthorisationDate": "26/05/2000",
             },  # Fails as incorrect assessment factor code
             {
                 "LAchildID": "child3",
+                "AssessmentID": "31",
                 "AssessmentFactors": "1A",
                 "AssessmentAuthorisationDate": "26/05/2000",
             },
             {
                 "LAchildID": "child3",
+                "AssessmentID": "32",
                 "AssessmentAuthorisationDate": "26/05/2000",
                 "AssessmentFactors": pd.NA,
             },  # Fails as no factor selected
             {
                 "LAchildID": "child4",
+                "AssessmentID": "41",
                 "AssessmentFactors": "1A",
                 "AssessmentAuthorisationDate": "26/05/2000",
             },
             {
                 "LAchildID": "child5",
+                "AssessmentID": "51",
                 "AssessmentAuthorisationDate": pd.NA,
                 "AssessmentFactors": pd.NA,
             },
             {
                 "LAchildID": "child5",
+                "AssessmentID": "52",
                 "AssessmentAuthorisationDate": "26/05/1945",
                 "AssessmentFactors": pd.NA,  # Passes as before census year
             },
@@ -186,7 +205,16 @@ def test_validate():
     sample_header = pd.DataFrame([{ReferenceDate: "31/03/2001"}])
 
     # Run rule function passing in our sample data
-    result = run_rule(validate, {Assessments: fake_data, Header: sample_header})
+    result = run_rule(
+        validate,
+        {
+            Assessments: fake_data,
+            AssessmentFactorsList: fake_data.rename(
+                columns={"AssessmentFactors": "AssessmentFactor"}
+            ),
+            Header: sample_header,
+        },
+    )
 
     # Use .type1_issues to check for the result of .push_type1_issues() which you used above.
     issues = result.type1_issues
@@ -215,7 +243,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child1",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    "11",
                     pd.NA,
                 ),
                 "ROW_ID": [0],
@@ -223,7 +251,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child2",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    "21",
                     "99",
                 ),
                 "ROW_ID": [1],
@@ -231,7 +259,7 @@ def test_validate():
             {
                 "ERROR_ID": (
                     "child3",
-                    pd.to_datetime("26/05/2000", format="%d/%m/%Y", errors="coerce"),
+                    "32",
                     pd.NA,
                 ),
                 "ROW_ID": [3],
