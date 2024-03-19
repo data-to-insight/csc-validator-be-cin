@@ -67,10 +67,20 @@ class CINTable(Enum):
         [
             "LAchildID",
             "CINdetailsID",
+            "AssessmentID",
             "AssessmentActualStartDate",
             "AssessmentInternalReviewDate",
             "AssessmentAuthorisationDate",
             "AssessmentFactors",
+        ],
+    )
+    AssessmentFactorsList = Enum(
+        "AssessmentFactorsList",
+        [
+            "LAchildID",
+            "CINdetailsID",
+            "AssessmentID",
+            "AssessmentFactor",
         ],
     )
     CINplanDates = Enum(

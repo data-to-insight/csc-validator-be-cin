@@ -9,9 +9,13 @@ from cin_validator.test_engine import run_rule
 
 Assessments = CINTable.Assessments
 LAchildID = Assessments.LAchildID
-AssessmentFactors = Assessments.AssessmentFactors
 CINdetailsID = Assessments.CINdetailsID
+AssessmentID = Assessments.AssessmentID
 AssessmentActualStartDate = Assessments.AssessmentActualStartDate
+AssessmentFactors = Assessments.AssessmentFactors
+
+AssessmentFactorsList = CINTable.AssessmentFactorsList
+AssessmentFactor = AssessmentFactorsList.AssessmentFactor
 
 CINdetails = CINTable.CINdetails
 LAchildID = CINdetails.LAchildID
@@ -38,43 +42,48 @@ def validate(
     # PREPARING DATA
 
     df_ass = data_container[Assessments].copy()
+    df_asslist = data_container[AssessmentFactorsList].copy()
     df_cin = data_container[CINdetails].copy()
 
     # Before you begin, rename the index so that the initial row positions can be kept intact.
     df_ass.index.name = "ROW_ID"
+    df_asslist.index.name = "ROW_ID"
     df_cin.index.name = "ROW_ID"
 
     # Resetting the index causes the ROW_IDs to become columns of their respective DataFrames
     # so that they can come along when the merge is done.
     df_ass.reset_index(inplace=True)
+    df_asslist.reset_index(inplace=True)
     df_cin.reset_index(inplace=True)
 
     # lOGIC
     # Within a <CINDetails> group, if there is only one <Assessment> group present and <AssessmentFactors> (N00181) = “21”, <ReasonForClosure> (N00103) must should = RC8 or RC9.
 
-    # Eliminates rows with more than 1 assessment per CINdetails group by determining if there's more than 1 AssessmentActualStartDate per CINdetailsID per child
+    # Eliminates rows with more than 1 assessment per CINdetails group by determining if there's more than 1 AssessmentID per CINdetailsID per child
     df_ass_merged = df_ass.merge(df_ass, on=["LAchildID", "CINdetailsID"])
     df_ass_merged = df_ass_merged[
-        (
-            df_ass_merged["AssessmentActualStartDate_x"]
-            != df_ass_merged["AssessmentActualStartDate_y"]
-        )
+        (df_ass_merged["AssessmentID_x"] != df_ass_merged["AssessmentID_y"])
     ]
     more_than_1_ass = df_ass_merged["ROW_ID_x"].tolist()
 
     df_ass = df_ass[~df_ass["ROW_ID"].isin(more_than_1_ass)]
 
-    df_ass = df_ass[
-        (df_ass[AssessmentFactors] == "21")
-        | (df_ass[AssessmentFactors] == "21 No factors identified")
-        | (df_ass[AssessmentFactors].str.contains("21"))
+    df_ass_merged = df_ass.merge(
+        df_asslist[["LAchildID", "CINdetailsID", "AssessmentID", "AssessmentFactor"]],
+        on=["LAchildID", "CINdetailsID", "AssessmentID"],
+    )
+
+    df_ass_merged = df_ass_merged[
+        (df_ass_merged[AssessmentFactor] == "2B")
+        | (df_ass_merged[AssessmentFactor] == "21 No factors identified")
+        | (df_ass_merged[AssessmentFactor].str.contains("21"))
     ]
 
-    # left merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
+    # left merge means that only the filtered cin children will be considered and there is no possibility of additonal children coming in from other tables.
 
     # get only the CINdetails groups with AssessmentFactors including 21.
-    merged_df = df_ass.copy().merge(
-        df_cin.copy(),
+    merged_df = df_ass_merged.merge(
+        df_cin,
         on=[LAchildID, "CINdetailsID"],
         how="left",
         suffixes=["_ass", "_cin"],
@@ -88,7 +97,12 @@ def validate(
 
     # create an identifier for each error instance.
     merged_df["ERROR_ID"] = tuple(
-        zip(merged_df[LAchildID], merged_df[CINdetailsID], merged_df[ReasonForClosure])
+        zip(
+            merged_df[LAchildID],
+            merged_df[CINdetailsID],
+            merged_df[AssessmentID],
+            merged_df[ReasonForClosure],
+        )
     )
 
     # The merges were done on copies of df_ass, and df_cin so that the column names in dataframes themselves aren't affected by the suffixes.
@@ -123,48 +137,56 @@ def test_validate():
                 "LAchildID": "child1",
                 "AssessmentFactors": "21",  # 0 pass
                 "CINdetailsID": "cinID1",
+                "AssessmentID": "11",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child1",
                 "AssessmentFactors": "BOO",  # 1 ignore: factor!=21
                 "CINdetailsID": "cinID2",
+                "AssessmentID": "12",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child2",
                 "AssessmentFactors": "BOO",  # 2 ignore: factor!=21
                 "CINdetailsID": "cinID1",
+                "AssessmentID": "21",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child3",
                 "AssessmentFactors": "21",  # 3 fail. reason!=RC8
                 "CINdetailsID": "cinID1",
+                "AssessmentID": "31",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {  # absent
                 "LAchildID": "child3",
                 "AssessmentFactors": pd.NA,  # 4 ignore: factor!=21
                 "CINdetailsID": "cinID2",
+                "AssessmentID": "32",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {  # fail
                 "LAchildID": "child3",
                 "AssessmentFactors": "21",  # 5 fail. reason!=RC8
                 "CINdetailsID": "cinID3",
+                "AssessmentID": "33",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child3",
                 "AssessmentFactors": "21",  # ignore: more than one assessment in CIN episode
                 "CINdetailsID": "cinID4",
+                "AssessmentID": "34",
                 "AssessmentActualStartDate": "5/12/1993",
             },
             {
                 "LAchildID": "child3",
                 "AssessmentFactors": "20",  # 6 ignore: factor!=21
                 "CINdetailsID": "cinID4",
+                "AssessmentID": "35",
                 "AssessmentActualStartDate": "5/12/1994",
             },
         ]
@@ -216,6 +238,9 @@ def test_validate():
         validate,
         {
             Assessments: sample_ass,
+            AssessmentFactorsList: sample_ass.rename(
+                columns={"AssessmentFactors": "AssessmentFactor"}
+            ),
             CINdetails: sample_cin,
         },
     )
@@ -254,7 +279,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",  # ChildID
                     "cinID1",  # CINdetailsID
-                    # corresponding CPPstartDate
+                    "31",  # AssessmentID
                     "RC10",
                 ),
                 "ROW_ID": [3],
@@ -263,6 +288,7 @@ def test_validate():
                 "ERROR_ID": (
                     "child3",
                     "cinID3",
+                    "33",
                     "RC10",
                 ),
                 "ROW_ID": [5],
