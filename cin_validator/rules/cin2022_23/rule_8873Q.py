@@ -74,7 +74,7 @@ def validate(
     )
 
     df_ass_merged = df_ass_merged[
-        (df_ass_merged[AssessmentFactor] == "2B")
+        (df_ass_merged[AssessmentFactor] == "21")
         | (df_ass_merged[AssessmentFactor] == "21 No factors identified")
         | (df_ass_merged[AssessmentFactor].str.contains("21"))
     ]

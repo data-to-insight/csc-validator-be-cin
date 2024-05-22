@@ -156,7 +156,7 @@ def test_validate():
     # check that the failing locations are contained in a DataFrame having the appropriate columns. These lines do not change.
     assert isinstance(issue_rows, pd.DataFrame)
     assert issue_rows.columns.to_list() == ["ERROR_ID", "ROW_ID"]
-    print(issue_rows)
+
     # Create the dataframe which you expect, based on the fake data you created. It should have two columns.
     # - The first column is ERROR_ID which contains the unique combination that identifies each error instance, which you decided on earlier.
     # - The second column in ROW_ID which contains a list of index positions that belong to each error instance.
