@@ -39,7 +39,13 @@
                 <ReasonForClosure>RC1</ReasonForClosure>
                 <DateOfInitialCPC>2022-12-06</DateOfInitialCPC>
                 <Assessments>
-                    <AssessmentActualStartDate>2023-01-24</AssessmentActualStartDate>
+                    <AssessmentActualStartDate>2028-04-28</AssessmentActualStartDate>
+                    <AssessmentAuthorisationDate>2020-09-19</AssessmentAuthorisationDate>
+                    <FactorsIdentifiedAtAssessment>
+                        <AssessmentFactors>1C</AssessmentFactors>
+                        <AssessmentFactors>RB</AssessmentFactors>
+                        <AssessmentFactors>6B</AssessmentFactors>
+                    </FactorsIdentifiedAtAssessment>
                 </Assessments>
                 <CINPlanDates>
                     <CINPlanStartDate>2023-01-24</CINPlanStartDate>

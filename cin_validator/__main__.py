@@ -79,7 +79,7 @@ def run_all(filename: str, ruleset, select, output):
     # get rules based on specified year.
     module = importlib.import_module(f"cin_validator.rules.{ruleset}")
     ruleset_registry = getattr(module, "registry")
-
+    
     validator = cin_validator.CinValidator(
         data_files, ruleset_registry, selected_rules=select
     )
