@@ -24,7 +24,7 @@ Sex = ChildIdentifiers.Sex
     # replace ChildIdentifiers with the value in the module column of the excel sheet corresponding to this rule .
     module=CINTable.ChildIdentifiers,
     # replace the message with the corresponding value for this rule, gotten from the excel sheet.
-    message="Sex is missing",
+    message="Sex must be provided and equal M, F, or U",
     # The column names tend to be the words within the < > signs in the github issue description.
     affected_fields=[Sex],
 )
@@ -74,4 +74,4 @@ def test_validate():
 
     # replace '4180' with the rule code and put the appropriate message in its place too.
     assert result.definition.code == "4180"
-    assert result.definition.message == "Sex is missing"
+    assert result.definition.message == "Sex must be provided and equal M, F, or U"
