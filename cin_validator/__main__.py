@@ -99,7 +99,7 @@ def run_all(filename: str, ruleset, select, output):
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2024_25",
+    default="cin2022_23",
     help="Which ruleset to use, e.g. cin2022_23",
 )
 def test_cmd(rule, ruleset):

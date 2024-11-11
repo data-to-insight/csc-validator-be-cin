@@ -59,7 +59,9 @@ def validate(
     ref_date = header[ReferenceDate].iloc[0]
     school_start_date = ref_date + pd.DateOffset(months=4, days=31)
 
-    school_start_minus4 = school_start_date - pd.DateOffset(years=4)
+    # As we got the school start date for the current collection period, we can take 6 years off of this
+    # which is the same as the start date previous to the current collection period minus four years
+    school_start_minus5 = school_start_date - pd.DateOffset(years=6)
 
     # lOGIC
     # Implement rule logic as described by the Github issue.
@@ -75,7 +77,7 @@ def validate(
     ]
 
     # get only ChildIdentifiers where child is old enough to need a UPN
-    df_cid = df_cid[(df_cid[PersonBirthDate] <= school_start_minus4)]
+    df_cid = df_cid[(df_cid[PersonBirthDate] <= school_start_minus5)]
 
     # merge ChildIdentifiers with filtered CINdetails and take only those that match
     df_merged = df_cid.merge(
@@ -129,7 +131,7 @@ def test_validate():
         [
             {
                 "LAchildID": "child1",  # 0 Ignore - under school age
-                "PersonBirthDate": "01/09/2000",
+                "PersonBirthDate": "01/09/1995",
                 "UPN": pd.NA,
                 "UPNunknown": pd.NA,
             },
@@ -153,13 +155,13 @@ def test_validate():
             },
             {
                 "LAchildID": "child5",  # 4 Fail - over school age and no UPN or valid UPNunknown
-                "PersonBirthDate": "26/05/1990",
+                "PersonBirthDate": "31/08/1995",
                 "UPN": pd.NA,
                 "UPNunknown": pd.NA,
             },
             {
                 "LAchildID": "child6",  # 5 Fail - over school age and no UPN or valid UPNunknown (UN1 is not valid for >5yrs)
-                "PersonBirthDate": "26/05/1990",
+                "PersonBirthDate": "31/08/1995",
                 "UPN": pd.NA,
                 "UPNunknown": "UN1",
             },
@@ -171,7 +173,7 @@ def test_validate():
             },
             {
                 "LAchildID": "child8",  # 7 Fail- over school age and no UPN or valid UPNunknown (UN8 is not valid)
-                "PersonBirthDate": "30/08/1990",
+                "PersonBirthDate": "31/08/1993",
                 "UPN": pd.NA,
                 "UPNunknown": pd.NA,
             },
@@ -190,9 +192,10 @@ def test_validate():
             {"LAchildID": "child8", "ReferralNFA": "0"},
         ]
     )
-    sample_header = pd.DataFrame(
-        [{ReferenceDate: "31/03/2001"}]  # the census start date here will be 01/04/2000
-    )
+
+    # The census start date here will be 01/04/2000 so we care about school year starting 1999
+    # So we care about children born on or before 31/08/1995
+    sample_header = pd.DataFrame([{ReferenceDate: "31/03/2001"}])
 
     # if rule requires columns containing date values, convert those columns to datetime objects first. Do it here in the test_validate function, not above.
     sample_cid[PersonBirthDate] = pd.to_datetime(
