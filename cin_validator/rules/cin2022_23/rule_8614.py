@@ -62,7 +62,7 @@ def test_validate():
             {
                 "LAchildID": "child2",
                 "AssessmentAuthorisationDate": "26/05/2000",
-                "AssessmentFactors": ['6a', '6b'],
+                "AssessmentFactors": ["6a", "6b"],
             },
             {
                 "LAchildID": "child3",
