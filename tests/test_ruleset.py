@@ -9,3 +9,7 @@ def test_ruleset_complete():
     registry = get_year_ruleset("2024")
     # check that the 2023/2024 version of CIN rules pulls in the preceding year's rules.
     assert len(registry) == 105
+
+     registry = get_year_ruleset("2025")
+    # check that the 2023/2024 version of CIN rules pulls in the preceding year's rules.
+    assert len(registry) == 105
