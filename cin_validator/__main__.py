@@ -20,8 +20,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2022_23",
-    help="Which ruleset to use, e.g. cin2022_23",
+    default="cin2024_25",
+    help="Which ruleset to use, e.g. cin2024_25",
 )
 def list_cmd(ruleset):
     """
@@ -45,8 +45,8 @@ def list_cmd(ruleset):
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2022_23",
-    help="Which ruleset to use, e.g. cin2022_23",
+    default="cin2024_25",
+    help="Which ruleset to use, e.g. cin2024_25",
 )
 @click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
@@ -99,8 +99,8 @@ def run_all(filename: str, ruleset, select, output):
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2022_23",
-    help="Which ruleset to use, e.g. cin2022_23",
+    default="cin2024_25",
+    help="Which ruleset to use, e.g. cin2024_25",
 )
 def test_cmd(rule, ruleset):
     """
