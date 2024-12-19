@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "csc-validator-be-cin"
-version = "0.1.4"
+version = "0.1.5"
 description = "Shared module for validating CIN census data using DfE rules."
 authors = ["Tambe Tabitha <tambe.tabitha@socialfinance.org.uk>", "Kaj Siebert <kaj.siebert@socialfinance.org.uk>", "William Levack-Payne <william.levack-payne@eastsussex.gov.uk>", "DatatoInsight's children's social care analyst community <datatoinsight.enquiries@gmail.com>"]
 repository = "https://github.com/data-to-insight/csc-validator-be-cin"
