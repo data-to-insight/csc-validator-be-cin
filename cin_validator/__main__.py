@@ -20,8 +20,8 @@ def cli():
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2024_25",
-    help="Which ruleset to use, e.g. cin2024_25",
+    default="cin2025_26",
+    help="Which ruleset to use, e.g. cin2025_26",
 )
 def list_cmd(ruleset):
     """
@@ -46,7 +46,7 @@ def list_cmd(ruleset):
     "--ruleset",
     "-r",
     default="cin2024_25",
-    help="Which ruleset to use, e.g. cin2024_25",
+    help="Which ruleset to use, e.g. cin2025_26",
 )
 @click.option("--select", "-s", default=None)
 @click.option("--output/--no_output", "-o/-no", default=False)
@@ -58,7 +58,7 @@ def run_all(filename: str, ruleset, select, output):
     python -m cin_validator run <filepath_to_data>
 
     Can be used to validate data, via the command line interface, for a given rule set.
-    Runs with the cin2022_23 ruleset as standard.
+    Runs with the cin2025_26 ruleset as standard.
 
     :param str filename: Refers to the filepath of data to be validated.
     :param str ruleset: The folder name of the validation rules to run input data against.
@@ -89,9 +89,9 @@ def run_all(filename: str, ruleset, select, output):
     if output:
         validator.user_report.to_csv("user_report.csv")
 
-    # click.echo(full_issue_df)
-    # click.echo(validator.multichild_issues)
-    click.echo(validator.data_files["Assessments"])
+    click.echo(full_issue_df)
+    # # click.echo(validator.multichild_issues)
+    # click.echo(validator.data_files["Assessments"])
 
 
 @cli.command(name="test")
@@ -99,8 +99,8 @@ def run_all(filename: str, ruleset, select, output):
 @click.option(
     "--ruleset",
     "-r",
-    default="cin2024_25",
-    help="Which ruleset to use, e.g. cin2024_25",
+    default="cin2025_26",
+    help="Which ruleset to use, e.g. cin2025_26",
 )
 def test_cmd(rule, ruleset):
     """
@@ -120,7 +120,7 @@ def test_cmd(rule, ruleset):
 
     :param str rule: Used to specify an individual rule to test.
     :param str ruleset: Use to give the name of a set of validation rules to test
-        (defaults to cin2022_23).
+        (defaults to cin2025_26).
     :returns: Pytest output in terminal of rules passing and failing.
     :rtype: Pytest output in terminal.
     """
