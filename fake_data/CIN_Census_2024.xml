@@ -70,5 +70,32 @@
                 </ChildProtectionPlans>
             </CINdetails>
         </Child>
+        <Child>
+    <ChildIdentifiers>
+        <LAchildID>child_fails_assessments</LAchildID>
+        <UPNunknown>UN1</UPNunknown>
+        <PersonBirthDate>2023-09-25</PersonBirthDate>
+        <Sex>M</Sex>
+    </ChildIdentifiers>
+    <ChildCharacteristics>
+        <Ethnicity>WBRI</Ethnicity>
+        <Disabilities>
+            <Disability>NONE</Disability>
+        </Disabilities>
+    </ChildCharacteristics>
+    <CINdetails>
+        <CINreferralDate>2024-10-24</CINreferralDate>
+        <ReferralSource>1A</ReferralSource>
+        <PrimaryNeedCode>N1</PrimaryNeedCode>
+        <CINclosureDate>2024-10-29</CINclosureDate>
+        <ReasonForClosure>RC9</ReasonForClosure>
+        <Assessments>
+            <AssessmentActualStartDate>2023-12-25</AssessmentActualStartDate>
+            <AssessmentAuthorisationDate>2024-01-27</AssessmentAuthorisationDate>
+            <FactorsIdentifiedAtAssessment/>
+        </Assessments>
+        <ReferralNFA>false</ReferralNFA>
+    </CINdetails>
+    </Child>
     </Children>
 </Message>
