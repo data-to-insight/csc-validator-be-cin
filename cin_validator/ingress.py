@@ -350,29 +350,33 @@ class XMLtoCSV:
 
             if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
-                for factor in assessment_factors:
-                    assessment_factors_dict = {
-                        "LAchildID": self.LAchildID,
-                        "CINdetailsID": self.CINdetailsID,
-                        "AssessmentID": self.AssessmentID,
-                    }
-                    assessment_factors_dict = get_values(
-                        assessment_elements, assessment_factors_dict, factor
+                if len(assessment_factors) != 0:
+                # checks that the assessment facros block has any assessment factors in it as
+                # some close without any in.
+                    for factor in assessment_factors:
+                        assessment_factors_dict = {
+                            "LAchildID": self.LAchildID,
+                            "CINdetailsID": self.CINdetailsID,
+                            "AssessmentID": self.AssessmentID,
+                        }
+                        assessment_factors_dict = get_values(
+                            assessment_elements, assessment_factors_dict, factor
+                        )
+                        assessment_factors_dict["AssessmentFactor"] = factor.text
+                        assessment_factors_list.append(assessment_factors_dict)
+                    assessment_factors_df = pd.DataFrame(assessment_factors_list)
+                    self.AssessmentFactorsList = pd.concat(
+                        [self.AssessmentFactorsList, assessment_factors_df],
+                        ignore_index=True,
                     )
-                    assessment_factors_dict["AssessmentFactor"] = factor.text
-                    assessment_factors_list.append(assessment_factors_dict)
-                assessment_factors_df = pd.DataFrame(assessment_factors_list)
-                self.AssessmentFactorsList = pd.concat(
-                    [self.AssessmentFactorsList, assessment_factors_df],
-                    ignore_index=True,
-                )
-                assessment_dict["AssessmentFactors"] = assessment_factors_df[
-                    "AssessmentFactor"
-                ].tolist()
+                    assessment_dict["AssessmentFactors"] = assessment_factors_df[
+                        "AssessmentFactor"
+                    ].tolist()
 
             assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
+        print(assessments_df)
         self.Assessments = pd.concat(
             [self.Assessments, assessments_df], ignore_index=True
         )
