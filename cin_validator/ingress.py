@@ -376,7 +376,6 @@ class XMLtoCSV:
             assessments_list.append(assessment_dict)
 
         assessments_df = pd.DataFrame(assessments_list)
-        print(assessments_df)
         self.Assessments = pd.concat(
             [self.Assessments, assessments_df], ignore_index=True
         )

@@ -118,7 +118,6 @@ def validate(
         .apply(list)
         .reset_index()
     )
-    print(df_cid_issues)
     # Ensure that you maintain the ROW_ID, and ERROR_ID column names which are shown above. They are keywords in this project.
     rule_context.push_type_2(
         table=ChildIdentifiers, columns=[UPN, UPNunknown], row_df=df_cid_issues
