@@ -351,8 +351,8 @@ class XMLtoCSV:
             if assessment_factors is not None:
                 # if statement handles the non-iterable NoneType that .find produces if the element is not present.
                 if len(assessment_factors) != 0:
-                # checks that the assessment facros block has any assessment factors in it as
-                # some close without any in.
+                    # checks that the assessment facros block has any assessment factors in it as
+                    # some close without any in.
                     for factor in assessment_factors:
                         assessment_factors_dict = {
                             "LAchildID": self.LAchildID,
