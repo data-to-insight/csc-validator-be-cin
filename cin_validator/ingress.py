@@ -31,6 +31,8 @@ class XMLtoCSV:
         to be populated with children's data from XML input.
     :param DataFrame Reviews: DataFrame of fields for the Reviews table for validation.
         to be populated with children's data from XML input.
+    :param DataFrame PreProceedings: DataFrame of fields for the Pre Proceedings and FGDM table for validation.
+        to be populated with children's data from XML input.
     :param list id_cols: List of columns containing IDs that can be used to merge tables.
     """
 
@@ -128,6 +130,21 @@ class XMLtoCSV:
     )
     Reviews = pd.DataFrame(
         columns=["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"]
+    )
+
+    PreProceedings = pd.DataFrame(
+        [
+            "PPStartDate",
+            "LBPSentDate",
+            "FGDMMeetingOffer",
+            "FGDMMeetingFac",
+            "InitialPPMeetingDate",
+            "ReviewMeetingsCount",
+            "StepDecisionDate",
+            "PPOutcome",
+            "CourtAppDate",
+            "LetterInitCPDate",
+        ]
     )
 
     id_cols = ["LAchildID", "CINdetailsID", "AssessmentID", "CPPID"]
@@ -309,6 +326,7 @@ class XMLtoCSV:
             self.create_CINplanDates(cin_detail)
             self.create_Section47(cin_detail)
             self.create_ChildProtectionPlans(cin_detail)
+            self.create_PreProceedings(cin_detail)
 
         cin_details_df = pd.DataFrame(cin_details_list)
         self.CINdetails = pd.concat(
@@ -464,6 +482,33 @@ class XMLtoCSV:
         plans_df = pd.DataFrame(plans_list)
         self.ChildProtectionPlans = pd.concat(
             [self.ChildProtectionPlans, plans_df], ignore_index=True
+        )
+
+    def create_PreProceedings(self, cin_detail):
+        """
+        Populates the PreProceedings table. Multiple PreProceedings blocks can exist in one CINdetails block.
+
+        :param xml child: 'child' element from the XML input
+        :returns: DataFrame of data for an individual child for the PreProceedings Table.
+        :rtype: DataFrame
+        """
+
+        sections_list = []
+        columns = self.PreProceedings.columns
+        elements = list(set(columns).difference(set(self.id_cols)))
+
+        sections = cin_detail.findall("PreProceedingsandFGDM")
+        for section in sections:
+            section_dict = {
+                "LAchildID": self.LAchildID,
+                "CINdetailsID": self.CINdetailsID,
+            }
+            section_dict = get_values(elements, section_dict, section)
+            sections_list.append(section_dict)
+
+        sections_df = pd.DataFrame(sections_list)
+        self.PreProceedings = pd.concat(
+            [self.PreProceedings, sections_df], ignore_index=True
         )
 
     def create_Reviews(self, plan):
