@@ -7,6 +7,7 @@ from cin_validator.test_engine import run_rule
 
 PreProceedings = CINTable.PreProceedings
 
+
 # define characteristics of rule
 @rule_definition(
     code="8995Q",
