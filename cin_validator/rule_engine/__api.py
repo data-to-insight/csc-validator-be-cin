@@ -111,6 +111,22 @@ class CINTable(Enum):
             "NumberOfPreviousCPP",
         ],
     )
+    PreProceedings = Enum(
+        "PreProceedings",
+        [
+            "PPStartDate",
+            "LBPSentDate",
+            "FGDMMeetingOffer",
+            "FGDMMeetingFac",
+            "InitialPPMeetingDate",
+            "ReviewMeetingsCount",
+            "StepDecisionDate",
+            "PPOutcome",
+            "CourtAppDate",
+            "LetterInitCPDate",
+        ]
+    )
+
     Reviews = Enum("Reviews", ["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"])
 
     def __getattr__(self, item):
