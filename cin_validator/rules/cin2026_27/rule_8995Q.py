@@ -13,7 +13,7 @@ PreProceedings = CINTable.PreProceedings
     code="8995Q",
     rule_type=RuleType.QUERY,
     module=CINTable.PreProceedings,
-    message="No module 5 (pre-proceedings and FGM data) has been provided for any child.",
+    message="Please check and provide a reason why no module 5 (pre-proceedings and FGM) data has been provided for any child.",
     affected_fields=[],
 )
 def validate(
@@ -37,5 +37,5 @@ def test_validate():
 
     assert result.la_issues == (
         "8995Q",
-        "No module 5 (pre-proceedings and FGM data) has been provided for any child.",
+        "Please check and provide a reason why no module 5 (pre-proceedings and FGM) data has been provided for any child.",
     )
