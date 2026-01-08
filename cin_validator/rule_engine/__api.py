@@ -124,7 +124,7 @@ class CINTable(Enum):
             "PPOutcome",
             "CourtAppDate",
             "LetterInitCPDate",
-        ]
+        ],
     )
 
     Reviews = Enum("Reviews", ["LAchildID", "CINdetailsID", "CPPID", "CPPreviewDate"])
