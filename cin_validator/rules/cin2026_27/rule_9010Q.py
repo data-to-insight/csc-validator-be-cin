@@ -13,27 +13,29 @@ from cin_validator.utils import make_census_period
 
 PreProceedings = CINTable.PreProceedings
 FGDMMeetingOffer = PreProceedings.FGDMMeetingOffer
-LBPSentDate = PreProceedings.LBPSentDate
+FGDMMeetingFac = PreProceedings.FGDMMeetingFac
 
 
 @rule_definition(
-    code="9007",
+    code="9010Q",
     module=CINTable.PreProceedings,
-    message="You have confirmed that a letter before proceedings was sent. Please confirm whether or not a FGDM meeting was offered in the letter.",
-    affected_fields=[FGDMMeetingOffer],
+    message="Please check: You have reported that a FGDM meeting was offered in the letter before proceedings. Please confirm whether or not a FGDM meeting was facilitated in the pre-proceedings period following this offer.",
+    affected_fields=[FGDMMeetingFac],
 )
 def validate(
     data_container: Mapping[CINTable, pd.DataFrame], rule_context: RuleContext
 ):
-    # If (N00827) is present, then (N00828) should be present.
+    # If (N00828) is present and equals true, then   (N00829) should be present.
     df = data_container[PreProceedings]
 
-    df_issues = df[df[FGDMMeetingOffer].notna() & df[LBPSentDate].isna()]
+    df_issues = df[
+        (df[FGDMMeetingOffer].astype("str") == "1") & (df[FGDMMeetingFac].isna())
+    ]
 
     failing_indices = df_issues.index
 
     rule_context.push_issue(
-        table=PreProceedings, field=FGDMMeetingOffer, row=failing_indices
+        table=PreProceedings, field=FGDMMeetingFac, row=failing_indices
     )
 
 
@@ -48,13 +50,13 @@ def test_validate():
                 pd.NA,
                 0,
             ],
-            "LBPSentDate": [
+            "FGDMMeetingFac": [
                 pd.NA,
                 pd.NA,
-                "01/04/2001",
-                "02/04/2000",
-                "11/04/2000",
-                "11/04/2000",
+                1,
+                1,
+                1,
+                1,
             ],
         }  # 1 fails
     )
@@ -71,11 +73,11 @@ def test_validate():
     assert len(issues) == 1
 
     assert issues == [
-        IssueLocator(CINTable.PreProceedings, FGDMMeetingOffer, 1),
+        IssueLocator(CINTable.PreProceedings, FGDMMeetingFac, 1),
     ]
 
-    assert result.definition.code == "9007"
+    assert result.definition.code == "9010Q"
     assert (
         result.definition.message
-        == "You have confirmed that a letter before proceedings was sent. Please confirm whether or not a FGDM meeting was offered in the letter."
+        == "Please check: You have reported that a FGDM meeting was offered in the letter before proceedings. Please confirm whether or not a FGDM meeting was facilitated in the pre-proceedings period following this offer."
     )
