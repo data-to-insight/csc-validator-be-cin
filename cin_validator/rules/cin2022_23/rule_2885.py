@@ -14,6 +14,7 @@ CPPstartDate = ChildProtectionPlans.CPPstartDate
 LAchildID = ChildProtectionPlans.LAchildID
 CINdetailsID = ChildProtectionPlans.CINdetailsID
 DateOfInitialCPC = Section47.DateOfInitialCPC
+ICPCnotRequired = Section47.ICPCnotRequired
 
 # Reference date in header is needed to define the period of census.
 Header = CINTable.Header
@@ -76,9 +77,10 @@ def validate(
     )
     df_cpp = df_cpp[start_date_present & within_period]
 
-    # left merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
+    # inner merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
 
-    # get only the section47 rows where cppstartdate exists and is within period.
+    # get only the section47 rows where cppstartdate exists and is within period and section47 is not ICPCnotRequired.
+    df_47 = df_47[df_47[ICPCnotRequired] != '1']
     df_cpp_47 = df_cpp.merge(
         df_47, on=[LAchildID, CINdetailsID], how="inner", suffixes=["_cpp", "_47"]
     )
@@ -296,6 +298,12 @@ def test_validate():
                 "CINdetailsID": "cinID1",
                 "CPPstartDate": "20/10/2021",  # passes in cin
             },
+             # child 10: CP started 31 March previous year
+            {
+                "LAchildID": "child9",
+                "CINdetailsID": "cinID1",
+                "CPPstartDate": "31/03/2021",  # ignored
+            },
         ]
     )
     sample_section47 = pd.DataFrame(
@@ -304,56 +312,73 @@ def test_validate():
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/05/2021",  # pass. same as cppstartdate
                 "CINdetailsID": "cinID1",
+                "ICPCnotRequired": "0",
             },
             {  # 1 ignored
                 "LAchildID": "child1",
                 "DateOfInitialCPC": "26/05/2021",  # ignore. cppstartdate not in period of census
                 "CINdetailsID": "cinID2",
+                "ICPCnotRequired": "0",
             },
             {  # 2 pass
                 "LAchildID": "child2",
                 "DateOfInitialCPC": "30/05/2021",  # fail. not the same
                 "CINdetailsID": "cinID1",
+                "ICPCnotRequired": "0",
             },
             {  # 4 absent, ignored
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2021",  # ignore. cppstartdate is absent.
                 "CINdetailsID": "cinID2",
+                "ICPCnotRequired": "0",
             },
             {  # 5 fail
                 "LAchildID": "child3",
                 "DateOfInitialCPC": "26/05/2021",  # fail. not the same
                 "CINdetailsID": "cinID3",
+                "ICPCnotRequired": "0",
             },
             {  # 6 pass
                 "LAchildID": "child3",
                 "DateOfInitialCPC": pd.NA,  # fail. not the same
                 "CINdetailsID": "cinID4",
+                "ICPCnotRequired": "0",
             },
             {
                 "LAchildID": "child5",
                 "DateOfInitialCPC": "19/07/2021",  # pass. same as cppstartdate
                 "CINdetailsID": "cinID4",
+                "ICPCnotRequired": "0",
             },
             {
                 "LAchildID": "child5",
                 "DateOfInitialCPC": pd.NA,  # pass since other section47 in same modeule passes.
                 "CINdetailsID": "cinID4",
+                "ICPCnotRequired": "0",
             },
             {
                 "LAchildID": "child6",
                 "DateOfInitialCPC": pd.NA,  # fail. not the same
                 "CINdetailsID": "cinID4",
+                "ICPCnotRequired": "0",
             },
             {
                 "LAchildID": "child8",
                 "DateOfInitialCPC": "20/10/2021",  # pass. same as cpp_start_date
                 "CINdetailsID": "cinID1",
+                "ICPCnotRequired": "0",
             },
             {
                 "LAchildID": "child8",
                 "DateOfInitialCPC": "22/07/2021",  # pass since other section47 in the same CINmodule passes.
                 "CINdetailsID": "cinID1",
+                "ICPCnotRequired": "0",
+            },
+            {
+                "LAchildID": "child9",
+                "DateOfInitialCPC": pd.NA,  # pass since ICPC not required.
+                "CINdetailsID": "cinID1",
+                "ICPCnotRequired": "1",
             },
         ]
     )
