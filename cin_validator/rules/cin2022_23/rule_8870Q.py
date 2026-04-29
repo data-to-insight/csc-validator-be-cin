@@ -6,6 +6,7 @@ Rule details: Where present, the <InitialCPCtarget> (N00109) should not be a Sat
 Rule message: Please check: The Target Date for Initial Child Protection Conference should not be a weekend
 
 """
+
 from typing import Mapping
 
 import pandas as pd

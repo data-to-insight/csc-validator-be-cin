@@ -4,6 +4,7 @@ Module: Child Identifiers
 Rule details: If present <ExpectedPersonBirthDate> (N00098) should be between [<ReferenceDate> (N00603) minus 30 days] and [<ReferenceDate> (N00603) plus 9 months]
 Rule message: Please check: Expected Date of Birth is outside the expected range for this census (March to December of the Census Year end)
 """
+
 from typing import Mapping
 
 import pandas as pd

@@ -5,6 +5,7 @@ Rule details: Where present, the <CPPStartDate> (N00105) must be on or after the
 Rule message: The child protection plan start date cannot be before the referral date
 
 """
+
 from typing import Mapping
 
 import pandas as pd

@@ -1,13 +1,14 @@
 """
 Rule number: '8510'
 Module: Child idenitifiers
-Rule details: Each <LAchildID> (N00097) must be unique across all children within the same LA return. 
+Rule details: Each <LAchildID> (N00097) must be unique across all children within the same LA return.
 
 Note: This rule should be evaluated at LA-level for imported data
 
 Rule message: More than one child record with the same LA Child ID
 
 """
+
 from typing import Mapping
 
 import pandas as pd

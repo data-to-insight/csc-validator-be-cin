@@ -80,7 +80,7 @@ def validate(
     # inner merge means that only the filtered cpp children will be considered and there is no possibility of additonal children coming in from other tables.
 
     # get only the section47 rows where cppstartdate exists and is within period and section47 is not ICPCnotRequired.
-    df_47 = df_47[df_47[ICPCnotRequired] != '1']
+    df_47 = df_47[df_47[ICPCnotRequired] != "1"]
     df_cpp_47 = df_cpp.merge(
         df_47, on=[LAchildID, CINdetailsID], how="inner", suffixes=["_cpp", "_47"]
     )
@@ -298,7 +298,7 @@ def test_validate():
                 "CINdetailsID": "cinID1",
                 "CPPstartDate": "20/10/2021",  # passes in cin
             },
-             # child 10: CP started 31 March previous year
+            # child 10: CP started 31 March previous year
             {
                 "LAchildID": "child9",
                 "CINdetailsID": "cinID1",

@@ -1,10 +1,11 @@
 """
 Rule number: '1520'
 Module: Child idenitifiers
-Rule details: Each pupil <UPN> (N00001) must be unique across all pupils in the extract. 
-Note: This rule should be evaluated at LA-level for imported data                                                                     
+Rule details: Each pupil <UPN> (N00001) must be unique across all pupils in the extract.
+Note: This rule should be evaluated at LA-level for imported data
 Rule message: More than one record with the same UPN
 """
+
 from typing import Mapping
 
 import pandas as pd
