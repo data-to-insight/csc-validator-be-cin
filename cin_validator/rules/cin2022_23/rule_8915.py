@@ -5,6 +5,7 @@ Rule details: If <PersonDeathDate> (N00108) is present, then <CPPstartDate> (N00
 Rule message: Child Protection Plan shown as starting after the child’s Date of Death
 
 """
+
 from typing import Mapping
 
 import pandas as pd

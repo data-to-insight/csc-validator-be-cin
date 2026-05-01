@@ -70,7 +70,7 @@ def test_validate():
                 CINclosureDate: "01/10/2022"
             },  # 2 fail: October 1st is after March 31st, 2022. It is out of range
             {CINclosureDate: "01/04/2021"},  # Pass, first day of census period
-            {CINclosureDate: "31/03/2021"},  # Pass, last day of census period
+            {CINclosureDate: "31/03/2021"},  # Fail, last day of previous census period
         ]
     )
 
@@ -85,12 +85,13 @@ def test_validate():
     # The result contains a list of issues encountered
     issues = list(result.issues)
     # replace 2 with the number of failing points you expect from the sample data.
-    assert len(issues) == 2
+    assert len(issues) == 3
     # replace the table and column name as done earlier.
     # The last numbers represent the index values where you expect the sample data to fail the validation check.
     assert issues == [
         IssueLocator(CINTable.CINdetails, CINclosureDate, 0),
         IssueLocator(CINTable.CINdetails, CINclosureDate, 2),
+        IssueLocator(CINTable.CINdetails, CINclosureDate, 4),
     ]
 
     # Check that the rule definition is what you wrote in the context above.

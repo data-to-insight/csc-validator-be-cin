@@ -12,6 +12,7 @@ Rule details: If <CINclosureDate> (N00102) is present then it must be on or afte
 Rule message: Activity shown after a case has been closed
 
 """
+
 from typing import Mapping
 
 import pandas as pd

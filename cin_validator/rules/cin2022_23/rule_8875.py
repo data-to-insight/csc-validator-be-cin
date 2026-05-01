@@ -5,6 +5,7 @@ Rule details: Where present, the <DateOfInitialCPC> (N00110) must not be a Satur
 Rule message: The Date of Initial Child Protection Conference cannot be a weekend
 
 """
+
 from typing import Mapping
 
 import pandas as pd
